@@ -182,7 +182,13 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 //	EmployeeVO findByEmployeeVO(String empCode);
 
 
-
+	@Query(value = "SELECT e.employee, e.employeecode " +
+	        "FROM employee e " +
+	        "WHERE e.orgId = ?1 " +
+	        "  AND (?2 = 'ALL' OR e.branchCode = ?2) " +
+	        "  AND (?3 = 'ALL' OR e.department = ?3) " +
+	        "  AND e.active = 1", nativeQuery = true)
+	Set<Object[]> getEmployeeDetailsForAllTaskReport(Long orgId, String branchCode, String department);
 
 
 
