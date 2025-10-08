@@ -489,7 +489,7 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 		    + "          ?6 = 'ALL'\r\n"
 		    + "          OR (?6 = 'EMPLOYEE' AND e.type = 'EMPLOYEE')\r\n"
 		    + "          OR (?6 = 'CONTRACTOR' AND e.type = 'CONTRACTOR' AND (?7 IS NULL OR e.contractor = ?7))\r\n"
-		    + "      )\r\n"
+		    + "      ) AND e.employeecode NOT IN ('WDS008', 'WDS001') \r\n"
 		    + "),\r\n"
 		    + "date_series_with_emp AS (\r\n"
 		    + "    SELECT eb.employeecode, ds.dt AS checkindate\r\n"
