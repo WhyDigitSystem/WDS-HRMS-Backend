@@ -26,6 +26,7 @@ public class PerformanceGoalsDTO {
 	private String branchCode;
 	private String finYear;
 	private String department;
+	private String designation;
 
 	private List<PerformanceGoalsDetailsDTO> performanceGoalsDetailsDTO;
 

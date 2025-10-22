@@ -43,7 +43,14 @@ public interface PerformanceGoalsService {
 
 	PerformanceGoalsVO getPerformanceGoalsById(Long id);
 
-	List<Map<String, Object>> getPerformanceGoalsDetailsReport(Long orgId, String pmonth, String branch,
+	List<PerformanceGoalsVO> getPerformanceGoalsDetailsReport(Long orgId, String pmonth, String branch,
 			String appraisalYear);
+
+	List<PerformanceGoalsVO> getPerformanceGoalsByOrgIdAndReportingPerson(Long orgId, String reportingPerson);
+
+	List<PerformanceGoalsVO> getPerformanceGoalsByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
+
+	List<PerformanceGoalsVO> getDashBoardDetails(Long orgId, String pmonth,  String appraisalYear,
+			String employeeCode);
 
 }

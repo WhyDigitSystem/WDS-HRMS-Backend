@@ -24,11 +24,13 @@ public interface PerformanceGoalsRepo extends JpaRepository<PerformanceGoalsVO, 
 	@Query(nativeQuery = true, value = "select performancegoalsid,appraisalyear,empcode,empname,reportingto,reportingname,pmonth From performancegoals where lower(reportingto) = lower( ?1 )")
 	Set<Object[]> getPerformanceGoalsbyreportingto(String reportingto);
 
-	@Query(nativeQuery = true, value = "select p1.performancegoalsdetailsid,p1.perspective,p1.objectivedesc,p1.perassigned,p1.measurement\r\n"
-			+ ",p1.qtrtarget,p1.performance,p1.comments,p1.selfrating,p1.appraiserrating,p1.performanceself\r\n"
-			+ ",p1.apprjustification,p.branch,p.pmonth,p.appraisalyear,p.empname,p.empcode,p.department From performancegoals p, performancegoalsdetails p1  where p.performancegoalsid=p1.performancegoalsid \r\n"
-			+ " and p.orgid=?1 and p.pmonth=?2 and (p.branch=?3 or 'ALL'=?3)  and p.appraisalyear=?4")
-	Set<Object[]> getPerformanceGoalsDetailsReport(Long orgId,String pmonth,String branch,String appraisalYear);
+	@Query(nativeQuery = true, value = "SELECT * FROM \r\n"
+			+ "    performancegoals p where\r\n"
+			+ "     p.orgid = ?1\r\n"
+			+ "    AND p.pmonth = ?2\r\n"
+			+ "    AND (p.branch = ?3 OR 'ALL' = ?3)\r\n"
+			+ "    AND p.appraisalyear = ?4")
+	List<PerformanceGoalsVO> getPerformanceGoalsDetailsReport(Long orgId,String pmonth,String branch,String appraisalYear);
 
 	@Query(nativeQuery = true, value = "select * from performancegoals where performancegoalsid=?1")
 	PerformanceGoalsVO findPerformancegoals(Long id);
@@ -41,5 +43,14 @@ public interface PerformanceGoalsRepo extends JpaRepository<PerformanceGoalsVO, 
 
 	@Query(nativeQuery = true, value = "select * from performancegoals where performancegoalsid=?1")
 	PerformanceGoalsVO getPerformanceGoalsById(Long id);
+	
+	@Query(value="SELECT * FROM performancegoals e where e.orgid=?1 and e.reportingto=?2",nativeQuery = true)
+	List<PerformanceGoalsVO> getPerformanceGoalsByOrgIdAndReportingPerson(Long orgId,String reportingPerson);
+	
+	@Query(value="SELECT * FROM performancegoals e where e.orgid=?1 and e.empcode=?2",nativeQuery = true)
+	List<PerformanceGoalsVO> getPerformanceGoalsByOrgIdAndEmployeeCode(Long orgId,String employeeCode);
+	
+	@Query(nativeQuery = true, value = "select  * from performancegoals  where orgid = ?1 and  pmonth = ?2 and     appraisalyear = ?3 and empcode=?4")
+	List<PerformanceGoalsVO> getDashBoardDetails(Long orgId,String pmonth,String appraisalYear,String employeeCode);
 
 }

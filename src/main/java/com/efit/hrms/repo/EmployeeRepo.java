@@ -150,7 +150,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "AND YEAR(joiningdate) = YEAR(CURDATE())")
 	Set<Object[]> findNewJoinieDtailsByOrgId(Long orgid);
 
-	@Query(value = "SELECT * FROM employee e WHERE e.orgId = ?1 and employeecode=?2 and active=1", nativeQuery = true)
+	@Query(value = "SELECT * FROM employee e WHERE e.orgid = ?1 and employeecode=?2 and active=1", nativeQuery = true)
 	List<EmployeeVO> getAllEmployeeByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
 
 	EmployeeVO findByEmployeeCode(String employeecode);

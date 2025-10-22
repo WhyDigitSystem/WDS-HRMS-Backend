@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +37,9 @@ public class PerformanceController extends BaseController {
 	@Autowired
 	PerformanceGoalsDetailsRepo performanceGoalsDetailsRepo;
 
-	@PutMapping("/createPerformanceGoal")
-	public ResponseEntity<ResponseDTO> createPerformanceGoal(@RequestBody PerformanceGoalsDTO performanceGoalsDTO) {
-		String methodName = "createPerformanceGoals()";
+	@PutMapping("/createUpdatePerformanceGoals")
+	public ResponseEntity<ResponseDTO> createUpdatePerformanceGoals(@RequestBody PerformanceGoalsDTO performanceGoalsDTO) {
+		String methodName = "createUpdatePerformanceGoals()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
 		Map<String, Object> responseObjectsMap = new HashMap<>();
@@ -184,28 +185,33 @@ public class PerformanceController extends BaseController {
 	}
 
 	@GetMapping("/getPerformanceGoalsDetailsReport")
-	public ResponseEntity<ResponseDTO> getPerformanceGoalsDetailsReport(@RequestParam Long orgId, @RequestParam String pmonth,@RequestParam String branch, @RequestParam String appraisalYear) {
+	public ResponseEntity<ResponseDTO> getPerformanceGoalsDetailsReport(@RequestParam Long orgId,
+			@RequestParam String pmonth, @RequestParam String branch, @RequestParam String appraisalYear) {
 		String methodName = "getPerformanceGoalsDetailsReport()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
 		Map<String, Object> responseObjectsMap = new HashMap<>();
 		ResponseDTO responseDTO = null;
-		List<Map<String, Object>> getPerformanceGoalsDetails = null;
+		List<PerformanceGoalsVO> getPerformanceGoalsDetails = new ArrayList<>();
 		try {
-			getPerformanceGoalsDetails = performanceGoalsService.getPerformanceGoalsDetailsReport( orgId, pmonth, branch, appraisalYear);
-
-			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Pre Goals Details found Successfully");
-			responseObjectsMap.put("getPerformanceGoalsDetails", getPerformanceGoalsDetails);
-			responseDTO = createServiceResponse(responseObjectsMap);
+			getPerformanceGoalsDetails = performanceGoalsService.getPerformanceGoalsDetailsReport(orgId, pmonth, branch,
+					appraisalYear);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-			responseDTO = createServiceResponseError(responseObjectsMap, "Pre Goals Details information receive failed",
-					errorMsg);
 		}
-
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE,
+					"PerformanceGoalsDetails information get successfully ByOrgId");
+			responseObjectsMap.put("getPerformanceGoalsDetails", getPerformanceGoalsDetails);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"PerformanceGoalsDetails information receive failedByOrgId", errorMsg);
+		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
+
 	}
 
 	@PutMapping("/updatePerformanceGoalsApprovedDetails")
@@ -236,4 +242,93 @@ public class PerformanceController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 	}
 
+	@GetMapping("/getPerformanceGoalsByOrgIdAndReportingPerson")
+	public ResponseEntity<ResponseDTO> getPerformanceGoalsByOrgIdAndReportingPerson(@RequestParam Long orgId,
+			@RequestParam String reportingPerson) {
+		String methodName = "getPerformanceGoalsByOrgIdAndReportingPerson()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<PerformanceGoalsVO> performanceGoalsVO = new ArrayList<>();
+		try {
+			performanceGoalsVO = performanceGoalsService.getPerformanceGoalsByOrgIdAndReportingPerson(orgId,
+					reportingPerson);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "details information get successfully ByOrgId");
+			responseObjectsMap.put("performanceGoalsVO", performanceGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"PerformanceGoalsDetails information receive failedByOrgId", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+
+	}
+	
+	
+	@GetMapping("/getPerformanceGoalsByOrgIdAndEmployeeCode")
+	public ResponseEntity<ResponseDTO> getPerformanceGoalsByOrgIdAndEmployeeCode(@RequestParam Long orgId,
+			@RequestParam String employeeCode) {
+		String methodName = "getPerformanceGoalsByOrgIdAndEmployeeCode()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<PerformanceGoalsVO> performanceGoalsVO = new ArrayList<>();
+		try {
+			performanceGoalsVO = performanceGoalsService.getPerformanceGoalsByOrgIdAndEmployeeCode(orgId,
+					employeeCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "PerformanceGoalsDetails information get successfully ByOrgId");
+			responseObjectsMap.put("performanceGoalsVO", performanceGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"PerformanceGoalsDetails information receive failedByOrgId", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+
+	}
+	
+	
+	@GetMapping("/getDashBoardDetails")
+	public ResponseEntity<ResponseDTO> getDashBoardDetails(@RequestParam Long orgId,
+			@RequestParam String pmonth,  @RequestParam String appraisalYear, @RequestParam String employeeCode) {
+		String methodName = "getDashBoardDetails()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<PerformanceGoalsVO> getPerformanceGoalsDetails = new ArrayList<>();
+		try {
+			getPerformanceGoalsDetails = performanceGoalsService.getDashBoardDetails(orgId, pmonth,
+					appraisalYear,employeeCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE,
+					"DashBoardDetals information get successfully ByOrgId");
+			responseObjectsMap.put("getPerformanceGoalsDetails", getPerformanceGoalsDetails);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"DashBoardDetals information receive failedByOrgId", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+
+	}
 }

@@ -1,13 +1,11 @@
 package com.efit.hrms.service;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -98,6 +96,7 @@ public class PerformanceGoalsServiceImpl implements PerformanceGoalsService {
 		performanceGoalsVO.setBranchCode(performanceGoalsDTO.getBranchCode());
 		performanceGoalsVO.setFinYear(performanceGoalsDTO.getFinYear());
 		performanceGoalsVO.setDepartment(performanceGoalsDTO.getDepartment());
+		performanceGoalsVO.setDesignation(performanceGoalsDTO.getDesignation());
 		
 		if (ObjectUtils.isNotEmpty(performanceGoalsDTO.getId())) {
 			List<PerformanceGoalsDetailsVO> goalsDetailsVOs = performanceGoalsDetailsRepo
@@ -336,42 +335,41 @@ public class PerformanceGoalsServiceImpl implements PerformanceGoalsService {
 	}
 
 	@Override
-	public List<Map<String, Object>> getPerformanceGoalsDetailsReport(Long orgId,String pmonth,String branch,String appraisalYear) {
-		Set<Object[]> details = new HashSet<>();
-		details = performanceGoalsRepo.getPerformanceGoalsDetailsReport(orgId, pmonth, branch, appraisalYear);
-		return getPerformanceGoalsDetailsReport(details);
+	public List<PerformanceGoalsVO> getPerformanceGoalsDetailsReport(Long orgId,String pmonth,String branch,String appraisalYear) {
+	
+	return  performanceGoalsRepo.getPerformanceGoalsDetailsReport(orgId, pmonth, branch, appraisalYear);
 	}
 
-	private List<Map<String, Object>> getPerformanceGoalsDetailsReport(Set<Object[]> details) {
-		List<Map<String, Object>> report = new ArrayList<>();
-		for (Object[] det : details) {
-			DecimalFormat df = new DecimalFormat("0.00");
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			Map<String, Object> dtl = new HashMap<>();
-			dtl.put("gst_performancegoalsid", det[0]);
-			dtl.put("perspective", det[1] != null ? det[1].toString() : "");
-			dtl.put("objectivedesc", det[2] != null ? det[2].toString() : "");
-			dtl.put("perassigned", det[3] != null ? det[3].toString() : "");
-			dtl.put("measurement", det[4] != null ? det[4].toString() : "");
-
-			dtl.put("qtrtarget", det[5] != null ? det[5].toString() : "");
-			dtl.put("performance", det[6] != null ? det[6].toString() : "");
-			dtl.put("comments", det[7] != null ? det[7].toString() : "");
-			dtl.put("selfrating", det[8] != null ? new BigDecimal(det[8].toString()) : BigDecimal.ZERO);
-			dtl.put("appraiserrating", det[9] != null ? new BigDecimal(det[9].toString()) : BigDecimal.ZERO);
-			dtl.put("performanceself", det[10] != null ? det[10].toString() : "");
-			dtl.put("apprjustification", det[11] != null ? det[11].toString() : "");
-			dtl.put("branch", det[12] != null ? det[12].toString() : "");
-			dtl.put("pmonth", det[13] != null ? det[13].toString() : "");
-			dtl.put("finYear", det[14] != null ? det[14].toString() : "");
-			dtl.put("employeeName", det[15] != null ? det[15].toString() : "");
-			dtl.put("employeeCode", det[16] != null ? det[16].toString() : "");
-			dtl.put("department", det[17] != null ? det[17].toString() : "");
-
-			report.add(dtl);
-		}
-		return report;
-	}
+//	private List<Map<String, Object>> getPerformanceGoalsDetailsReport(Set<Object[]> details) {
+//		List<Map<String, Object>> report = new ArrayList<>();
+//		for (Object[] det : details) {
+//			DecimalFormat df = new DecimalFormat("0.00");
+//			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//			Map<String, Object> dtl = new HashMap<>();
+//			dtl.put("gst_performancegoalsid", det[0]);
+//			dtl.put("perspective", det[1] != null ? det[1].toString() : "");
+//			dtl.put("objectivedesc", det[2] != null ? det[2].toString() : "");
+//			dtl.put("perassigned", det[3] != null ? det[3].toString() : "");
+//			dtl.put("measurement", det[4] != null ? det[4].toString() : "");
+//
+//			dtl.put("qtrtarget", det[5] != null ? det[5].toString() : "");
+//			dtl.put("performance", det[6] != null ? det[6].toString() : "");
+//			dtl.put("comments", det[7] != null ? det[7].toString() : "");
+//			dtl.put("selfrating", det[8] != null ? new BigDecimal(det[8].toString()) : BigDecimal.ZERO);
+//			dtl.put("appraiserrating", det[9] != null ? new BigDecimal(det[9].toString()) : BigDecimal.ZERO);
+//			dtl.put("performanceself", det[10] != null ? det[10].toString() : "");
+//			dtl.put("apprjustification", det[11] != null ? det[11].toString() : "");
+//			dtl.put("branch", det[12] != null ? det[12].toString() : "");
+//			dtl.put("pmonth", det[13] != null ? det[13].toString() : "");
+//			dtl.put("finYear", det[14] != null ? det[14].toString() : "");
+//			dtl.put("employeeName", det[15] != null ? det[15].toString() : "");
+//			dtl.put("employeeCode", det[16] != null ? det[16].toString() : "");
+//			dtl.put("department", det[17] != null ? det[17].toString() : "");
+//
+//			report.add(dtl);
+//		}
+//		return report;
+//	}
 
 	@Override
 	public PerformanceGoalsVO updatePerformanceGoalsApprovedDetails(Long id, String approve1, String approve1name) {
@@ -391,11 +389,22 @@ public class PerformanceGoalsServiceImpl implements PerformanceGoalsService {
 	}
 
 
-//	@Override
-//	public Map<String, Object> createUpdatePreGoals(PreGoalsDtlDTO preGoalsDtlDTO)
-//			throws IOException, ApplicationException {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
+	@Override
+	public List<PerformanceGoalsVO> getPerformanceGoalsByOrgIdAndReportingPerson(Long orgId,String reportingPerson) {
+	
+	return  performanceGoalsRepo.getPerformanceGoalsByOrgIdAndReportingPerson( orgId, reportingPerson);
+	}
+	
+	@Override
+	public List<PerformanceGoalsVO> getPerformanceGoalsByOrgIdAndEmployeeCode(Long orgId,String employeeCode) {
+	
+	return  performanceGoalsRepo.getPerformanceGoalsByOrgIdAndEmployeeCode( orgId, employeeCode);
+	}
+	
+	@Override
+	public List<PerformanceGoalsVO> getDashBoardDetails(Long orgId,String pmonth,String appraisalYear,String employeeCode) {
+	
+	return  performanceGoalsRepo.getDashBoardDetails(orgId, pmonth, appraisalYear,employeeCode);
+	}
 
 }

@@ -71,6 +71,9 @@ public class PerformanceGoalsVO {
 	@Column(name = "department")
 	private String department;
 	
+	@Column(name = "designation")
+	private String designation;
+	
 	@Column(name = "orgid")
 	private Long orgId;
 	
