@@ -117,8 +117,8 @@ public class PerformanceGoalsServiceImpl implements PerformanceGoalsService {
 			performanceGoalsDetailsVO.setPerformance(performanceGoalsDetailsDTO.getPerformance());
 			performanceGoalsDetailsVO.setComments(performanceGoalsDetailsDTO.getComments());
 			performanceGoalsDetailsVO.setSelfrating(performanceGoalsDetailsDTO.getSelfrating());
-			performanceGoalsDetailsVO.setAppraiserrating(performanceGoalsDetailsDTO.getAppraiserrating());
-			performanceGoalsDetailsVO.setAppraiserrating(performanceGoalsDetailsDTO.getAppraiserrating());
+		performanceGoalsDetailsVO.setAppraiserrating(performanceGoalsDetailsDTO.getAppraiserrating());
+//			performanceGoalsDetailsVO.setAppraiserrating(performanceGoalsDetailsDTO.getAppraiserrating());
 			performanceGoalsDetailsVO.setPerformanceself(performanceGoalsDetailsDTO.getPerformanceself());
 			performanceGoalsDetailsVO.setApprjustification(performanceGoalsDetailsDTO.getApprjustification());
 			performanceGoalsDetailsVO.setPerassigned(performanceGoalsDetailsDTO.getPerassigned());
