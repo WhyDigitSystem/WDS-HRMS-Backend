@@ -27,7 +27,7 @@ public interface PerformanceGoalsRepo extends JpaRepository<PerformanceGoalsVO, 
 	@Query(nativeQuery = true, value = "SELECT * FROM \r\n"
 			+ "    performancegoals p where\r\n"
 			+ "     p.orgid = ?1\r\n"
-			+ "    AND p.pmonth = ?2\r\n"
+			+ "    AND (p.pmonth = ?2 or 'ALL'=?2)\r\n"
 			+ "    AND (p.branch = ?3 OR 'ALL' = ?3)\r\n"
 			+ "    AND p.appraisalyear = ?4")
 	List<PerformanceGoalsVO> getPerformanceGoalsDetailsReport(Long orgId,String pmonth,String branch,String appraisalYear);

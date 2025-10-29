@@ -71,7 +71,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "e.payslipeffectivedate\r\n"
 			+ "FROM employee e\r\n"
 			+ "JOIN company c ON e.orgid = c.companyid\r\n"
-			+ "WHERE e.orgid = ?1 ORDER BY e.employee ASC \r\n"
+			+ "WHERE e.orgid = ?1 and e.active=1 ORDER BY e.employee ASC \r\n"
 			+ "", nativeQuery = true)
 	List<Map<String, Object>> getEmployeesWithCompanyInfoByOrgId(Long orgId);
 
