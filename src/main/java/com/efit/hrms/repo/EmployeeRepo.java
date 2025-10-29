@@ -97,7 +97,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "FROM employee  \r\n"
 			+ "WHERE orgid = ?1  and branchcode=?2 AND employeecode NOT IN (?3)  \r\n"
 			+ "\r\n"
-			+ "AND (trim(designation) LIKE '%MANAGER%' OR trim(designation) LIKE '%TEAM LEAD%' OR trim(designation) LIKE '%CEO%' OR trim(designation) LIKE '%HR%' OR trim(designation) LIKE '%MANAGING DIRECTOR%')" )
+			+ "AND (trim(designation) LIKE '%MANAGER%' OR trim(designation) LIKE '%TEAM LEAD%' OR trim(designation) LIKE '%CEO%' OR trim(designation) LIKE '%HR%' OR trim(designation) LIKE '%MANAGING DIRECTOR%') and active=1" )
 	Set<Object[]> findReportingNameForEmployee(Long orgId, String branchCode, String employeeCode);
 	
 //	@Query(nativeQuery = true,value="select concat(format,lpad(last_number,5,0)) AS docid from sequence_tracker where company_id=?1 and year=?2 and branch_code=?3 and Department_code=?4 and company_code=?5;\r\n")
@@ -189,6 +189,8 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	        "  AND (?3 = 'ALL' OR e.department = ?3) " +
 	        "  AND e.active = 1", nativeQuery = true)
 	Set<Object[]> getEmployeeDetailsForAllTaskReport(Long orgId, String branchCode, String department);
+
+	EmployeeVO findByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
 
 
 

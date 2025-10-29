@@ -65,6 +65,8 @@ public class SalaryStructureVO {
 	private BigDecimal pfPercentage;
 	@Column(name = "esipercentage")
 	private BigDecimal esiPercentage;
+    @Column(name = "effectivefrom")
+    private LocalDate effectiveFrom;
 	
 	@Column(name = "active")
 	private boolean active = true;

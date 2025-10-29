@@ -30,6 +30,7 @@ public class SalaryStructureDTO {
 	private BigDecimal sumOfDetection;
 	private BigDecimal pfPercentage;
 	private BigDecimal esiPercentage;
+    private LocalDate effectiveFrom;
 
 
 	private String createdBy;
