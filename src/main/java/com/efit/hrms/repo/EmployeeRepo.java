@@ -71,7 +71,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "e.payslipeffectivedate\r\n"
 			+ "FROM employee e\r\n"
 			+ "JOIN company c ON e.orgid = c.companyid\r\n"
-			+ "WHERE e.orgid = ?1 ORDER BY e.employee ASC \r\n"
+			+ "WHERE e.orgid = ?1 and e.active=1 ORDER BY e.employee ASC \r\n"
 			+ "", nativeQuery = true)
 	List<Map<String, Object>> getEmployeesWithCompanyInfoByOrgId(Long orgId);
 
@@ -150,7 +150,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "AND YEAR(joiningdate) = YEAR(CURDATE())")
 	Set<Object[]> findNewJoinieDtailsByOrgId(Long orgid);
 
-	@Query(value = "SELECT * FROM employee e WHERE e.orgId = ?1 and employeecode=?2 and active=1", nativeQuery = true)
+	@Query(value = "SELECT * FROM employee e WHERE e.orgid = ?1 and employeecode=?2 and active=1", nativeQuery = true)
 	List<EmployeeVO> getAllEmployeeByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
 
 	EmployeeVO findByEmployeeCode(String employeecode);
