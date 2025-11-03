@@ -24,4 +24,10 @@ public interface BranchRepo extends JpaRepository<BranchVO, Long> {
 
 	BranchVO findByOrgIdAndBranch(Long orgId, String branch);
 
+//	BranchVO findByBranch(String branch);
+
+	BranchVO findByBranchCode(String branchCode);
+
+	BranchVO findByBranch(String branch);
+
 }

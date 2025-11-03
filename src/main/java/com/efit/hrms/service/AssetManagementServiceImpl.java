@@ -1,21 +1,35 @@
 package com.efit.hrms.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.Transactional;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
+import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
+import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
+import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.AssetAllocationRepo;
 import com.efit.hrms.repo.AssetMasterRepo;
+import com.efit.hrms.repo.ExpenseClaimsRepo;
+
 
 @Service
 public class AssetManagementServiceImpl implements AssetManagementService{
@@ -26,6 +40,13 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	
 	@Autowired
 	AssetAllocationRepo assetAllocationRepo;
+	
+	@Autowired
+	ExpenseClaimsRepo expenseClaimsRepo;
+	
+	@Value("${file.upload-dir}")
+	private String uploadDir;
+
 	
 	@Override
 	public Map<String, Object> CreateUpdateAssetMaster(AssetMasterDTO assetMasterDTO) throws ApplicationException {
@@ -76,6 +97,110 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 
 	}
 	
+
+	
+//	@Transactional
+//	public Map<String, Object> uploadMultipleAssetImages(Long assetMasterId, List<MultipartFile> files, String createdBy) throws IOException, ApplicationException {
+//	    Map<String, Object> response = new HashMap<>();
+//
+//	    AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
+//	        .orElseThrow(() -> new ApplicationException("Invalid AssetMaster ID"));
+//
+//	    List<AssetImageVO> uploadedImages = new ArrayList<>();
+//
+//	    for (MultipartFile file : files) {
+//	        if (file.isEmpty()) continue;
+//
+//	        int seq = 1; // or start from 0 if needed
+//
+//	        String fileName = String.format("AssetImage%02d_%d_%s", 
+//	            seq, 
+//	            System.currentTimeMillis(), 
+//	            file.getOriginalFilename()
+//	        );
+//	        seq++;
+//
+//	        Path filePath = Paths.get(uploadDir + File.separator + fileName);
+//	        Files.createDirectories(filePath.getParent());
+//	        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+//
+//	        // Create child object
+//	        AssetImageVO imageVO = new AssetImageVO();
+//	        imageVO.setFileName(fileName);
+//	        imageVO.setImagePath(filePath.toString());
+//	        imageVO.setAssetMaster(assetMaster);
+//
+//	        uploadedImages.add(imageVO);
+//	    }
+//
+//	    // Add to header
+//	    assetMaster.getAssetImages().addAll(uploadedImages);
+//
+//	    // Cascade saves all children
+//	    assetMasterRepo.save(assetMaster);
+//
+//	    response.put("message", "Images uploaded successfully");
+//	    response.put("uploadedCount", uploadedImages.size());
+//	    response.put("imageList", uploadedImages);
+//
+//	    return response;
+//	}
+//
+//	
+	
+	
+	@Transactional
+	public Map<String, Object> uploadMultipleAssetImages(Long assetMasterId, List<MultipartFile> files, String createdBy)
+	        throws IOException, ApplicationException, GeneralSecurityException {
+
+	    Map<String, Object> response = new HashMap<>();
+
+	    AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
+	            .orElseThrow(() -> new ApplicationException("Invalid AssetMaster ID"));
+
+	    List<AssetImageVO> uploadedImages = new ArrayList<>();
+
+	    int seq = 1;
+
+	    for (MultipartFile file : files) {
+	        if (file.isEmpty()) continue;
+
+	        String fileName = String.format("AssetImage%02d_%d_%s",
+	                seq++,
+	                System.currentTimeMillis(),
+	                file.getOriginalFilename());
+
+	        // Save temporarily to local folder
+	        Path tempPath = Files.createTempFile("drive_upload_", file.getOriginalFilename());
+	        Files.copy(file.getInputStream(), tempPath, StandardCopyOption.REPLACE_EXISTING);
+
+	        java.io.File localFile = tempPath.toFile();
+
+	        // ✅ Upload to Google Drive
+	        String driveUrl = GoogleDriveUtil.uploadFileToDrive(localFile, fileName);
+
+	        // ✅ Create DB record
+	        AssetImageVO imageVO = new AssetImageVO();
+	        imageVO.setFileName(fileName);
+	        imageVO.setImagePath(driveUrl);
+	        imageVO.setAssetMaster(assetMaster);
+
+	        uploadedImages.add(imageVO);
+
+	        // Delete temp file after upload
+	        localFile.delete();
+	    }
+
+	    assetMaster.getAssetImages().addAll(uploadedImages);
+	    assetMasterRepo.save(assetMaster);
+
+	    response.put("message", "Images uploaded successfully to Google Drive");
+	    response.put("uploadedCount", uploadedImages.size());
+	    response.put("imageList", uploadedImages);
+
+	    return response;
+	}
+
 	
 	@Override
 	public AssetMasterVO getAssetMasterById(Long id) {
@@ -203,4 +328,66 @@ public class AssetManagementServiceImpl implements AssetManagementService{
         return list;
     }
 	
+	
+	//expenseclaims
+	
+	@Override
+	public Map<String, Object> CreateUpdateExpenseClaims(ExpenseClaimsDTO expenseClaimsDTO) throws ApplicationException {
+
+		ExpenseClaimsVO expenseClaimsVO = new ExpenseClaimsVO();
+		String message;
+		
+		if (ObjectUtils.isNotEmpty(expenseClaimsDTO.getId())) {
+			expenseClaimsVO = expenseClaimsRepo.findById(expenseClaimsDTO.getId())
+					.orElseThrow(() -> new ApplicationException("Invalid ExpenseClaims details"));
+			
+			expenseClaimsVO.setUpdatedBy(expenseClaimsDTO.getCreatedBy());
+
+
+			message = "ExpenseClaims Updated Successfully";
+		} else {
+
+			expenseClaimsVO.setCreatedBy(expenseClaimsDTO.getCreatedBy());
+			expenseClaimsVO.setUpdatedBy(expenseClaimsDTO.getCreatedBy());
+			message = "ExpenseClaims Created Successfully";
+		}
+
+		createUpdateExpenseClaimsVOByExpenseClaimsDTO(expenseClaimsVO, expenseClaimsDTO);
+		expenseClaimsRepo.save(expenseClaimsVO);
+		Map<String, Object> response = new HashMap<>();
+		response.put("expenseClaimsVO", expenseClaimsVO);
+		response.put("message", message);
+		return response;
+	}
+
+	private void createUpdateExpenseClaimsVOByExpenseClaimsDTO(ExpenseClaimsVO expenseClaimsVO, ExpenseClaimsDTO expenseClaimsDTO) {
+
+	    expenseClaimsVO.setEmployeename(expenseClaimsDTO.getEmployeename());
+	    expenseClaimsVO.setExpenseTitle(expenseClaimsDTO.getExpenseTitle());
+	    expenseClaimsVO.setCategory(expenseClaimsDTO.getCategory());
+	    expenseClaimsVO.setAmount(expenseClaimsDTO.getAmount());
+	    expenseClaimsVO.setCurrency(expenseClaimsDTO.getCurrency());
+	    expenseClaimsVO.setExpenseDate(expenseClaimsDTO.getExpenseDate());
+	    expenseClaimsVO.setReceiptAttached(expenseClaimsDTO.getReceiptAttached());
+	    expenseClaimsVO.setDescription(expenseClaimsDTO.getDescription());
+	    expenseClaimsVO.setApproveStatus(expenseClaimsDTO.getApproveStatus());
+	    expenseClaimsVO.setApproveBy(expenseClaimsDTO.getApproveBy());
+	    expenseClaimsVO.setApproveOn(expenseClaimsDTO.getApproveOn());
+	    expenseClaimsVO.setBranchCode(expenseClaimsDTO.getBranchCode());
+	    expenseClaimsVO.setBranch(expenseClaimsDTO.getBranch());
+	    expenseClaimsVO.setCreatedBy(expenseClaimsDTO.getCreatedBy());
+	    expenseClaimsVO.setOrgId(expenseClaimsDTO.getOrgId());
+	}
+	
+	
+	@Override
+	public List<ExpenseClaimsVO> getExpenseClaimsByOrgId(Long orgId, String branchCode) {
+		// TODO Auto-generated method stub
+		return expenseClaimsRepo.getExpenseClaimsByOrgId(orgId,branchCode);
+	}
+	
+	@Override
+	public ExpenseClaimsVO getExpenseClaimsById(Long id) {
+		return expenseClaimsRepo.getExpenseClaimsById(id);
+	}
 }

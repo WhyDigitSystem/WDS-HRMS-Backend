@@ -11,19 +11,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
+import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetMasterVO;
+import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.service.AssetManagementService;
 
 @CrossOrigin
@@ -56,6 +61,32 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	@PostMapping("/uploadAssetImages/{assetMasterId}")
+	public ResponseEntity<ResponseDTO> uploadAssetImages(
+	        @PathVariable Long assetMasterId,
+	        @RequestParam("files") List<MultipartFile> files,
+	        @RequestParam("createdBy") String createdBy) {
+
+	    String methodName = "uploadAssetImages()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO;
+
+	    try {
+	        Map<String, Object> result = assetManagementService.uploadMultipleAssetImages(assetMasterId, files, createdBy);
+	        responseObjectsMap.putAll(result);
+	        responseDTO = createServiceResponse(responseObjectsMap);
+	    } catch (Exception e) {
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
+	        responseDTO = createServiceResponseError(responseObjectsMap, e.getMessage(), e.getMessage());
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+	    return ResponseEntity.ok(responseDTO);
+	}
+
 	
 	
 	@GetMapping("getAssetMasterById")
@@ -267,4 +298,82 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	
+	//ExpenseClaims
+	
+	@PutMapping("/CreateUpdateExpenseClaims")
+	public ResponseEntity<ResponseDTO> CreateUpdateExpenseClaims(@RequestBody ExpenseClaimsDTO expenseClaimsDTO) {
+		String methodName = "CreateUpdateExpenseClaims()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		Map<String, Object> responseObjectsMap = new HashMap<String, Object>();
+		String errorMsg = null;
+		ResponseDTO responseDTO = null;
+		try {
+			Map<String, Object> expenseClaimsVO = assetManagementService.CreateUpdateExpenseClaims(expenseClaimsDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, expenseClaimsVO.get("message"));
+			responseObjectsMap.put("expenseClaimsVO", expenseClaimsVO.get("expenseClaimsVO"));
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	@GetMapping("getExpenseClaimsByOrgId")
+	public ResponseEntity<ResponseDTO> getExpenseClaimsByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+		String methodName = "getExpenseClaimsByOrgId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<ExpenseClaimsVO> expenseClaimsVO = null;
+		try {
+			expenseClaimsVO = assetManagementService.getExpenseClaimsByOrgId(orgId,branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "ExpenseClaims found by ORGID");
+			responseObjectsMap.put("expenseClaimsVO", expenseClaimsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "ExpenseClaims not found for orgID: " + orgId;
+			responseDTO = createServiceResponseError(responseObjectsMap, "ExpenseClaims not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@GetMapping("getExpenseClaimsById")
+	public ResponseEntity<ResponseDTO> getExpenseClaimsById(@RequestParam Long id) {
+		String methodName = "getExpenseClaimsById()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		ExpenseClaimsVO expenseClaimsVO = null;
+		try {
+			expenseClaimsVO = assetManagementService.getExpenseClaimsById(id);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "ExpenseClaims found by ID");
+			responseObjectsMap.put("expenseClaimsVO", expenseClaimsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "ExpenseClaims not found for ID: " + id;
+			responseDTO = createServiceResponseError(responseObjectsMap, "ExpenseClaims not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
 }
