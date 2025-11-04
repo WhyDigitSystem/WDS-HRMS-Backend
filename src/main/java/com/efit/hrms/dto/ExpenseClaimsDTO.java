@@ -25,6 +25,7 @@ public class ExpenseClaimsDTO {
 	private String branchCode;
 	private String branch;
 	private String createdBy;
+	private byte[] expenseAttachment;
 	private Long orgId;
 
 

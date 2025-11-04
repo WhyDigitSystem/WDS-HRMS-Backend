@@ -58,6 +58,14 @@ public class TravelRequestsVO {
 	@Column(name = "businesspurpose")
 	private String businessPurpose;
 	
+	@Column(name = "reportingperson")
+	private String reportingPerson;
+	@Column(name = "reportingpersoncode")
+	private String reportingPersonCode;
+	@Column(name = "reportingpersonemail")
+	private String reportingPersonEmail;
+	
+	
 	@Column(name = "approvestatus")
 	private String approveStatus;
 	@Column(name = "approveby")

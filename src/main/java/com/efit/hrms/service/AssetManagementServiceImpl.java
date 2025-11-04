@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,7 @@ import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.exception.ApplicationException;
@@ -335,6 +338,26 @@ public class AssetManagementServiceImpl implements AssetManagementService{
         return list;
     }
 	
+	@Override
+    public List<Map<String, Object>> getAssetAllocationReportByOrgId(Long orgId, String branchCode,String employeeCode) {
+        List<Object[]> results = assetAllocationRepo.getAssetAllocationReportByOrgId(orgId, branchCode,employeeCode);
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("employeeName", row[0] != null ? row[0] : "");
+            map.put("assetName", row[1] != null ? row[1] : "");
+            map.put("assetCode", row[2] != null ? row[2] : "");
+            map.put("assetCondition", row[3] != null ? row[3] : "");
+            map.put("allocationDate", row[4] != null ? row[4] : "");
+            map.put("expectedReturnDate", row[5] != null ? row[5] : "");
+
+            list.add(map);
+        }
+
+        return list;
+    }
+	
 	
 	//expenseclaims
 	
@@ -370,6 +393,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	private void createUpdateExpenseClaimsVOByExpenseClaimsDTO(ExpenseClaimsVO expenseClaimsVO, ExpenseClaimsDTO expenseClaimsDTO) {
 
 	    expenseClaimsVO.setEmployeename(expenseClaimsDTO.getEmployeename());
+	    expenseClaimsVO.setEmployeeCode(expenseClaimsDTO.getEmployeeCode());
 	    expenseClaimsVO.setExpenseTitle(expenseClaimsDTO.getExpenseTitle());
 	    expenseClaimsVO.setCategory(expenseClaimsDTO.getCategory());
 	    expenseClaimsVO.setAmount(expenseClaimsDTO.getAmount());
@@ -377,6 +401,9 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	    expenseClaimsVO.setExpenseDate(expenseClaimsDTO.getExpenseDate());
 	    expenseClaimsVO.setReceiptAttached(expenseClaimsDTO.getReceiptAttached());
 	    expenseClaimsVO.setDescription(expenseClaimsDTO.getDescription());
+	    expenseClaimsVO.setReportingPerson("ABINAYA K");
+	    expenseClaimsVO.setReportingPersonCode("WDS051");
+	    expenseClaimsVO.setReportingPersonEmail("abinaya@whydigit.in");
 	    expenseClaimsVO.setApproveStatus("PENDING");
 	    expenseClaimsVO.setBranchCode(expenseClaimsDTO.getBranchCode());
 	    expenseClaimsVO.setBranch(expenseClaimsDTO.getBranch());
@@ -386,9 +413,9 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	
 	
 	@Override
-	public List<ExpenseClaimsVO> getExpenseClaimsByOrgId(Long orgId, String branchCode) {
+	public List<ExpenseClaimsVO> getExpenseClaimsByOrgId(Long orgId, String branchCode,String employeeCode) {
 		// TODO Auto-generated method stub
-		return expenseClaimsRepo.getExpenseClaimsByOrgId(orgId,branchCode);
+		return expenseClaimsRepo.getExpenseClaimsByOrgId(orgId,branchCode,employeeCode);
 	}
 	
 	@Override
@@ -446,20 +473,206 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	    travelRequestsVO.setBranch(travelRequestsDTO.getBranch());
 	    travelRequestsVO.setCreatedBy(travelRequestsDTO.getCreatedBy());
 	    travelRequestsVO.setOrgId(travelRequestsDTO.getOrgId());
-
+	    travelRequestsVO.setReportingPerson("ABINAYA K");
+	    travelRequestsVO.setReportingPersonCode("WDS051");
+	    travelRequestsVO.setReportingPersonEmail("abinaya@whydigit.in");
 	    travelRequestsVO.setApproveStatus("PENDING"); 
 	}
 	
 	@Override
-	public List<TravelRequestsVO> getTravelRequestsByOrgId(Long orgId,String branchCode) {
+	public List<TravelRequestsVO> getTravelRequestsByOrgId(Long orgId,String branchCode,String employeeCode) {
 		// TODO Auto-generated method stub
-		return travelRequestsRepo.getTravelRequestsByOrgId(orgId,branchCode);
+		return travelRequestsRepo.getTravelRequestsByOrgId(orgId,branchCode,employeeCode);
 	}
 	
 	@Override
 	public TravelRequestsVO getTravelRequestsById(Long id) {
 		return travelRequestsRepo.getTravelRequestsById(id);
 	}
+	
+	 @Override
+	    public Map<String, Object> createApprovalExpenseClaims(
+	            Long orgId,
+	            Long id,
+	            String employeeCode,
+	            String action,
+	            String actionBy,
+	            String notifyCode,
+	            String notify,
+	            String screenName,
+	            String email) throws Exception {
+
+	        // Response map
+	        Map<String, Object> response = new HashMap<>();
+	        String message = "";
+
+	        // 1️⃣ Fetch increment management record
+	        ExpenseClaimsVO expenseClaimsVO =
+	        		expenseClaimsRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
+
+	        if (expenseClaimsVO == null) {
+	            throw new ApplicationException("ExpenseClaims record not found for the given details.");
+	        }
+
+	        // 2️⃣ Check if already approved or rejected
+	        String currentStatus = expenseClaimsVO.getApproveStatus();
+	        if (currentStatus != null &&
+	            (currentStatus.equalsIgnoreCase("Approved") || currentStatus.equalsIgnoreCase("Rejected"))) {
+	            throw new ApplicationException(
+	                    "This ExpenseClaims is already " + currentStatus + ".");
+	        }
+
+	        // 3️⃣ Proceed only if action is valid
+	        if ("APPROVED".equalsIgnoreCase(action)) {
+	            message = "Approved Successfully";
+
+	        } else if ("REJECTED".equalsIgnoreCase(action)) {
+	            // Just mark as rejected
+	            message = "Rejected Successfully";
+
+	        } else {
+	            throw new ApplicationException("Invalid action: must be APPROVED or REJECTED.");
+	        }
+
+	        // 4️⃣ Update approval details
+	        expenseClaimsVO.setApproveStatus(action);
+	        expenseClaimsVO.setApproveBy(actionBy);
+
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+	        expenseClaimsVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+
+	        expenseClaimsRepo.save(expenseClaimsVO);
+
+	        // 5️⃣ Prepare response
+	        response.put("expenseClaimsVO", expenseClaimsVO);
+	        response.put("message", message);
+	        return response;
+	    }
 
 	
+	 
+	 @Override
+	    public Map<String, Object> createApprovalTravelRequests(
+	            Long orgId,
+	            Long id,
+	            String employeeCode,
+	            String action,
+	            String actionBy,
+	            String notifyCode,
+	            String notify,
+	            String screenName,
+	            String email) throws Exception {
+
+	        // Response map
+	        Map<String, Object> response = new HashMap<>();
+	        String message = "";
+
+	        // 1️⃣ Fetch increment management record
+	        TravelRequestsVO travelRequestsVO =
+	        		travelRequestsRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
+
+	        if (travelRequestsVO == null) {
+	            throw new ApplicationException("TravelRequests record not found for the given details.");
+	        }
+
+	        // 2️⃣ Check if already approved or rejected
+	        String currentStatus = travelRequestsVO.getApproveStatus();
+	        if (currentStatus != null &&
+	            (currentStatus.equalsIgnoreCase("Approved") || currentStatus.equalsIgnoreCase("Rejected"))) {
+	            throw new ApplicationException(
+	                    "This TravelRequests is already " + currentStatus + ".");
+	        }
+
+	        // 3️⃣ Proceed only if action is valid
+	        if ("APPROVED".equalsIgnoreCase(action)) {
+	            message = "Approved Successfully";
+
+	        } else if ("REJECTED".equalsIgnoreCase(action)) {
+	            // Just mark as rejected
+	            message = "Rejected Successfully";
+
+	        } else {
+	            throw new ApplicationException("Invalid action: must be APPROVED or REJECTED.");
+	        }
+
+	        // 4️⃣ Update approval details
+	        travelRequestsVO.setApproveStatus(action);
+	        travelRequestsVO.setApproveBy(actionBy);
+
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+	        travelRequestsVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+
+	        travelRequestsRepo.save(travelRequestsVO);
+
+	        // 5️⃣ Prepare response
+	        response.put("travelRequestsVO", travelRequestsVO);
+	        response.put("message", message);
+	        return response;
+	    }
+
+	 
+	 @Override
+		public List<TravelRequestsVO> getTravelRequestsForDashBoard(Long orgId, String reportingPersonCode,String branchCode) {
+			return  travelRequestsRepo.getTravelRequestsForDashBoard(orgId, reportingPersonCode,branchCode);
+		}
+	 
+	 @Override
+		public List<ExpenseClaimsVO> getExpenseClaimsForDashBoard(Long orgId, String reportingPersonCode,String branchCode) {
+			return  expenseClaimsRepo.getExpenseClaimsForDashBoard(orgId, reportingPersonCode,branchCode);
+		}
+	
+	 @Override
+		public ExpenseClaimsVO uploadExpenseClaimsImageInBloob(MultipartFile file, Long id) throws IOException, java.io.IOException {
+		 ExpenseClaimsVO expenseClaimsVO = expenseClaimsRepo.findById(id).get();
+			if (file != null && !file.isEmpty()) {
+				expenseClaimsVO.setExpenseAttachment(file.getBytes());
+
+			}
+			return expenseClaimsRepo.save(expenseClaimsVO);
+		}
+	 
+	 
+	 
+	 @Override
+	    public List<Map<String, Object>> getApprovalExpenseAndTravelByOrgId(Long orgId, String branchCode,String employeeCode) {
+	        List<Object[]> results = expenseClaimsRepo.getApprovalExpenseAndTravelByOrgId(orgId, branchCode,employeeCode);
+	        List<Map<String, Object>> list = new ArrayList<>();
+
+	        for (Object[] row : results) {
+	            Map<String, Object> map = new HashMap<>();
+	            map.put("id", row[0] != null ? row[0] : "");
+	            map.put("type", row[1] != null ? row[1] : "");
+	            map.put("title", row[2] != null ? row[2] : "");
+	            map.put("employeeName", row[3] != null ? row[3] : "");
+	            map.put("employeeCode", row[4] != null ? row[4] : "");
+	            map.put("amount", row[5] != null ? row[5] : "");
+	            map.put("submitted", row[6] != null ? row[6] : "");
+	            map.put("status", row[7] != null ? row[7] : "");
+
+	            list.add(map);
+	        }
+
+	        return list;
+	    }
+	 
+	 
+	 
+	 @Override
+	    public List<Map<String, Object>> getExpenseCountByOrgId(Long orgId, String branchCode,String employeeCode) {
+	        List<Object[]> results = expenseClaimsRepo.getExpenseCountByOrgId(orgId, branchCode,employeeCode);
+	        List<Map<String, Object>> list = new ArrayList<>();
+
+	        for (Object[] row : results) {
+	            Map<String, Object> map = new HashMap<>();
+	            map.put("pending", row[0]);
+	            map.put("approved", row[1]);
+	            map.put("rejected", row[2]);
+	            map.put("totalCount", row[3]);
+	            map.put("totalAmount", row[4]);
+
+	            list.add(map);
+	        }
+
+	        return list;
+	    }
 }

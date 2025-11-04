@@ -49,9 +49,18 @@ public class ExpenseClaimsVO {
 	private LocalDate expenseDate;
 	@Column(name = "receiptattached")
 	private String receiptAttached;
-
+	@Column(name = "expenseattachment", columnDefinition = "LONGBLOB")
+	private byte[] expenseAttachment;
+	
 	@Column(name = "description")
 	private String description;
+	
+	@Column(name = "reportingperson")
+	private String reportingPerson;
+	@Column(name = "reportingpersoncode")
+	private String reportingPersonCode;
+	@Column(name = "reportingpersonemail")
+	private String reportingPersonEmail;
 	
 	@Column(name = "approvestatus")
 	private String approveStatus;

@@ -105,6 +105,7 @@ public class IncrementManagementServicesImpl implements IncrementManagementServi
 	        entity.setTotalCtcPercentage(dto.getAdjustmentValue());
 	        entity.setApproveStatus("PENDING");
 	        entity.setOrgId(dto.getOrgId());
+	        entity.setReportingPerson(dto.getReportingPerson());
 	        entity.setReportingPersonCode(dto.getReportingPersonCode());
 	        entity.setReportingPersonEmail(dto.getReportingPersonEmail());
 	        entity.setBranch(dto.getBranch());

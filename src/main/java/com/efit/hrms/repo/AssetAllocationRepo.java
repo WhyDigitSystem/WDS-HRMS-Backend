@@ -56,4 +56,8 @@ public interface AssetAllocationRepo extends JpaRepository<AssetAllocationVO, Lo
 			+ "  AND a.branchcode = ?2")
 	List<Object[]> getAssetDashboardByOrgId(Long orgId, String branchCode);
 
+	@Query(nativeQuery = true, value = "SELECT employeename,assetname,assetcode,assetcondition,allocationdate,expectedreturndate FROM assetallocation WHERE employeecode = ?3\r\n"
+			+ "  AND orgid = ?1 AND branchcode = ?2 ORDER BY allocationdate DESC")
+	List<Object[]> getAssetAllocationReportByOrgId(Long orgId, String branchCode, String employeeCode);
+
 }

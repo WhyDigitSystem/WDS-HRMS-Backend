@@ -48,7 +48,7 @@ public interface AssetManagementService {
 	
 	Map<String, Object> CreateUpdateExpenseClaims(ExpenseClaimsDTO expenseClaimsDTO) throws ApplicationException;
 
-	List<ExpenseClaimsVO> getExpenseClaimsByOrgId(Long orgId, String branchCode);
+	List<ExpenseClaimsVO> getExpenseClaimsByOrgId(Long orgId, String branchCode, String employeeCode);
 
 	ExpenseClaimsVO getExpenseClaimsById(Long id);	
 	
@@ -56,9 +56,27 @@ public interface AssetManagementService {
 	
 	Map<String, Object> CreateUpdateTravelRequests(TravelRequestsDTO travelRequestsDTO) throws ApplicationException;
 
-	List<TravelRequestsVO> getTravelRequestsByOrgId(Long orgId, String branchCode);
+	List<TravelRequestsVO> getTravelRequestsByOrgId(Long orgId, String branchCode, String employeeCode);
 
 	TravelRequestsVO getTravelRequestsById(Long id);
+
+	Map<String, Object> createApprovalExpenseClaims(Long orgId, Long id, String employeeCode, String action,
+			String actionBy, String notifyCode, String notify, String screenName, String email) throws Exception;
+
+	Map<String, Object> createApprovalTravelRequests(Long orgId, Long id, String employeeCode, String action,
+			String actionBy, String notifyCode, String notify, String screenName, String email) throws Exception;
+
+	List<TravelRequestsVO> getTravelRequestsForDashBoard(Long orgId, String reportingPersonCode, String branchCode);
+
+	List<ExpenseClaimsVO> getExpenseClaimsForDashBoard(Long orgId, String reportingPersonCode, String branchCode);
+
+	ExpenseClaimsVO uploadExpenseClaimsImageInBloob(MultipartFile file, Long id) throws IOException, IOException;
+
+	List<Map<String, Object>> getApprovalExpenseAndTravelByOrgId(Long orgId, String branchCode, String employeeCode);
+
+	List<Map<String, Object>> getAssetAllocationReportByOrgId(Long orgId, String branchCode, String employeeCode);
+
+	List<Map<String, Object>> getExpenseCountByOrgId(Long orgId, String branchCode, String employeeCode);
 
 	
 	

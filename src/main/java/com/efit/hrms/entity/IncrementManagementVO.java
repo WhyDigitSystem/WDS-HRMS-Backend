@@ -73,6 +73,8 @@ public class IncrementManagementVO {
 	private String totalCtcPercentage;
 	@Column(name = "orgid")
 	private Long orgId;
+	@Column(name = "reportingperson")
+	private String reportingPerson;
 	@Column(name = "reportingpersoncode")
 	private String reportingPersonCode;
 	@Column(name = "reportingpersonemail")

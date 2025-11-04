@@ -30,6 +30,7 @@ public class IncrementManagementDTO {
 	private String newGrade;
 	private String remarks;
 	private String nextApproval;
+	private String reportingPerson;
 	private String reportingPersonCode;
 	private String reportingPersonEmail;
 	private String branch;
