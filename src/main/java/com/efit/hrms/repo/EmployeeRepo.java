@@ -139,7 +139,9 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "FROM employee\r\n"
 			+ "WHERE \r\n"
 			+ "    MONTH(joiningdate) = MONTH(CURDATE()) \r\n"
-			+ "    AND DAY(joiningdate) = DAY(CURDATE())\r\n"
+			+ "    AND DAY(joiningdate) = DAY(CURDATE())"
+			+ "    AND YEAR(joiningdate) < YEAR(CURDATE()) \r\n"
+			+ "\r\n"
 			+ "")
 	Set<Object[]> findWorkaniversaryByOrgId(Long orgid);
 

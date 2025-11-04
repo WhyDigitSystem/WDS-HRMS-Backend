@@ -26,9 +26,11 @@ import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.ResponseDTO;
+import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetMasterVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
+import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.service.AssetManagementService;
 
 @CrossOrigin
@@ -375,5 +377,85 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	
+	//TravelRequests
+	
+	@PutMapping("/CreateUpdateTravelRequests")
+	public ResponseEntity<ResponseDTO> CreateUpdateTravelRequests(@RequestBody TravelRequestsDTO travelRequestsDTO) {
+		String methodName = "CreateUpdateTravelRequests()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		Map<String, Object> responseObjectsMap = new HashMap<String, Object>();
+		String errorMsg = null;
+		ResponseDTO responseDTO = null;
+		try {
+			Map<String, Object> travelRequestsVO = assetManagementService.CreateUpdateTravelRequests(travelRequestsDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, travelRequestsVO.get("message"));
+			responseObjectsMap.put("travelRequestsVO", travelRequestsVO.get("travelRequestsVO"));
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	@GetMapping("getTravelRequestsByOrgId")
+	public ResponseEntity<ResponseDTO> getTravelRequestsByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+		String methodName = "getTravelRequestsByOrgId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<TravelRequestsVO> travelRequestsVO = null;
+		try {
+			travelRequestsVO = assetManagementService.getTravelRequestsByOrgId(orgId,branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "TravelRequests found by ORGID");
+			responseObjectsMap.put("travelRequestsVO", travelRequestsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "TravelRequests not found for orgID: " + orgId;
+			responseDTO = createServiceResponseError(responseObjectsMap, "TravelRequests not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	@GetMapping("getTravelRequestsById")
+	public ResponseEntity<ResponseDTO> getTravelRequestsById(@RequestParam Long id) {
+		String methodName = "getTravelRequestsById()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		TravelRequestsVO travelRequestsVO = null;
+		try {
+			travelRequestsVO = assetManagementService.getTravelRequestsById(id);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "TravelRequests found by ID");
+			responseObjectsMap.put("travelRequestsVO", travelRequestsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "TravelRequests not found for ID: " + id;
+			responseDTO = createServiceResponseError(responseObjectsMap, "TravelRequests not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
 	
 }

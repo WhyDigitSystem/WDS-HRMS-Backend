@@ -14,6 +14,7 @@ public class ExpenseClaimsDTO {
 
 	private Long id;
 	private String employeename;
+	private String employeeCode;
 	private String expenseTitle;
 	private String category;
 	private BigDecimal amount;
@@ -21,9 +22,6 @@ public class ExpenseClaimsDTO {
 	private LocalDate expenseDate;
 	private String receiptAttached;
 	private String description;
-	private String approveStatus;
-	private String approveBy;
-	private String approveOn;
 	private String branchCode;
 	private String branch;
 	private String createdBy;

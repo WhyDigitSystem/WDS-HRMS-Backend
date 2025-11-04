@@ -20,38 +20,43 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "expenseclaims")
+@Table(name = "travelrequests")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExpenseClaimsVO {
+public class TravelRequestsVO {
 
-	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "expenseclaimsgen")
-	@SequenceGenerator(name = "expenseclaimsgen", sequenceName = "expenseclaimsseq", initialValue = 1000000001, allocationSize = 1)
-	@Column(name = "expenseclaimsid")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "travelrequestsgen")
+	@SequenceGenerator(name = "travelrequestsgen", sequenceName = "travelrequestsseq", initialValue = 1000000001, allocationSize = 1)
+	@Column(name = "travelrequestsid")
 	private Long id;
 	
 	@Column(name = "employeename")
 	private String employeename;
+
 	@Column(name = "employeecode")
 	private String employeeCode;
-	@Column(name = "expensetitle")
-	private String expenseTitle;
-	@Column(name = "category")
-	private String category;
-	@Column(name = "amount")
-	private BigDecimal amount;
-	@Column(name = "currency")
-	private String currency;
-	@Column(name = "expensedate")
-	private LocalDate expenseDate;
-	@Column(name = "receiptattached")
-	private String receiptAttached;
+	@Column(name = "traveltitle")
+	private String travelTitle;
+	@Column(name = "fromlocation")
+	private String from;
+	@Column(name = "tolocation")
+	private String to;
+	@Column(name = "departuredate")
+	private LocalDate departureDate;
+	@Column(name = "returndate")
+	private LocalDate returnDate;
+	@Column(name = "transportmode")
+	private String transportMode;
 
-	@Column(name = "description")
-	private String description;
+	@Column(name = "accommodation")
+	private String accommodation;
+	
+	@Column(name = "estimatedcost")
+	private String estimatedCost;
+	@Column(name = "businesspurpose")
+	private String businessPurpose;
 	
 	@Column(name = "approvestatus")
 	private String approveStatus;
@@ -78,10 +83,10 @@ public class ExpenseClaimsVO {
 	private String cancelRemarks;
 	
 	@Column(name = "screencode", length = 5)
-	private String screenCode = "EC";
+	private String screenCode = "TR";
 
 	@Column(name = "screenname", length = 25)
-	private String screenName = "EXPENSE CLAIMS";
+	private String screenName = "TRAVEL REQUEST";
 	
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();

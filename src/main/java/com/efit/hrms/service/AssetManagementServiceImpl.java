@@ -21,14 +21,17 @@ import org.springframework.web.multipart.MultipartFile;
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
+import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
+import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.AssetAllocationRepo;
 import com.efit.hrms.repo.AssetMasterRepo;
 import com.efit.hrms.repo.ExpenseClaimsRepo;
+import com.efit.hrms.repo.TravelRequestsRepo;
 
 
 @Service
@@ -43,6 +46,10 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	
 	@Autowired
 	ExpenseClaimsRepo expenseClaimsRepo;
+	
+	
+	@Autowired
+	TravelRequestsRepo travelRequestsRepo;
 	
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -370,9 +377,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	    expenseClaimsVO.setExpenseDate(expenseClaimsDTO.getExpenseDate());
 	    expenseClaimsVO.setReceiptAttached(expenseClaimsDTO.getReceiptAttached());
 	    expenseClaimsVO.setDescription(expenseClaimsDTO.getDescription());
-	    expenseClaimsVO.setApproveStatus(expenseClaimsDTO.getApproveStatus());
-	    expenseClaimsVO.setApproveBy(expenseClaimsDTO.getApproveBy());
-	    expenseClaimsVO.setApproveOn(expenseClaimsDTO.getApproveOn());
+	    expenseClaimsVO.setApproveStatus("PENDING");
 	    expenseClaimsVO.setBranchCode(expenseClaimsDTO.getBranchCode());
 	    expenseClaimsVO.setBranch(expenseClaimsDTO.getBranch());
 	    expenseClaimsVO.setCreatedBy(expenseClaimsDTO.getCreatedBy());
@@ -390,4 +395,71 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	public ExpenseClaimsVO getExpenseClaimsById(Long id) {
 		return expenseClaimsRepo.getExpenseClaimsById(id);
 	}
+	
+	
+	//TravelRequests
+	
+	@Override
+	public Map<String, Object> CreateUpdateTravelRequests(TravelRequestsDTO travelRequestsDTO) throws ApplicationException {
+
+		TravelRequestsVO travelRequestsVO = new TravelRequestsVO();
+		String message;
+		
+		if (ObjectUtils.isNotEmpty(travelRequestsDTO.getId())) {
+			travelRequestsVO = travelRequestsRepo.findById(travelRequestsDTO.getId())
+					.orElseThrow(() -> new ApplicationException("Invalid TravelRequests details"));
+			
+			travelRequestsVO.setUpdatedBy(travelRequestsDTO.getCreatedBy());
+
+
+			message = "TravelRequests Updated Successfully";
+		} else {
+
+			travelRequestsVO.setCreatedBy(travelRequestsDTO.getCreatedBy());
+			travelRequestsVO.setUpdatedBy(travelRequestsDTO.getCreatedBy());
+			message = "ExpenseClaims Created Successfully";
+		}
+
+		createUpdateTravelRequestsVOByTravelRequestsDTO(travelRequestsVO, travelRequestsDTO);
+		travelRequestsRepo.save(travelRequestsVO);
+		Map<String, Object> response = new HashMap<>();
+		response.put("travelRequestsVO", travelRequestsVO);
+		response.put("message", message);
+		return response;
+	}
+
+	private void createUpdateTravelRequestsVOByTravelRequestsDTO(TravelRequestsVO travelRequestsVO, TravelRequestsDTO travelRequestsDTO) {
+
+	    travelRequestsVO.setId(travelRequestsDTO.getId());
+	    travelRequestsVO.setEmployeename(travelRequestsDTO.getEmployeename());
+	    travelRequestsVO.setEmployeeCode(travelRequestsDTO.getEmployeeCode());
+	    travelRequestsVO.setTravelTitle(travelRequestsDTO.getTravelTitle());
+	    travelRequestsVO.setFrom(travelRequestsDTO.getFrom());
+	    travelRequestsVO.setTo(travelRequestsDTO.getTo());
+	    travelRequestsVO.setDepartureDate(travelRequestsDTO.getDepartureDate());
+	    travelRequestsVO.setReturnDate(travelRequestsDTO.getReturnDate());
+	    travelRequestsVO.setTransportMode(travelRequestsDTO.getTransportMode());
+	    travelRequestsVO.setAccommodation(travelRequestsDTO.getAccommodation());
+	    travelRequestsVO.setEstimatedCost(travelRequestsDTO.getEstimatedCost());
+	    travelRequestsVO.setBusinessPurpose(travelRequestsDTO.getBusinessPurpose());
+	    travelRequestsVO.setBranchCode(travelRequestsDTO.getBranchCode());
+	    travelRequestsVO.setBranch(travelRequestsDTO.getBranch());
+	    travelRequestsVO.setCreatedBy(travelRequestsDTO.getCreatedBy());
+	    travelRequestsVO.setOrgId(travelRequestsDTO.getOrgId());
+
+	    travelRequestsVO.setApproveStatus("PENDING"); 
+	}
+	
+	@Override
+	public List<TravelRequestsVO> getTravelRequestsByOrgId(Long orgId,String branchCode) {
+		// TODO Auto-generated method stub
+		return travelRequestsRepo.getTravelRequestsByOrgId(orgId,branchCode);
+	}
+	
+	@Override
+	public TravelRequestsVO getTravelRequestsById(Long id) {
+		return travelRequestsRepo.getTravelRequestsById(id);
+	}
+
+	
 }
