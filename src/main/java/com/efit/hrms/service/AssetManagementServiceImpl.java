@@ -339,25 +339,43 @@ public class AssetManagementServiceImpl implements AssetManagementService{
     }
 	
 	@Override
-    public List<Map<String, Object>> getAssetAllocationReportByOrgId(Long orgId, String branchCode,String employeeCode) {
-        List<Object[]> results = assetAllocationRepo.getAssetAllocationReportByOrgId(orgId, branchCode,employeeCode);
-        List<Map<String, Object>> list = new ArrayList<>();
+	public List<Map<String, Object>> getAssetAllocationReportByOrgId(Long orgId, String branchCode, String employeeCode) {
+	    List<Object[]> results = assetAllocationRepo.getAssetAllocationReportByOrgId(orgId, branchCode, employeeCode);
+	    Map<String, Object> employeeMap = new HashMap<>();
+	    List<Map<String, Object>> assetsList = new ArrayList<>();
+	    List<Map<String, Object>> finalList = new ArrayList<>();
 
-        for (Object[] row : results) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("employeeName", row[0] != null ? row[0] : "");
-            map.put("assetName", row[1] != null ? row[1] : "");
-            map.put("assetCode", row[2] != null ? row[2] : "");
-            map.put("assetCondition", row[3] != null ? row[3] : "");
-            map.put("allocationDate", row[4] != null ? row[4] : "");
-            map.put("expectedReturnDate", row[5] != null ? row[5] : "");
+	    for (Object[] row : results) {
+	        // Employee Header (Parent) - only set once
+	        if (employeeMap.isEmpty()) {
+	            employeeMap.put("employeeName", row[0] != null ? row[0] : "");
+	            employeeMap.put("employeeCode", row[1] != null ? row[1] : "");
+	            employeeMap.put("email", row[2] != null ? row[2] : "");
+	            employeeMap.put("branch", row[3] != null ? row[3] : "");
+	            employeeMap.put("branchCode", row[4] != null ? row[4] : "");
+	            employeeMap.put("department", row[5] != null ? row[5] : "");
+	            employeeMap.put("designation", row[6] != null ? row[6] : "");
+	        }
 
-            list.add(map);
-        }
+	        // Child List (Assets)
+	        Map<String, Object> asset = new HashMap<>();
+	        asset.put("assetName", row[7] != null ? row[7] : "");
+	        asset.put("assetCode", row[8] != null ? row[8] : "");
+	        asset.put("assetCondition", row[9] != null ? row[9] : "");
+	        asset.put("allocationDate", row[10] != null ? row[10] : "");
+	        asset.put("expectedReturnDate", row[11] != null ? row[11] : "");
+	        assetsList.add(asset);
+	    }
 
-        return list;
-    }
-	
+	    // Attach child list
+	    employeeMap.put("assets", assetsList);
+
+	    // Wrap parent into final list (in case you add multiple employees later)
+	    finalList.add(employeeMap);
+
+	    return finalList;
+	}
+
 	
 	//expenseclaims
 	
