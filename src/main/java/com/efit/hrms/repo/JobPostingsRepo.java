@@ -11,10 +11,10 @@ import com.efit.hrms.entity.JobPostingsVO;
 @Repository
 public interface JobPostingsRepo extends JpaRepository<JobPostingsVO, Long>{
 
-	@Query(nativeQuery = true, value = "select * from jobpostings where orgid=?1 and branchcode=?2")
+	@Query(nativeQuery = true, value = "select * from jobpostings where orgid=?1 and branchcode=?2 and active=1")
 	List<JobPostingsVO> getJobPostingsByOrgId(Long orgId, String branchCode);
 
-	@Query(nativeQuery = true, value = "select * from jobpostings where jobpostingsid=?1")
+	@Query(nativeQuery = true, value = "select * from jobpostings where jobpostingsid=?1 ")
 	JobPostingsVO getJobPostingsById(Long id);
 
 }

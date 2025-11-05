@@ -1,6 +1,6 @@
 package com.efit.hrms.entity;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -15,34 +15,40 @@ import com.efit.hrms.dto.CreatedUpdatedDate;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "designation")
+@Table(name = "offerletter")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class DesignationVO {
+public class OfferLetterVO {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "designationgen")
-	@SequenceGenerator(name = "designationgen", sequenceName = "designationseq", initialValue = 1000000001, allocationSize = 1)
-	@Column(name = "designationid")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "offerlettergen")
+	@SequenceGenerator(name = "offerlettergen", sequenceName = "offerletterseq", initialValue = 1000000001, allocationSize = 1)
+	@Column(name = "offerletterid")
 	private Long id;
-    
-    @Column(name = "designationname", length = 255)
-	private String designationName;
 
-    @Column(name = "designationcode", length = 75)
-    private String designationCode;
-    @Column(name = "expenselimit")
-    private BigDecimal expenseLimit;
-    
+	@Column(name = "candidatesname")
+	private String candidatesName;
+
+	@Column(name = "email")
+	private String email;
+	@Column(name = "position")
+	private String position;
+
+	@Column(name = "department")
+	private String department;
+	@Column(name = "location")
+	private String location;
+
+	@Column(name = "remarks")
+	private String remarks;
+
 	@Column(name = "active")
-	private boolean active= true;
+	private boolean active ;
 	@Column(name = "createdby")
 	private String createdBy;
 	@Column(name = "modifiedby")
@@ -50,22 +56,25 @@ public class DesignationVO {
 	@Column(name = "orgid")
 	private Long orgId;
 	@Column(name = "cancel")
-	private boolean cancel;
-	
+	private boolean cancel = false;
+	@Column(name = "branchcode")
+	private String branchCode;
+	@Column(name = "branch")
+	private String branch;
+
+
 	@Column(name = "screencode", length = 5)
-	private String screenCode = "DES";
+	private String screenCode = "OF";
 
 	@Column(name = "screenname", length = 25)
-	private String screenName = "DESIGNATION";
-    
+	private String screenName = "OFFER LETER";
+
 	@JsonGetter("active")
 	public String getActive() {
 		return active ? "Active" : "In-Active";
 	}
-    
-    @Embedded
-	@Builder.Default
+
+	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
 }
-
 

@@ -55,6 +55,9 @@ public class ExpenseClaimsVO {
 	@Column(name = "description")
 	private String description;
 	
+	@Column(name = "approvedamount")
+	private BigDecimal approvedAmount;
+	
 	@Column(name = "reportingperson")
 	private String reportingPerson;
 	@Column(name = "reportingpersoncode")

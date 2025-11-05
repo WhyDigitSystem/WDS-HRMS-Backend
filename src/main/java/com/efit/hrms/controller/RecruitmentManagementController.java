@@ -21,8 +21,11 @@ import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.CandidatesDTO;
 import com.efit.hrms.dto.JobPostingsDTO;
+import com.efit.hrms.dto.OfferLetterDTO;
 import com.efit.hrms.dto.ResponseDTO;
+import com.efit.hrms.entity.CandidatesVO;
 import com.efit.hrms.entity.JobPostingsVO;
+import com.efit.hrms.entity.OfferLetterVO;
 import com.efit.hrms.service.RecruitmentManagementService;
 
 @CrossOrigin
@@ -135,4 +138,160 @@ public class RecruitmentManagementController extends BaseController{
 	}
 	
 	
+	@GetMapping("getCandidatesByOrgId")
+	public ResponseEntity<ResponseDTO> getCandidatesByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+		String methodName = "getCandidatesByOrgId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<CandidatesVO> candidatesVO = null;
+		try {
+			candidatesVO = recruitmentManagementService.getCandidatesByOrgId(orgId,branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "candidates found by ORGID");
+			responseObjectsMap.put("candidatesVO", candidatesVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "candidates not found for orgID: " + orgId;
+			responseDTO = createServiceResponseError(responseObjectsMap, "candidates not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	@GetMapping("getCandidatesById")
+	public ResponseEntity<ResponseDTO> getCandidatesById(@RequestParam Long id) {
+		String methodName = "getCandidatesById()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		CandidatesVO candidatesVO = null;
+		try {
+			candidatesVO = recruitmentManagementService.getCandidatesById(id);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "candidates found by ID");
+			responseObjectsMap.put("candidatesVO", candidatesVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "candidates not found for ID: " + id;
+			responseDTO = createServiceResponseError(responseObjectsMap, "candidates not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	@GetMapping("getSchedulerCandidatesByOrgId")
+	public ResponseEntity<ResponseDTO> getSchedulerCandidatesByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+		String methodName = "getSchedulerCandidatesByOrgId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<CandidatesVO> candidatesVO = null;
+		try {
+			candidatesVO = recruitmentManagementService.getSchedulerCandidatesByOrgId(orgId,branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "candidates found by ORGID");
+			responseObjectsMap.put("candidatesVO", candidatesVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "candidates not found for orgID: " + orgId;
+			responseDTO = createServiceResponseError(responseObjectsMap, "candidates not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	@PutMapping("/createUpdateOfferLetter")
+	public ResponseEntity<ResponseDTO> createUpdateOfferLetter(@RequestBody OfferLetterDTO offerLetterDTO) {
+		String methodName = "createUpdateOfferLetter()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		Map<String, Object> responseObjectsMap = new HashMap<String, Object>();
+		String errorMsg = null;
+		ResponseDTO responseDTO = null;
+		try {
+			Map<String, Object> offerLetterVO = recruitmentManagementService.createUpdateOfferLetter(offerLetterDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, offerLetterVO.get("message"));
+			responseObjectsMap.put("offerLetterVO", offerLetterVO.get("offerLetterVO"));
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	
+	@GetMapping("getOfferLetterById")
+	public ResponseEntity<ResponseDTO> getOfferLetterById(@RequestParam Long id) {
+		String methodName = "getOfferLetterById()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		OfferLetterVO offerLetterVO = null;
+		try {
+			offerLetterVO = recruitmentManagementService.getOfferLetterById(id);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "OfferLetter found by ID");
+			responseObjectsMap.put("offerLetterVO", offerLetterVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "OfferLeter not found for ID: " + id;
+			responseDTO = createServiceResponseError(responseObjectsMap, "OfferLetter not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	@GetMapping("getOfferLetterByOrgId")
+	public ResponseEntity<ResponseDTO> getOfferLetterByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+		String methodName = "getOfferLetterByOrgId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<OfferLetterVO> offerLetterVO = null;
+		try {
+			offerLetterVO = recruitmentManagementService.getOfferLetterByOrgId(orgId,branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "OfferLetter found by ORGID");
+			responseObjectsMap.put("offerLetterVO", offerLetterVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "OfferLetter not found for orgID: " + orgId;
+			responseDTO = createServiceResponseError(responseObjectsMap, "OfferLetter not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
 }

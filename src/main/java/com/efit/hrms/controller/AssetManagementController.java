@@ -1,5 +1,6 @@
 package com.efit.hrms.controller;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,6 @@ import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetMasterVO;
-import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.service.AssetManagementService;
@@ -411,7 +411,7 @@ public class AssetManagementController extends BaseController {
 	@PutMapping("/createApprovalExpenseClaims")
 	public ResponseEntity<ResponseDTO> createApprovalExpenseClaims(@RequestParam Long orgId, @RequestParam Long id,
 			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
-			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam(required = false) String email) {
+			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam(required = false) String email,@RequestParam BigDecimal approvedAmount) {
 		String methodName = "createApprovalExpenseClaims()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -419,7 +419,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		try {
 			Map<String, Object> result = assetManagementService.createApprovalExpenseClaims(orgId, id, employeeCode, action,
-					actionBy, notifyCode, notify,screenName,email);
+					actionBy, notifyCode, notify,screenName,email,approvedAmount);
 
 			// ✅ Correct keys from the returned map
 			responseObjectsMap.put("expenseClaimsVO", result.get("expenseClaimsVO"));
@@ -518,7 +518,7 @@ public class AssetManagementController extends BaseController {
 	@PutMapping("/createApprovalTravelRequests")
 	public ResponseEntity<ResponseDTO> createApprovalTravelRequests(@RequestParam Long orgId, @RequestParam Long id,
 			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
-			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam(required = false) String email) {
+			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam(required = false) String email,@RequestParam BigDecimal approvedAmount) {
 		String methodName = "createApprovalTravelRequests()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -526,7 +526,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		try {
 			Map<String, Object> result = assetManagementService.createApprovalTravelRequests(orgId, id, employeeCode, action,
-					actionBy, notifyCode, notify,screenName,email);
+					actionBy, notifyCode, notify,screenName,email,approvedAmount);
 
 			// ✅ Correct keys from the returned map
 			responseObjectsMap.put("travelRequestsVO", result.get("travelRequestsVO"));

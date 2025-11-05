@@ -1,6 +1,7 @@
 package com.efit.hrms.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -518,7 +519,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	            String notifyCode,
 	            String notify,
 	            String screenName,
-	            String email) throws Exception {
+	            String email,BigDecimal approvalAmount) throws Exception {
 
 	        // Response map
 	        Map<String, Object> response = new HashMap<>();
@@ -542,6 +543,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 
 	        // 3️⃣ Proceed only if action is valid
 	        if ("APPROVED".equalsIgnoreCase(action)) {
+	        	expenseClaimsVO.setApprovedAmount(approvalAmount);
 	            message = "Approved Successfully";
 
 	        } else if ("REJECTED".equalsIgnoreCase(action)) {
@@ -579,7 +581,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	            String notifyCode,
 	            String notify,
 	            String screenName,
-	            String email) throws Exception {
+	            String email,BigDecimal approvedAmount) throws Exception {
 
 	        // Response map
 	        Map<String, Object> response = new HashMap<>();
@@ -603,6 +605,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 
 	        // 3️⃣ Proceed only if action is valid
 	        if ("APPROVED".equalsIgnoreCase(action)) {
+	        	travelRequestsVO.setApprovedAmount(approvedAmount);
 	            message = "Approved Successfully";
 
 	        } else if ("REJECTED".equalsIgnoreCase(action)) {
@@ -666,6 +669,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	            map.put("amount", row[5] != null ? row[5] : "");
 	            map.put("submitted", row[6] != null ? row[6] : "");
 	            map.put("status", row[7] != null ? row[7] : "");
+	            map.put("expenseLimit", row[8] != null ? row[8] : "");
 
 	            list.add(map);
 	        }

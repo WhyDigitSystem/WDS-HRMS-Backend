@@ -22,6 +22,8 @@ public class CandidatesDTO {
 	private String interviewer;
 	private int rating;
 	private String feedBack;
+	private boolean active ;
+
 
 	private String createdBy;
 	private Long orgId;

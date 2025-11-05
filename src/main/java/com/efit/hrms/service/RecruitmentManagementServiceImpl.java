@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 
 import com.efit.hrms.dto.CandidatesDTO;
 import com.efit.hrms.dto.JobPostingsDTO;
+import com.efit.hrms.dto.OfferLetterDTO;
 import com.efit.hrms.entity.CandidatesVO;
 import com.efit.hrms.entity.JobPostingsVO;
+import com.efit.hrms.entity.OfferLetterVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.CandidatesRepo;
 import com.efit.hrms.repo.JobPostingsRepo;
+import com.efit.hrms.repo.OfferLetterRepo;
 
 @Service
 public class RecruitmentManagementServiceImpl implements RecruitmentManagementService {
@@ -28,6 +31,9 @@ public class RecruitmentManagementServiceImpl implements RecruitmentManagementSe
 	
 	@Autowired
 	CandidatesRepo candidatesRepo;
+	
+	@Autowired
+	OfferLetterRepo offerLetterRepo;
 
 	@Override
 	public Map<String, Object> createUpdateJobPostings(JobPostingsDTO jobPostingsDTO) throws ApplicationException {
@@ -65,6 +71,8 @@ public class RecruitmentManagementServiceImpl implements RecruitmentManagementSe
 	    jobPostingsVO.setOrgId(jobPostingsDTO.getOrgId());
 	    jobPostingsVO.setBranch(jobPostingsDTO.getBranch());
 	    jobPostingsVO.setBranchCode(jobPostingsDTO.getBranchCode());
+	    jobPostingsVO.setActive(jobPostingsDTO.isActive());
+
 	}
 
 	
@@ -124,9 +132,81 @@ public class RecruitmentManagementServiceImpl implements RecruitmentManagementSe
 	    candidatesVO.setOrgId(candidatesDTO.getOrgId());
 	    candidatesVO.setBranchCode(candidatesDTO.getBranchCode());
 	    candidatesVO.setBranch(candidatesDTO.getBranch());
+	    candidatesVO.setActive(candidatesDTO.isActive());
+
 	}
+	
+	@Override
+	public List<CandidatesVO> getCandidatesByOrgId(Long orgId, String branchCode) {
+		// TODO Auto-generated method stub
+		return candidatesRepo.getCandidatesByOrgId(orgId,branchCode);
+	}
+	
+	@Override
+	public CandidatesVO getCandidatesById(Long id) {
+		return candidatesRepo.getCandidatesById(id);
+	}
+	
+	@Override
+	public List<CandidatesVO> getSchedulerCandidatesByOrgId(Long orgId, String branchCode) {
+		// TODO Auto-generated method stub
+		return candidatesRepo.getSchedulerCandidatesByOrgId(orgId,branchCode);
+	}
+	
 
 	
+	@Override
+	public Map<String, Object> createUpdateOfferLetter(OfferLetterDTO offerLeterDTO) throws ApplicationException {
+
+		OfferLetterVO offerLetterVO = new OfferLetterVO();
+		String message;
+
+		if (ObjectUtils.isNotEmpty(offerLeterDTO.getId())) {
+			offerLetterVO = offerLetterRepo.findById(offerLeterDTO.getId())
+					.orElseThrow(() -> new ApplicationException("Invalid JobPostings details"));
+
+			offerLetterVO.setUpdatedBy(offerLeterDTO.getCreatedBy());
+
+			message = "OfferLetter Updated Successfully";
+		} else {
+
+			offerLetterVO.setCreatedBy(offerLeterDTO.getCreatedBy());
+			offerLetterVO.setUpdatedBy(offerLeterDTO.getCreatedBy());
+			message = "OfferLeter Created Successfully";
+		}
+
+		createUpdateofferLetterVOFromOfferLeterDTO(offerLetterVO, offerLeterDTO);
+		offerLetterRepo.save(offerLetterVO);
+		Map<String, Object> response = new HashMap<>();
+		response.put("offerLetterVO", offerLetterVO);
+		response.put("message", message);
+		return response;
+	}
+
+	private void createUpdateofferLetterVOFromOfferLeterDTO(OfferLetterVO offerLetterVO, OfferLetterDTO offerLeterDTO) {
+
+	    offerLetterVO.setCandidatesName(offerLeterDTO.getCandidatesName());
+	    offerLetterVO.setEmail(offerLeterDTO.getEmail());
+	    offerLetterVO.setPosition(offerLeterDTO.getPosition());
+	    offerLetterVO.setDepartment(offerLeterDTO.getDepartment());
+	    offerLetterVO.setLocation(offerLeterDTO.getLocation());
+	    offerLetterVO.setRemarks(offerLeterDTO.getRemarks());
+	    offerLetterVO.setActive(offerLeterDTO.isActive());
+	    offerLetterVO.setOrgId(offerLeterDTO.getOrgId());
+	    offerLetterVO.setBranchCode(offerLeterDTO.getBranchCode());
+	    offerLetterVO.setBranch(offerLeterDTO.getBranch());
+	}
+
+	@Override
+	public List<OfferLetterVO> getOfferLetterByOrgId(Long orgId, String branchCode) {
+		// TODO Auto-generated method stub
+		return offerLetterRepo.getOfferLetterByOrgId(orgId,branchCode);
+	}
+	
+	@Override
+	public OfferLetterVO getOfferLetterById(Long id) {
+		return offerLetterRepo.getOfferLetterById(id);
+	}
 
 
 	

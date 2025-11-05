@@ -1,6 +1,7 @@
 package com.efit.hrms.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
@@ -61,10 +62,10 @@ public interface AssetManagementService {
 	TravelRequestsVO getTravelRequestsById(Long id);
 
 	Map<String, Object> createApprovalExpenseClaims(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName, String email) throws Exception;
+			String actionBy, String notifyCode, String notify, String screenName, String email, BigDecimal approvedAmount) throws Exception;
 
 	Map<String, Object> createApprovalTravelRequests(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName, String email) throws Exception;
+			String actionBy, String notifyCode, String notify, String screenName, String email, BigDecimal approvedAmount) throws Exception;
 
 	List<TravelRequestsVO> getTravelRequestsForDashBoard(Long orgId, String reportingPersonCode, String branchCode);
 

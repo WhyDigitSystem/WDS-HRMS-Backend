@@ -21,6 +21,7 @@ public class ExpenseClaimsDTO {
 	private String currency;
 	private LocalDate expenseDate;
 	private String receiptAttached;
+//	private String approvedAmount;
 	private String description;
 	private String branchCode;
 	private String branch;

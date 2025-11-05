@@ -53,7 +53,7 @@ public class JobPostingsVO {
 	private String branchCode;
 	
 	@Column(name = "active")
-	private boolean active=true;
+	private boolean active;
 	@Column(name = "cancel")
 	private boolean cancel=false;
 	@Column(name = "createdby")
