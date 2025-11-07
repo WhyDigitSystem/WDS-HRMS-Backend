@@ -10,8 +10,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -23,17 +27,24 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
+import com.efit.hrms.dto.CompensationDetailsDTO;
+import com.efit.hrms.dto.CreateOfferDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
-import com.efit.hrms.entity.EmployeeVO;
+import com.efit.hrms.entity.CompensationDetailsVO;
+import com.efit.hrms.entity.CreateOfferVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
+import com.efit.hrms.entity.SalaryDetectionDetailsVO;
+import com.efit.hrms.entity.SalaryEarningDetailsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.AssetAllocationRepo;
 import com.efit.hrms.repo.AssetMasterRepo;
+import com.efit.hrms.repo.CompensationDetailsRepo;
+import com.efit.hrms.repo.CreateOfferRepo;
 import com.efit.hrms.repo.ExpenseClaimsRepo;
 import com.efit.hrms.repo.TravelRequestsRepo;
 
@@ -54,6 +65,8 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	
 	@Autowired
 	TravelRequestsRepo travelRequestsRepo;
+	
+	
 	
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -680,21 +693,58 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	 
 	 
 	 @Override
-	    public List<Map<String, Object>> getExpenseCountByOrgId(Long orgId, String branchCode,String employeeCode) {
-	        List<Object[]> results = expenseClaimsRepo.getExpenseCountByOrgId(orgId, branchCode,employeeCode);
+	    public List<Map<String, Object>> getExpenseCountByOrgId(Long orgId, String branchCode,String employeeCode,Long month,Long year) {
+	        List<Object[]> results = expenseClaimsRepo.getExpenseCountByOrgId(orgId, branchCode,employeeCode,month,year);
 	        List<Map<String, Object>> list = new ArrayList<>();
 
 	        for (Object[] row : results) {
 	            Map<String, Object> map = new HashMap<>();
-	            map.put("pending", row[0]);
-	            map.put("approved", row[1]);
-	            map.put("rejected", row[2]);
-	            map.put("totalCount", row[3]);
-	            map.put("totalAmount", row[4]);
+//	            map.put("pending", row[0]);
+//	            map.put("approved", row[1]);
+//	            map.put("rejected", row[2]);
+//	            map.put("totalCount", row[3]);
+//	            map.put("totalAmount", row[4]);
+	            map.put("expensePending", row[0] != null ? row[0] : "");
+	            map.put("expenseApproved", row[1] != null ? row[1] : "");
+	            map.put("expenseRejected", row[2] != null ? row[2] : "");
+	            map.put("expenseTotalCount", row[3] != null ? row[3] : "");
+	            map.put("expenseAmount", row[4] != null ? row[4] : "");
+	            map.put("travelPending", row[5] != null ? row[5] : "");
+	            map.put("travelApproved", row[6] != null ? row[6] : "");
+	            map.put("travelRejected", row[7] != null ? row[7] : "");
+	            map.put("travelTotalCount", row[8] != null ? row[8] : "");
+	            map.put("travelAmount", row[9] != null ? row[9] : "");
 
 	            list.add(map);
 	        }
 
 	        return list;
 	    }
+	 
+	 
+	 @Override
+	 public Map<String, List<Map<String, Object>>> getExpenseGraphByOrgId(Long orgId, String branchCode, String employeeCode, Long year,Long month) {
+	     List<Object[]> results = expenseClaimsRepo.getExpenseGraphByOrgId(orgId, branchCode, employeeCode, year,month);
+	     Map<String, List<Map<String, Object>>> response = new LinkedHashMap<>();
+
+	     String[] months = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+
+	     for (Object[] row : results) {
+	         String category = (String) row[0];
+	         for (int i = 1; i <= 12; i++) {
+	             BigDecimal amount = (row[i] != null) ? new BigDecimal(row[i].toString()) : BigDecimal.ZERO;
+	             if (amount.compareTo(BigDecimal.ZERO) > 0) {
+	                 Map<String, Object> detail = new LinkedHashMap<>();
+	                 detail.put("category", category);
+	                 detail.put("amount", amount);
+
+	                 response.computeIfAbsent(months[i - 1], k -> new ArrayList<>()).add(detail);
+	             }
+	         }
+	     }
+	     return response;
+	 }
+
+	
+
 }

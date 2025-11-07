@@ -36,7 +36,9 @@ public class CandidatesVO {
 
 	@Column(name = "candidatesname")
 	private String candidatesName;
-
+	@Column(name = "candidateid")
+	private Long candidateId ;
+	
 	@Column(name = "email")
 	private String email;
 	@Column(name = "positionapplied")

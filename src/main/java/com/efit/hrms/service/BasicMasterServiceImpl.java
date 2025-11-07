@@ -870,7 +870,7 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 			checkInVO.setEntryTime(entryTime);
 			
 			
-			AttendanceProcessVO attendanceProcessVO = attendanceProcessRepo.findBySourceId(checkInVO.getId());
+			AttendanceProcessVO attendanceProcessVO = attendanceProcessRepo.findBySourceIdAndAttendanceMode(checkInVO.getId(),checkInVO.getAttendanceMode());
 			if (attendanceProcessVO != null) {
 			    attendanceProcessVO.setEntryTime(entryTime);
 			    attendanceProcessVO.setStatus("Out");	

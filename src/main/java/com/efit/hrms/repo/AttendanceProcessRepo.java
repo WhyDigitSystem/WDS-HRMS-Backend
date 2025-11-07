@@ -995,7 +995,7 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 
 
 
-	AttendanceProcessVO findBySourceId(Long id);
+//	AttendanceProcessVO findBySourceId(Long id);
 
 	List<AttendanceProcessVO> findByOrgId(Long orgId);
 
@@ -1006,6 +1006,10 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 
 
 	List<AttendanceProcessVO> findBySourceIdIn(List<Long> currentUploadIds);
+
+
+
+	AttendanceProcessVO findBySourceIdAndAttendanceMode(Long id, String attendanceMode);
 
 
 

@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,13 +26,16 @@ import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
+import com.efit.hrms.dto.CreateOfferDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetMasterVO;
+import com.efit.hrms.entity.CreateOfferVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
+import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.service.AssetManagementService;
 
 @CrossOrigin
@@ -653,7 +657,7 @@ public class AssetManagementController extends BaseController {
 	
 	
 	@GetMapping("getExpenseCountByOrgId")
-	public ResponseEntity<ResponseDTO> getExpenseCountByOrgId(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String employeeCode) {
+	public ResponseEntity<ResponseDTO> getExpenseCountByOrgId(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String employeeCode,@RequestParam Long month,@RequestParam Long year) {
 		String methodName = "getExpenseCountByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -661,7 +665,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> expenseClaimsVO = null;
 		try {
-			expenseClaimsVO = assetManagementService.getExpenseCountByOrgId(orgId,branchCode,employeeCode);
+			expenseClaimsVO = assetManagementService.getExpenseCountByOrgId(orgId,branchCode,employeeCode,month,year);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -677,6 +681,36 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	@GetMapping("getExpenseGraphByOrgId")
+	 public ResponseEntity<ResponseDTO> getExpenseGraphByOrgId(
+	         @RequestParam Long orgId,
+	         @RequestParam String branchCode,
+	         @RequestParam String employeeCode,
+	         @RequestParam Long year,@RequestParam Long month) {
+
+	     String methodName = "getExpenseCountByOrgId()";
+	     LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+	     ResponseDTO responseDTO;
+	     Map<String, Object> responseObjectsMap = new HashMap<>();
+
+	     try {
+	         Map<String, List<Map<String, Object>>> graphData = assetManagementService.getExpenseGraphByOrgId(orgId, branchCode, employeeCode, year,month);
+	         responseObjectsMap.put("message", "ExpenseGraph found by ORGID");
+	         responseObjectsMap.put("graphData", graphData);
+	         responseDTO = createServiceResponse(responseObjectsMap);
+	     } catch (Exception e) {
+	         LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
+	         responseDTO = createServiceResponseError(responseObjectsMap, "ExpenseGraph not found", e.getMessage());
+	     }
+
+	     LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+	     return ResponseEntity.ok().body(responseDTO);
+	 }
+	
+	
+
+	
 	
 	
 }
