@@ -424,8 +424,9 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 
 	private void createUpdateExpenseClaimsVOByExpenseClaimsDTO(ExpenseClaimsVO expenseClaimsVO, ExpenseClaimsDTO expenseClaimsDTO) {
 
-	    expenseClaimsVO.setEmployeename(expenseClaimsDTO.getEmployeename());
+	    expenseClaimsVO.setEmployeeName(expenseClaimsDTO.getEmployeeName());
 	    expenseClaimsVO.setEmployeeCode(expenseClaimsDTO.getEmployeeCode());
+	    expenseClaimsVO.setDepartment(expenseClaimsDTO.getDepartment());
 	    expenseClaimsVO.setExpenseTitle(expenseClaimsDTO.getExpenseTitle());
 	    expenseClaimsVO.setCategory(expenseClaimsDTO.getCategory());
 	    expenseClaimsVO.setAmount(expenseClaimsDTO.getAmount());
@@ -489,9 +490,9 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 
 	private void createUpdateTravelRequestsVOByTravelRequestsDTO(TravelRequestsVO travelRequestsVO, TravelRequestsDTO travelRequestsDTO) {
 
-	    travelRequestsVO.setId(travelRequestsDTO.getId());
-	    travelRequestsVO.setEmployeename(travelRequestsDTO.getEmployeename());
+	    travelRequestsVO.setEmployeeName(travelRequestsDTO.getEmployeeName());
 	    travelRequestsVO.setEmployeeCode(travelRequestsDTO.getEmployeeCode());
+	    travelRequestsVO.setDepartment(travelRequestsDTO.getDepartment());
 	    travelRequestsVO.setTravelTitle(travelRequestsDTO.getTravelTitle());
 	    travelRequestsVO.setFrom(travelRequestsDTO.getFrom());
 	    travelRequestsVO.setTo(travelRequestsDTO.getTo());

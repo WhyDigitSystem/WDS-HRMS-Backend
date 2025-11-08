@@ -34,9 +34,11 @@ public class ExpenseClaimsVO {
 	private Long id;
 	
 	@Column(name = "employeename")
-	private String employeename;
+	private String employeeName;
 	@Column(name = "employeecode")
 	private String employeeCode;
+	@Column(name = "department")
+	private String department;
 	@Column(name = "expensetitle")
 	private String expenseTitle;
 	@Column(name = "category")

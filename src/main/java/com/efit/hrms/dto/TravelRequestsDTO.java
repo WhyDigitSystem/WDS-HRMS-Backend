@@ -16,8 +16,9 @@ import lombok.NoArgsConstructor;
 public class TravelRequestsDTO {
 
 	private Long id;
-	private String employeename;
+	private String employeeName;
 	private String employeeCode;
+	private String department;
 	private String travelTitle;
 	private String from;
 	private String to;

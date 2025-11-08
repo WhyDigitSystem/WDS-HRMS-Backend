@@ -33,10 +33,12 @@ public class TravelRequestsVO {
 	private Long id;
 	
 	@Column(name = "employeename")
-	private String employeename;
+	private String employeeName;
 
 	@Column(name = "employeecode")
 	private String employeeCode;
+	@Column(name = "department")
+	private String department;
 	@Column(name = "traveltitle")
 	private String travelTitle;
 	@Column(name = "fromlocation")

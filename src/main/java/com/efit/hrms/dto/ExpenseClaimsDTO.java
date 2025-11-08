@@ -13,8 +13,9 @@ import lombok.NoArgsConstructor;
 public class ExpenseClaimsDTO {
 
 	private Long id;
-	private String employeename;
+	private String employeeName;
 	private String employeeCode;
+	private String department;
 	private String expenseTitle;
 	private String category;
 	private BigDecimal amount;
