@@ -26,19 +26,24 @@ public interface InitiateSeparationRepo  extends JpaRepository<InitiateSeparatio
 			+ "		      AND active = 1 ")
 	List<InitiateSeparationVO> getInitiateSeparationByDepartment(Long orgId, String branchCode,String department, String type);
 
-	@Query(nativeQuery = true, value = "SELECT \r\n"
-			+ "    totalasset,\r\n"
-			+ "    allocatedasset,\r\n"
-			+ "    (totalasset - allocatedasset) AS availableasset\r\n"
-			+ "FROM (\r\n"
-			+ "    SELECT \r\n"
-			+ "        (SELECT COUNT(*) \r\n"
-			+ "         FROM assetmaster \r\n"
-			+ "         WHERE orgid = ?1 AND branchcode = ?2 and active=1) AS totalasset,\r\n"
-			+ "        (SELECT COUNT(*) \r\n"
-			+ "         FROM assetallocation \r\n"
-			+ "         WHERE orgid = ?1 AND branchcode = ?2 and active=1) AS allocatedasset\r\n"
-			+ ") AS asset_summary")
+	@Query(nativeQuery = true, value = " SELECT\r\n"
+			+ "        totalcount,\r\n"
+			+ "        pendingcount,\r\n"
+			+ "        approvedcount\r\n"
+			+ "    FROM (\r\n"
+			+ "        SELECT \r\n"
+			+ "            (SELECT COUNT(*) \r\n"
+			+ "             FROM initiateseparation \r\n"
+			+ "             WHERE orgid = ?1 AND branchcode = ?2 AND active = 1) AS totalcount,\r\n"
+			+ "             \r\n"
+			+ "            (SELECT COUNT(*) \r\n"
+			+ "             FROM initiateseparation \r\n"
+			+ "             WHERE orgid = ?1 AND branchcode = ?2 AND status = 'PENDING' AND active = 1) AS pendingcount,\r\n"
+			+ "             \r\n"
+			+ "            (SELECT COUNT(*) \r\n"
+			+ "             FROM initiateseparation \r\n"
+			+ "             WHERE orgid = ?1 AND branchcode = ?2 AND status = 'APPROVED' AND active = 1) AS approvedcount\r\n"
+			+ "    ) AS initiateseparation_summary")
 	List<Object[]> getInitiateSeparationCountByOrgId(Long orgId, String branchCode);
 
 }
