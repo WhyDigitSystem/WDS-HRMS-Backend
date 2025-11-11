@@ -140,7 +140,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "WHERE \r\n"
 			+ "    MONTH(joiningdate) = MONTH(CURDATE()) \r\n"
 			+ "    AND DAY(joiningdate) = DAY(CURDATE())"
-			+ "    AND YEAR(joiningdate) < YEAR(CURDATE()) \r\n"
+			+ "    AND YEAR(joiningdate) < YEAR(CURDATE()) and active=1 \r\n"
 			+ "\r\n"
 			+ "")
 	Set<Object[]> findWorkaniversaryByOrgId(Long orgid);
@@ -149,7 +149,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	@Query(nativeQuery = true,value ="SELECT employeeid, department, designation,  employeecode, employee, gender,orgid,profileimage \r\n"
 			+ "FROM employee\r\n"
 			+ "WHERE MONTH(joiningdate) = MONTH(CURDATE()) \r\n"
-			+ "AND YEAR(joiningdate) = YEAR(CURDATE())")
+			+ "AND YEAR(joiningdate) = YEAR(CURDATE()) and active=1")
 	Set<Object[]> findNewJoinieDtailsByOrgId(Long orgid);
 
 	@Query(value = "SELECT * FROM employee e WHERE e.orgid = ?1 and employeecode=?2 and active=1", nativeQuery = true)
