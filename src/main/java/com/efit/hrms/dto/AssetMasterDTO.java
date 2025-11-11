@@ -23,7 +23,9 @@ public class AssetMasterDTO {
 	private String purchaseCost;
 	private LocalDate warrantyExpiry;
 	private String location;
-	private String notes;  
+	private String notes;  	
+	private boolean active ;
+
 	
 	private String branch;
 	private String branchCode;	

@@ -109,6 +109,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 		assetMasterVO.setBranchCode(assetMasterDTO.getBranchCode());
 		assetMasterVO.setFinyear(assetMasterDTO.getFinyear());
 		assetMasterVO.setOrgId(assetMasterDTO.getOrgId());
+		assetMasterVO.setActive(assetMasterDTO.isActive());
 
 
 	}
@@ -230,13 +231,15 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 		return assetMasterRepo.getAssetMasterByOrgId(orgId,branchCode);
 	}
 	
-	
+	@Transactional
 	@Override
     public void uploadImages(Long assetMasterId, List<MultipartFile> files) throws IOException {
         AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
                 .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + assetMasterId));
 
         List<AssetImageVO> imageList = new ArrayList<>();
+        
+        assetImageRepo.deleteByAssetMasterId(assetMasterId);
 
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;

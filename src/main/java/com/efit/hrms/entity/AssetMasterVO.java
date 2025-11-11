@@ -67,7 +67,7 @@ public class AssetMasterVO {
 	private String finyear;
 
 	@Column(name = "active")
-	private boolean active = true;
+	private boolean active ;
 	@Column(name = "createdby")
 	private String createdBy;
 	@Column(name = "modifiedby")
