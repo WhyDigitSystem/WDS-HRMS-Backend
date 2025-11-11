@@ -10,12 +10,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -27,24 +24,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
-import com.efit.hrms.dto.CompensationDetailsDTO;
-import com.efit.hrms.dto.CreateOfferDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
-import com.efit.hrms.entity.CompensationDetailsVO;
-import com.efit.hrms.entity.CreateOfferVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
-import com.efit.hrms.entity.SalaryDetectionDetailsVO;
-import com.efit.hrms.entity.SalaryEarningDetailsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.AssetAllocationRepo;
+import com.efit.hrms.repo.AssetImageRepo;
 import com.efit.hrms.repo.AssetMasterRepo;
-import com.efit.hrms.repo.CompensationDetailsRepo;
-import com.efit.hrms.repo.CreateOfferRepo;
 import com.efit.hrms.repo.ExpenseClaimsRepo;
 import com.efit.hrms.repo.TravelRequestsRepo;
 
@@ -66,6 +56,8 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	@Autowired
 	TravelRequestsRepo travelRequestsRepo;
 	
+	@Autowired
+	AssetImageRepo assetImageRepo;
 	
 	
 	@Value("${file.upload-dir}")
@@ -206,7 +198,7 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	        // ✅ Create DB record
 	        AssetImageVO imageVO = new AssetImageVO();
 	        imageVO.setFileName(fileName);
-	        imageVO.setImagePath(driveUrl);
+//	        imageVO.setImagePath(driveUrl);
 	        imageVO.setAssetMaster(assetMaster);
 
 	        uploadedImages.add(imageVO);
@@ -237,6 +229,35 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 		// TODO Auto-generated method stub
 		return assetMasterRepo.getAssetMasterByOrgId(orgId,branchCode);
 	}
+	
+	
+	@Override
+    public void uploadImages(Long assetMasterId, List<MultipartFile> files) throws IOException {
+        AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
+                .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + assetMasterId));
+
+        List<AssetImageVO> imageList = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue;
+
+            AssetImageVO image = new AssetImageVO();
+            image.setFileName(file.getOriginalFilename());
+            image.setImageAttachment(file.getBytes());
+//            image.setImagePath(null);  // Save bytes directly in DB
+            image.setAssetMaster(assetMaster);
+            imageList.add(image);
+        }
+
+        assetImageRepo.saveAll(imageList);
+    }
+
+    @Override
+    public List<AssetImageVO> getImagesByAsset(Long assetMasterId) {
+        AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
+                .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + assetMasterId));
+        return assetMaster.getAssetImages();
+    }
 	
 	
 	@Override
@@ -684,6 +705,8 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	            map.put("submitted", row[6] != null ? row[6] : "");
 	            map.put("status", row[7] != null ? row[7] : "");
 	            map.put("expenseLimit", row[8] != null ? row[8] : "");
+	            map.put("attachment", row[9] != null ? row[9] : "");
+
 
 	            list.add(map);
 	        }

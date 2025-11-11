@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AssetImageDTO {
     private String imagePath;
+//    private byte[] imageData;
     private String fileName;
 }

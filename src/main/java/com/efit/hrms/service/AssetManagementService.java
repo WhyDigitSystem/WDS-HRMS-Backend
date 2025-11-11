@@ -11,12 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
-import com.efit.hrms.dto.CreateOfferDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
+import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
-import com.efit.hrms.entity.CreateOfferVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.exception.ApplicationException;
@@ -84,6 +83,9 @@ public interface AssetManagementService {
 	Map<String, List<Map<String, Object>>> getExpenseGraphByOrgId(Long orgId, String branchCode, String employeeCode,
 			Long year, Long month);
 
+	void uploadImages(Long assetMasterId, List<MultipartFile> files) throws IOException;
+
+    List<AssetImageVO> getImagesByAsset(Long assetMasterId);
 	
 
 

@@ -21,8 +21,12 @@ public class AssetImageVO {
     @Column(name = "assetimageid")
     private Long id;
 
-    @Column(name = "imagepath", nullable = false)
-    private String imagePath;
+//    @Column(name = "imagepath", nullable = true)
+//    private String imagePath;  
+    
+    @Lob
+    @Column(name = "imageattachment", nullable = false, columnDefinition = "LONGBLOB")
+    private byte[] imageAttachment;
 
     @Column(name = "filename")
     private String fileName;

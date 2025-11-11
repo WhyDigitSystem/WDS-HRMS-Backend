@@ -1,5 +1,6 @@
 package com.efit.hrms.controller;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,16 +26,14 @@ import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
-import com.efit.hrms.dto.CreateOfferDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
+import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
-import com.efit.hrms.entity.CreateOfferVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
-import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.service.AssetManagementService;
 
 @CrossOrigin
@@ -43,7 +41,7 @@ import com.efit.hrms.service.AssetManagementService;
 @RequestMapping("/api/assetmanagement")
 public class AssetManagementController extends BaseController {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(CheckInOutController.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(AssetManagementController.class);
 
 	@Autowired
 	AssetManagementService assetManagementService;
@@ -93,6 +91,22 @@ public class AssetManagementController extends BaseController {
 	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 	    return ResponseEntity.ok(responseDTO);
 	}
+	
+	
+	@PostMapping("/upload/{assetMasterId}")
+    public ResponseEntity<?> uploadImages(
+            @PathVariable Long assetMasterId,
+            @RequestParam("files") List<MultipartFile> files) throws IOException {
+
+		assetManagementService.uploadImages(assetMasterId, files);
+        return ResponseEntity.ok("Images uploaded successfully for Asset ID: " + assetMasterId);
+    }
+
+    // ✅ Retrieve all images (metadata only)
+    @GetMapping("/getAssetImage/{assetMasterId}")
+    public ResponseEntity<List<AssetImageVO>> getImagesByAsset(@PathVariable Long assetMasterId) {
+        return ResponseEntity.ok(assetManagementService.getImagesByAsset(assetMasterId));
+    }
 
 	
 	
