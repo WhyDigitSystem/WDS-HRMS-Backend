@@ -83,7 +83,7 @@ public interface AssetManagementService {
 	Map<String, List<Map<String, Object>>> getExpenseGraphByOrgId(Long orgId, String branchCode, String employeeCode,
 			Long year, Long month);
 
-	void uploadImages(Long assetMasterId, List<MultipartFile> files) throws IOException;
+	Map<String, Object> uploadImages(Long assetMasterId, List<MultipartFile> files) throws IOException;
 
     List<AssetImageVO> getImagesByAsset(Long assetMasterId);
 	

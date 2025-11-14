@@ -1147,7 +1147,8 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 		    "      AND (?5 = 'ALL' OR e.department = ?5)\n" +
 		    "      AND (?6 = 'ALL'\n" +
 		    "           OR (?6 = 'EMPLOYEE' AND e.type='EMPLOYEE')\n" +
-		    "           OR (?6 = 'CONTRACTOR' AND e.type='CONTRACTOR' AND e.contractor=?7))\n" +
+		    "           OR (?6 = 'CONTRACTOR' AND e.type='CONTRACTOR' AND e.contractor=?7))"
+		    + "    And e.active=1 \n" +
 		    "),\n" +
 		    "shift_assignments AS (\n" +
 		    "    SELECT s.employeecode, s.shifttype, s.intime, s.outtime, s.effectivefrom, s.effectiveto\n" +

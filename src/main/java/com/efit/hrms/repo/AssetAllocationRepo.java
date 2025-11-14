@@ -11,7 +11,18 @@ import com.efit.hrms.entity.AssetAllocationVO;
 @Repository
 public interface AssetAllocationRepo extends JpaRepository<AssetAllocationVO, Long>{
 
-	@Query(nativeQuery = true, value = "select assetname,assetcode from assetMaster where orgid=?1 and branchcode=?2")
+	@Query(nativeQuery = true, value = "SELECT am.assetname, am.assetcode\r\n"
+			+ "FROM assetmaster am\r\n"
+			+ "WHERE am.orgid = 1000000001\r\n"
+			+ "  AND am.branchcode = 'WDSBLR'\r\n"
+			+ "  AND NOT EXISTS (\r\n"
+			+ "        SELECT 1\r\n"
+			+ "        FROM assetallocation aa\r\n"
+			+ "        WHERE aa.assetcode = am.assetcode\r\n"
+			+ "          AND aa.orgid = am.orgid\r\n"
+			+ "          AND aa.branchcode = am.branchcode\r\n"
+			+ "      );\r\n"
+			+ "")
 	List<Object[]> getAssetNameCodeByOrgId(Long orgId, String branchCode);
 
 	@Query(nativeQuery = true, value = "select * from assetallocation where orgid=?1 and branchcode=?2")

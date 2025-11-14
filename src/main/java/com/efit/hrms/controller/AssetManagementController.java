@@ -94,13 +94,14 @@ public class AssetManagementController extends BaseController {
 	
 	
 	@PostMapping("/upload/{assetMasterId}")
-    public ResponseEntity<?> uploadImages(
-            @PathVariable Long assetMasterId,
-            @RequestParam("files") List<MultipartFile> files) throws IOException {
+	public ResponseEntity<?> uploadImages(
+	        @PathVariable Long assetMasterId,
+	        @RequestParam("files") List<MultipartFile> files) throws IOException {
 
-		assetManagementService.uploadImages(assetMasterId, files);
-        return ResponseEntity.ok("Images uploaded successfully for Asset ID: " + assetMasterId);
-    }
+	    Map<String, Object> result = assetManagementService.uploadImages(assetMasterId, files);
+
+	    return ResponseEntity.ok(result);
+	}
 
     // ✅ Retrieve all images (metadata only)
     @GetMapping("/getAssetImage/{assetMasterId}")

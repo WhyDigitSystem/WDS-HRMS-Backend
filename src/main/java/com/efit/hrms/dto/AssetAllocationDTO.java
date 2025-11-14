@@ -24,6 +24,7 @@ public class AssetAllocationDTO {
 	private LocalDate expectedreturndate;
 	private String assetcondition;
 	private String allocationnotes;
+	private boolean active ;
 
 	private String branch;
 	private String branchCode;	

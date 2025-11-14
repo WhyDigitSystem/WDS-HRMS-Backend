@@ -233,27 +233,58 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	
 	@Transactional
 	@Override
-    public void uploadImages(Long assetMasterId, List<MultipartFile> files) throws IOException {
-        AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
-                .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + assetMasterId));
+	public Map<String, Object> uploadImages(Long assetMasterId, List<MultipartFile> files) throws IOException {
 
-        List<AssetImageVO> imageList = new ArrayList<>();
-        
-        assetImageRepo.deleteByAssetMasterId(assetMasterId);
+	    AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
+	            .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + assetMasterId));
 
-        for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
+	    List<AssetImageVO> imageList = new ArrayList<>();
+	    List<String> failedFiles = new ArrayList<>();
+	    List<String> uploadedFileNames = new ArrayList<>();
 
-            AssetImageVO image = new AssetImageVO();
-            image.setFileName(file.getOriginalFilename());
-            image.setImageAttachment(file.getBytes());
-//            image.setImagePath(null);  // Save bytes directly in DB
-            image.setAssetMaster(assetMaster);
-            imageList.add(image);
-        }
+	    // Delete existing images
+	    assetImageRepo.deleteByAssetMasterId(assetMasterId);
 
-        assetImageRepo.saveAll(imageList);
-    }
+	    for (MultipartFile file : files) {
+	        if (file.isEmpty()) {
+	            failedFiles.add(file.getOriginalFilename());
+	            continue;
+	        }
+
+	        try {
+	            AssetImageVO image = new AssetImageVO();
+	            image.setFileName(file.getOriginalFilename());
+	            image.setImageAttachment(file.getBytes());   // Save bytes to DB
+	            image.setAssetMaster(assetMaster);
+
+	            imageList.add(image);
+	            uploadedFileNames.add(file.getOriginalFilename());
+
+	        } catch (Exception ex) {
+	            failedFiles.add(file.getOriginalFilename());
+	        }
+	    }
+
+	    assetImageRepo.saveAll(imageList);
+
+	    // Prepare response
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("assetMasterId", assetMasterId);
+	    response.put("uploadedCount", uploadedFileNames.size());
+	    response.put("failedCount", failedFiles.size());
+	    response.put("uploadedFiles", uploadedFileNames);
+	    response.put("failedFiles", failedFiles);
+
+	    if (failedFiles.isEmpty()) {
+	        response.put("message", "All images uploaded successfully.");
+	    } else {
+	        response.put("message",
+	                uploadedFileNames.size() + " images uploaded, " + failedFiles.size() + " failed.");
+	    }
+
+	    return response;
+	}
+
 
     @Override
     public List<AssetImageVO> getImagesByAsset(Long assetMasterId) {
@@ -306,8 +337,10 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 	    assetAllocationVO.setBranch(assetAllocationDTO.getBranch());
 	    assetAllocationVO.setBranchCode(assetAllocationDTO.getBranchCode());
 	    assetAllocationVO.setFinyear(assetAllocationDTO.getFinyear());
-	    assetAllocationVO.setCreatedBy(assetAllocationDTO.getCreatedBy());
+//	    assetAllocationVO.setCreatedBy(assetAllocationDTO.getCreatedBy());
 	    assetAllocationVO.setOrgId(assetAllocationDTO.getOrgId());
+	    assetAllocationVO.setActive(assetAllocationDTO.isActive());
+
 	}
 	
 	
