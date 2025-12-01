@@ -34,7 +34,7 @@ import com.efit.hrms.service.DocumentTypeService;
 @RequestMapping("/api/documenttypecontroller")
 public class DocumentTypeController  extends BaseController{
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(BasicMasterController.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(DocumentTypeController.class);
 
 	@Autowired
 	DocumentTypeService documentTypeService;
