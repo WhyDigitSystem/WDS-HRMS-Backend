@@ -362,7 +362,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 			+ "      ELSE '00:00'\r\n"
 			+ "    END AS othours\r\n"
 			+ "FROM final_cte f\r\n"
-			+ "ORDER BY f.checkindate, f.empcode;\r\n"
+			+ "ORDER BY f.empcode,f.checkindate\r\n"
 			+ "\r\n",
 	        nativeQuery = true)
 	Set<Object[]> getCheckInOutReport(Long orgId, String employeeCode, String fromDate, String toDate, String branch);
