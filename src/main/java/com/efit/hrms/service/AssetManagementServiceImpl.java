@@ -166,57 +166,57 @@ public class AssetManagementServiceImpl implements AssetManagementService{
 //	
 	
 	
-	@Transactional
-	public Map<String, Object> uploadMultipleAssetImages(Long assetMasterId, List<MultipartFile> files, String createdBy)
-	        throws IOException, ApplicationException, GeneralSecurityException {
-
-	    Map<String, Object> response = new HashMap<>();
-
-	    AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
-	            .orElseThrow(() -> new ApplicationException("Invalid AssetMaster ID"));
-
-	    List<AssetImageVO> uploadedImages = new ArrayList<>();
-
-	    int seq = 1;
-
-	    for (MultipartFile file : files) {
-	        if (file.isEmpty()) continue;
-
-	        String fileName = String.format("AssetImage%02d_%d_%s",
-	                seq++,
-	                System.currentTimeMillis(),
-	                file.getOriginalFilename());
-
-	        // Save temporarily to local folder
-	        Path tempPath = Files.createTempFile("drive_upload_", file.getOriginalFilename());
-	        Files.copy(file.getInputStream(), tempPath, StandardCopyOption.REPLACE_EXISTING);
-
-	        java.io.File localFile = tempPath.toFile();
-
-	        // ✅ Upload to Google Drive
-	        String driveUrl = GoogleDriveUtil.uploadFileToDrive(localFile, fileName);
-
-	        // ✅ Create DB record
-	        AssetImageVO imageVO = new AssetImageVO();
-	        imageVO.setFileName(fileName);
-//	        imageVO.setImagePath(driveUrl);
-	        imageVO.setAssetMaster(assetMaster);
-
-	        uploadedImages.add(imageVO);
-
-	        // Delete temp file after upload
-	        localFile.delete();
-	    }
-
-	    assetMaster.getAssetImages().addAll(uploadedImages);
-	    assetMasterRepo.save(assetMaster);
-
-	    response.put("message", "Images uploaded successfully to Google Drive");
-	    response.put("uploadedCount", uploadedImages.size());
-	    response.put("imageList", uploadedImages);
-
-	    return response;
-	}
+//	@Transactional
+//	public Map<String, Object> uploadMultipleAssetImages(Long assetMasterId, List<MultipartFile> files, String createdBy)
+//	        throws IOException, ApplicationException, GeneralSecurityException {
+//
+//	    Map<String, Object> response = new HashMap<>();
+//
+//	    AssetMasterVO assetMaster = assetMasterRepo.findById(assetMasterId)
+//	            .orElseThrow(() -> new ApplicationException("Invalid AssetMaster ID"));
+//
+//	    List<AssetImageVO> uploadedImages = new ArrayList<>();
+//
+//	    int seq = 1;
+//
+//	    for (MultipartFile file : files) {
+//	        if (file.isEmpty()) continue;
+//
+//	        String fileName = String.format("AssetImage%02d_%d_%s",
+//	                seq++,
+//	                System.currentTimeMillis(),
+//	                file.getOriginalFilename());
+//
+//	        // Save temporarily to local folder
+//	        Path tempPath = Files.createTempFile("drive_upload_", file.getOriginalFilename());
+//	        Files.copy(file.getInputStream(), tempPath, StandardCopyOption.REPLACE_EXISTING);
+//
+//	        java.io.File localFile = tempPath.toFile();
+//
+//	        // ✅ Upload to Google Drive
+//	        String driveUrl = GoogleDriveUtil.uploadFileToDrive(localFile, fileName);
+//
+//	        // ✅ Create DB record
+//	        AssetImageVO imageVO = new AssetImageVO();
+//	        imageVO.setFileName(fileName);
+////	        imageVO.setImagePath(driveUrl);
+//	        imageVO.setAssetMaster(assetMaster);
+//
+//	        uploadedImages.add(imageVO);
+//
+//	        // Delete temp file after upload
+//	        localFile.delete();
+//	    }
+//
+//	    assetMaster.getAssetImages().addAll(uploadedImages);
+//	    assetMasterRepo.save(assetMaster);
+//
+//	    response.put("message", "Images uploaded successfully to Google Drive");
+//	    response.put("uploadedCount", uploadedImages.size());
+//	    response.put("imageList", uploadedImages);
+//
+//	    return response;
+//	}
 
 	
 	@Override

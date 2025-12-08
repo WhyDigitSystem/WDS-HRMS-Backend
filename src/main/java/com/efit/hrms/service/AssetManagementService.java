@@ -43,7 +43,7 @@ public interface AssetManagementService {
 
 	List<Map<String, Object>> getAssetDashboardByOrgId(Long orgId, String branchCode);
 
-	Map<String, Object> uploadMultipleAssetImages(Long assetMasterId, List<MultipartFile> files, String createdBy) throws IOException, ApplicationException, GeneralSecurityException;
+//	Map<String, Object> uploadMultipleAssetImages(Long assetMasterId, List<MultipartFile> files, String createdBy) throws IOException, ApplicationException, GeneralSecurityException;
 
 	
 	//expenseClaims
