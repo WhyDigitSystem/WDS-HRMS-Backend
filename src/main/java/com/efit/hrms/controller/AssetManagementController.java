@@ -67,32 +67,32 @@ public class AssetManagementController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 	}
 	
-	@PostMapping("/uploadAssetImages/{assetMasterId}")
-	public ResponseEntity<ResponseDTO> uploadAssetImages(
-	        @PathVariable Long assetMasterId,
-	        @RequestParam("files") List<MultipartFile> files,
-	        @RequestParam("createdBy") String createdBy) {
-
-	    String methodName = "uploadAssetImages()";
-	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
-
-	    Map<String, Object> responseObjectsMap = new HashMap<>();
-	    ResponseDTO responseDTO;
-
-	    try {
-	        Map<String, Object> result = assetManagementService.uploadMultipleAssetImages(assetMasterId, files, createdBy);
-	        responseObjectsMap.putAll(result);
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
-	        responseDTO = createServiceResponseError(responseObjectsMap, e.getMessage(), e.getMessage());
-	    }
-
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok(responseDTO);
-	}
-	
-	
+//	@PostMapping("/uploadAssetImages/{assetMasterId}")
+//	public ResponseEntity<ResponseDTO> uploadAssetImages(
+//	        @PathVariable Long assetMasterId,
+//	        @RequestParam("files") List<MultipartFile> files,
+//	        @RequestParam("createdBy") String createdBy) {
+//
+//	    String methodName = "uploadAssetImages()";
+//	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+//
+//	    Map<String, Object> responseObjectsMap = new HashMap<>();
+//	    ResponseDTO responseDTO;
+//
+//	    try {
+//	        Map<String, Object> result = assetManagementService.uploadMultipleAssetImages(assetMasterId, files, createdBy);
+//	        responseObjectsMap.putAll(result);
+//	        responseDTO = createServiceResponse(responseObjectsMap);
+//	    } catch (Exception e) {
+//	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
+//	        responseDTO = createServiceResponseError(responseObjectsMap, e.getMessage(), e.getMessage());
+//	    }
+//
+//	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+//	    return ResponseEntity.ok(responseDTO);
+//	}
+//	
+//	
 	@PostMapping("/upload/{assetMasterId}")
 	public ResponseEntity<?> uploadImages(
 	        @PathVariable Long assetMasterId,
