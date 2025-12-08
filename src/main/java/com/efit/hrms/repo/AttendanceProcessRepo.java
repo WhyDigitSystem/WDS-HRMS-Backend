@@ -678,10 +678,6 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 //		        String branch, String type, String contractor);
 
 		
-		
-		
-		
-		
 		@Query(nativeQuery = true, value = 
 			    "WITH RECURSIVE date_series AS (\r\n"
 			    + "    SELECT DATE(?1) AS dt\r\n"
