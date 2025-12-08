@@ -72,8 +72,8 @@ public interface SalaryProcessRepo extends JpaRepository<SalaryProcessVO, Long> 
 	@Query(nativeQuery = true, value = "select distinct(a.employee),a.orgid,a.employeecode ,a.joiningdate, a.designation,a.department ,a.branch,a.branchcode,a.accountno,a.panno,a.uanno,empsalarydays as effectiveworkingdays,totalcompanyworkingdays as monthdays,a.bankname,s.lopleave,s.othours from employee a, salaryprocess s \r\n"
 			+ "where a.employeecode =?2\r\n"
 			+ " and a.employeecode = s.employeecode\r\n"
-			+ "and a.orgid=?1")
-	Set<Object[]> findpayslipemployeeandearningsdetails(Long orgId, String Employeecode );
+			+ "and a.orgid=?1 and s.month=?3 and s.year=?4 ")
+	Set<Object[]> findpayslipemployeeandearningsdetails(Long orgId, String Employeecode, Long month, Long year );
 	
 //	@Query(nativeQuery = true, value = "SELECT \r\n"
 //			+ "    employeename,\r\n"

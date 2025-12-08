@@ -148,7 +148,7 @@ List<Map<String, Object>> GetCountofNewAssignedTask(Long Orgid,String Assignedby
 
 // payslip
 	
-	List<Map<String, Object>> getpayslipemployeedetails(Long orgId, String Employeecode);
+	List<Map<String, Object>> getpayslipemployeedetails(Long orgId, String Employeecode, Long month, Long year);
 	
 	
 	List<Map<String, Object>> getpayslipearningdetails(Long orgId, String Employeecode,Long Month,Long year);
