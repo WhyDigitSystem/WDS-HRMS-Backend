@@ -2,7 +2,6 @@ package com.efit.hrms.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 
@@ -11,11 +10,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
+import com.efit.hrms.dto.AssetReturnDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
+import com.efit.hrms.entity.AssetReturnVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.exception.ApplicationException;
@@ -45,17 +46,16 @@ public interface AssetManagementService {
 
 //	Map<String, Object> uploadMultipleAssetImages(Long assetMasterId, List<MultipartFile> files, String createdBy) throws IOException, ApplicationException, GeneralSecurityException;
 
-	
-	//expenseClaims
-	
+	// expenseClaims
+
 	Map<String, Object> CreateUpdateExpenseClaims(ExpenseClaimsDTO expenseClaimsDTO) throws ApplicationException;
 
 	List<ExpenseClaimsVO> getExpenseClaimsByOrgId(Long orgId, String branchCode, String employeeCode);
 
-	ExpenseClaimsVO getExpenseClaimsById(Long id);	
-	
-	//TravelRequests
-	
+	ExpenseClaimsVO getExpenseClaimsById(Long id);
+
+	// TravelRequests
+
 	Map<String, Object> CreateUpdateTravelRequests(TravelRequestsDTO travelRequestsDTO) throws ApplicationException;
 
 	List<TravelRequestsVO> getTravelRequestsByOrgId(Long orgId, String branchCode, String employeeCode);
@@ -63,10 +63,12 @@ public interface AssetManagementService {
 	TravelRequestsVO getTravelRequestsById(Long id);
 
 	Map<String, Object> createApprovalExpenseClaims(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName, String email, BigDecimal approvedAmount) throws Exception;
+			String actionBy, String notifyCode, String notify, String screenName, String email,
+			BigDecimal approvedAmount) throws Exception;
 
 	Map<String, Object> createApprovalTravelRequests(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName, String email, BigDecimal approvedAmount) throws Exception;
+			String actionBy, String notifyCode, String notify, String screenName, String email,
+			BigDecimal approvedAmount) throws Exception;
 
 	List<TravelRequestsVO> getTravelRequestsForDashBoard(Long orgId, String reportingPersonCode, String branchCode);
 
@@ -78,16 +80,22 @@ public interface AssetManagementService {
 
 	List<Map<String, Object>> getAssetAllocationReportByOrgId(Long orgId, String branchCode, String employeeCode);
 
-	List<Map<String, Object>> getExpenseCountByOrgId(Long orgId, String branchCode, String employeeCode, Long month, Long year);
+	List<Map<String, Object>> getExpenseCountByOrgId(Long orgId, String branchCode, String employeeCode, Long month,
+			Long year);
 
 	Map<String, List<Map<String, Object>>> getExpenseGraphByOrgId(Long orgId, String branchCode, String employeeCode,
 			Long year, Long month);
 
 	Map<String, Object> uploadImages(Long assetMasterId, List<MultipartFile> files) throws IOException;
 
-    List<AssetImageVO> getImagesByAsset(Long assetMasterId);
-	
+	List<AssetImageVO> getImagesByAsset(Long assetMasterId);
 
+	// AssetReturn
 
+	Map<String, Object> CreateUpdateAssetReturn(AssetReturnDTO assetReturnDTO) throws ApplicationException;
+
+	List<AssetReturnVO> getAssetReturnByOrgId(Long orgId, String branchCode);
+
+	AssetReturnVO getAssetReturnById(Long id);
 
 }
