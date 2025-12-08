@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.16</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
+
     <groupId>com.efit</groupId>
     <artifactId>hrms</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>hrms</name>
     <description>HRMS Project for Spring Boot</description>
+
     <properties>
-        <java.version>8</java.version>
+        <java.version>1.8</java.version>
     </properties>
 
     <dependencies>
@@ -133,7 +137,45 @@
             <artifactId>xmlbeans</artifactId>
             <version>5.0.2</version>
         </dependency>
+
+        <!-- ✅ Google Drive API (Stable version) -->
+      <dependency>
+  <groupId>com.google.apis</groupId>
+  <artifactId>google-api-services-drive</artifactId>
+  <version>v3-rev20220815-2.0.0</version>
+</dependency>
+
+
+        <!-- ✅ Google Auth Library -->
+        <dependency>
+            <groupId>com.google.auth</groupId>
+            <artifactId>google-auth-library-oauth2-http</artifactId>
+            <version>1.23.0</version>
+        </dependency>
+
+        <!-- ✅ Google HTTP Client with Jackson2 -->
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-jackson2</artifactId>
+            <version>1.43.3</version>
+        </dependency>
+
+        <!-- ✅ Google API Client Core -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>1.34.1</version>
+        </dependency>
     </dependencies>
+
+    <!-- ✅ Add Google Maven Repository -->
+    <repositories>
+        <repository>
+            <id>google-api-services</id>
+            <name>Google API Services</name>
+            <url>https://maven.google.com</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

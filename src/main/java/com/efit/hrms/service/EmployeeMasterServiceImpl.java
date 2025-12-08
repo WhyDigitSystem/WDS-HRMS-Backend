@@ -259,6 +259,7 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 		salaryStructureVO.setDesignation(salaryStructureDTO.getDesignation());
 		salaryStructureVO.setPfPercentage(salaryStructureDTO.getPfPercentage());
 		salaryStructureVO.setEsiPercentage(salaryStructureDTO.getEsiPercentage());
+		salaryStructureVO.setEffectiveFrom(salaryStructureDTO.getEffectiveFrom());
 
 		// Save Parent Record
 		final SalaryStructureVO savedSalaryStructureVO = salaryStructureRepo.save(salaryStructureVO);

@@ -71,7 +71,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "e.payslipeffectivedate\r\n"
 			+ "FROM employee e\r\n"
 			+ "JOIN company c ON e.orgid = c.companyid\r\n"
-			+ "WHERE e.orgid = ?1 ORDER BY e.employee ASC \r\n"
+			+ "WHERE e.orgid = ?1 and e.active=1 ORDER BY e.employee ASC \r\n"
 			+ "", nativeQuery = true)
 	List<Map<String, Object>> getEmployeesWithCompanyInfoByOrgId(Long orgId);
 
@@ -97,7 +97,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "FROM employee  \r\n"
 			+ "WHERE orgid = ?1  and branchcode=?2 AND employeecode NOT IN (?3)  \r\n"
 			+ "\r\n"
-			+ "AND (trim(designation) LIKE '%MANAGER%' OR trim(designation) LIKE '%TEAM LEAD%' OR trim(designation) LIKE '%CEO%' OR trim(designation) LIKE '%HR%' OR trim(designation) LIKE '%MANAGING DIRECTOR%')" )
+			+ "AND (trim(designation) LIKE '%MANAGER%' OR trim(designation) LIKE '%TEAM LEAD%' OR trim(designation) LIKE '%CEO%' OR trim(designation) LIKE '%HR%' OR trim(designation) LIKE '%MANAGING DIRECTOR%') and active=1" )
 	Set<Object[]> findReportingNameForEmployee(Long orgId, String branchCode, String employeeCode);
 	
 //	@Query(nativeQuery = true,value="select concat(format,lpad(last_number,5,0)) AS docid from sequence_tracker where company_id=?1 and year=?2 and branch_code=?3 and Department_code=?4 and company_code=?5;\r\n")
@@ -139,7 +139,9 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "FROM employee\r\n"
 			+ "WHERE \r\n"
 			+ "    MONTH(joiningdate) = MONTH(CURDATE()) \r\n"
-			+ "    AND DAY(joiningdate) = DAY(CURDATE())\r\n"
+			+ "    AND DAY(joiningdate) = DAY(CURDATE())"
+			+ "    AND YEAR(joiningdate) < YEAR(CURDATE()) and active=1 \r\n"
+			+ "\r\n"
 			+ "")
 	Set<Object[]> findWorkaniversaryByOrgId(Long orgid);
 
@@ -147,10 +149,10 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	@Query(nativeQuery = true,value ="SELECT employeeid, department, designation,  employeecode, employee, gender,orgid,profileimage \r\n"
 			+ "FROM employee\r\n"
 			+ "WHERE MONTH(joiningdate) = MONTH(CURDATE()) \r\n"
-			+ "AND YEAR(joiningdate) = YEAR(CURDATE())")
+			+ "AND YEAR(joiningdate) = YEAR(CURDATE()) and active=1")
 	Set<Object[]> findNewJoinieDtailsByOrgId(Long orgid);
 
-	@Query(value = "SELECT * FROM employee e WHERE e.orgId = ?1 and employeecode=?2 and active=1", nativeQuery = true)
+	@Query(value = "SELECT * FROM employee e WHERE e.orgid = ?1 and employeecode=?2 and active=1", nativeQuery = true)
 	List<EmployeeVO> getAllEmployeeByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
 
 	EmployeeVO findByEmployeeCode(String employeecode);
@@ -182,7 +184,15 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 //	EmployeeVO findByEmployeeVO(String empCode);
 
 
+	@Query(value = "SELECT e.employee, e.employeecode " +
+	        "FROM employee e " +
+	        "WHERE e.orgId = ?1 " +
+	        "  AND (?2 = 'ALL' OR e.branchCode = ?2) " +
+	        "  AND (?3 = 'ALL' OR e.department = ?3) " +
+	        "  AND e.active = 1", nativeQuery = true)
+	Set<Object[]> getEmployeeDetailsForAllTaskReport(Long orgId, String branchCode, String department);
 
+	EmployeeVO findByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
 
 
 

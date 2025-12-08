@@ -1,5 +1,7 @@
 package com.efit.hrms.dto;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,5 +16,6 @@ public class DesignationDTO {
 	private boolean active;
 	private Long orgId;
 	private String createdBy;
+	private BigDecimal expenseLimit;
 
 }

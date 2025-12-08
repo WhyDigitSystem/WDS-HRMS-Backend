@@ -1761,8 +1761,8 @@ public class CheckInOutServiceImpl implements CheckInOutService {
 			map.put("weekOffs", record[9] != null ? new BigInteger(record[9].toString()).toString() : "0");
 
 			map.put("leaves", record[10] != null ? new BigDecimal(record[10].toString()).toPlainString() : "0");
-			map.put("absent", record[11] != null ? ((BigDecimal) record[11]).toPlainString() : "0");
-			map.put("lop", record[12] != null ? ((BigDecimal) record[12]).toPlainString() : "0");
+			map.put("lop", record[11] != null ? ((BigDecimal) record[11]).toPlainString() : "0");
+			map.put("absent", record[12] != null ? ((BigDecimal) record[12]).toPlainString() : "0");
 			map.put("presentDays", record[13] != null ? ((BigDecimal) record[13]).toPlainString() : "0");
 			map.put("salaryDays", record[14] != null ? ((BigDecimal) record[14]).toPlainString() : "0");
 			map.put("otHours", record[15] != null ? record[15].toString() : "00:00");

@@ -29,11 +29,13 @@ import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.BranchDTO;
 import com.efit.hrms.dto.DesignationLeaveDTO;
 import com.efit.hrms.dto.EmployeeDTO;
+import com.efit.hrms.dto.ListOfValuesDTO;
 import com.efit.hrms.dto.ProjectMasterDTO;
 import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.entity.BranchVO;
 import com.efit.hrms.entity.DesignationLeaveVO;
 import com.efit.hrms.entity.EmployeeVO;
+import com.efit.hrms.entity.ListOfValuesVO;
 import com.efit.hrms.entity.ProjectMasterVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.service.MasterService;
@@ -502,6 +504,111 @@ public class MasterController extends BaseController {
 		     }
 		 }
 
+		 
+		// listOfVlaues
+
+			@GetMapping("/getAllListOfValuesByOrgId")
+			public ResponseEntity<ResponseDTO> getAllListOfValuesByOrgId(@RequestParam Long orgId) {
+				String methodName = "getAllListOfValuesByOrgId()";
+				LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+				String errorMsg = null;
+				Map<String, Object> responseObjectsMap = new HashMap<>();
+				ResponseDTO responseDTO = null;
+				List<ListOfValuesVO> listOfValuesVO = new ArrayList<>();
+				try {
+					listOfValuesVO = masterService.getAllListOfValuesByOrgId(orgId);
+				} catch (Exception e) {
+					errorMsg = e.getMessage();
+					LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+				}
+				if (StringUtils.isBlank(errorMsg)) {
+					responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "ListOfValues information get successfully ByOrgId");
+					responseObjectsMap.put("listOfValuesVO", listOfValuesVO);
+					responseDTO = createServiceResponse(responseObjectsMap);
+				} else {
+					responseDTO = createServiceResponseError(responseObjectsMap,
+							"ListOfValues information receive failedByOrgId", errorMsg);
+				}
+				LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+				return ResponseEntity.ok().body(responseDTO);
+
+			}
+
+			@GetMapping("/getAllListOfValuesById")
+			public ResponseEntity<ResponseDTO> getAllListOfValuesById(@RequestParam Long id) {
+				String methodName = "getAllListOfValuesById()";
+				LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+				String errorMsg = null;
+				Map<String, Object> responseObjectsMap = new HashMap<>();
+				ResponseDTO responseDTO = null;
+				ListOfValuesVO listOfValuesVO = new ListOfValuesVO();
+				try {
+					listOfValuesVO = masterService.getAllListOfValuesById(id);
+				} catch (Exception e) {
+					errorMsg = e.getMessage();
+					LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+				}
+				if (StringUtils.isBlank(errorMsg)) {
+					responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "ListOfValuesVO get successfully By id");
+					responseObjectsMap.put("listOfValuesVO", listOfValuesVO);
+					responseDTO = createServiceResponse(responseObjectsMap);
+				} else {
+					responseDTO = createServiceResponseError(responseObjectsMap,
+							"ListOfValuesVO information receive failedByOrgId", errorMsg);
+				}
+				LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+				return ResponseEntity.ok().body(responseDTO);
+			}
+
+			@PutMapping("/updateCreateListOfValues")
+			public ResponseEntity<ResponseDTO> updateCreateListOfValues(@RequestBody ListOfValuesDTO listOfValuesDTO) {
+				String methodName = "updateCreateListOfValues()";
+				LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+				String errorMsg = null;
+				Map<String, Object> responseObjectsMap = new HashMap<>();
+				ResponseDTO responseDTO = null;
+				try {
+					Map<String, Object> listOfValuesVO = masterService.updateCreateListOfValues(listOfValuesDTO);
+					responseObjectsMap.put(CommonConstant.STRING_MESSAGE, listOfValuesVO.get("message"));
+					responseObjectsMap.put("listOfValuesVO", listOfValuesVO.get("listOfValuesVO"));
+					responseDTO = createServiceResponse(responseObjectsMap);
+				} catch (Exception e) {
+					errorMsg = e.getMessage();
+					LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+					responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+				}
+				LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+				return ResponseEntity.ok().body(responseDTO);
+			}
+
+			@GetMapping("/getAllListValues")
+			public ResponseEntity<ResponseDTO> getAllListValues(@RequestParam Long orgId,
+					@RequestParam String listDescription) {
+				String methodName = "getAllListValues()";
+				LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+				String errorMsg = null;
+				Map<String, Object> responseObjectsMap = new HashMap<>();
+				ResponseDTO responseDTO = null;
+				List<Map<String, Object>> listValues = new ArrayList<>();
+				try {
+					listValues = masterService.getAllListValues(orgId, listDescription);
+				} catch (Exception e) {
+					errorMsg = e.getMessage();
+					LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+				}
+				if (StringUtils.isBlank(errorMsg)) {
+					responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "ListValues information get successfully ByOrgId");
+					responseObjectsMap.put("listValues", listValues);
+					responseDTO = createServiceResponse(responseObjectsMap);
+				} else {
+					responseDTO = createServiceResponseError(responseObjectsMap, "ListValues information receive failedByOrgId",
+							errorMsg);
+				}
+				LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+				return ResponseEntity.ok().body(responseDTO);
+			}
+		 
+		 
 		 }
 
 

@@ -38,7 +38,14 @@ public class TimeSheetDetailsVO {
 	private String toTime;
 	@Column(name = "description")
 	private String description;
-	
+	@Column(name = "project")
+	private String project;
+	@Column(name = "wip")
+	private String wip;
+	@Column(name = "status")
+	private String status;
+	@Column(name = "remarks")
+	private String remarks;
 	
 	@ManyToOne
 	@JoinColumn(name = "timesheetid")
