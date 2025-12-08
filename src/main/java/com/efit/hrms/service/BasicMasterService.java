@@ -150,7 +150,6 @@ List<Map<String, Object>> GetCountofNewAssignedTask(Long Orgid,String Assignedby
 	
 	List<Map<String, Object>> getpayslipemployeedetails(Long orgId, String Employeecode, Long month, Long year);
 	
-	
 	List<Map<String, Object>> getpayslipearningdetails(Long orgId, String Employeecode,Long Month,Long year);
 	
 	List<Map<String, Object>> getpayslipdeductiondetails(Long orgId, String Employeecode, Long month, Long year);
