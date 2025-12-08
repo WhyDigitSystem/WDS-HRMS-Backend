@@ -271,6 +271,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		leaveRequestVO.setTotalDays(leaveRequestDTO.getTotalDays());
 		leaveRequestVO.setEmployeeName(leaveRequestDTO.getEmployeeName());
 		leaveRequestVO.setEmployeeCode(leaveRequestDTO.getEmployeeCode());
+		leaveRequestVO.setEmail(leaveRequestDTO.getEmail());
 //		leaveRequestVO.setFinYear(leaveRequestDTO.getFinYear());
 
 		leaveRequestVO.setBranch(leaveRequestDTO.getBranch());
@@ -579,7 +580,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 	
 	@Override
-	public Map<String, Object> createApprovalLeave(Long orgId, Long id, String employeeCode, String action, String actionBy,String notifyCode,String notify, String screenName)
+	public Map<String, Object> createApprovalLeave(Long orgId, Long id, String employeeCode, String action, String actionBy,String notifyCode,String notify, String screenName,String email)
 			throws ApplicationException {
 
 		LeaveRequestVO leaveRequestVO = leaveRequestRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);

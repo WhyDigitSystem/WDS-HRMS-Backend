@@ -49,7 +49,7 @@ public interface LeaveProcessService {
 	
 //	List<Map<String, Object>> getTotalLeaveFromLeaveBalance(Long orgId, String employeeCode, String leavetype);
 
-	Map<String, Object> createApprovalLeave(Long orgId, Long id,String employeeCode,String action, String actionBy, String notifyCode, String notify, String screenName) throws ApplicationException;
+	Map<String, Object> createApprovalLeave(Long orgId, Long id,String employeeCode,String action, String actionBy, String notifyCode, String notify, String screenName, String email) throws ApplicationException;
 
 	Map<String, Object> calculateLeavedays(Long orgId, LocalDate fromDate, LocalDate toDate, String selectLeave) throws ApplicationException;
 

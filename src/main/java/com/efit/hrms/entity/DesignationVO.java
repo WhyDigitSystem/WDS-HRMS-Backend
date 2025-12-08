@@ -1,5 +1,7 @@
 package com.efit.hrms.entity;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -36,6 +38,8 @@ public class DesignationVO {
 
     @Column(name = "designationcode", length = 75)
     private String designationCode;
+    @Column(name = "expenselimit")
+    private BigDecimal expenseLimit;
     
 	@Column(name = "active")
 	private boolean active= true;
