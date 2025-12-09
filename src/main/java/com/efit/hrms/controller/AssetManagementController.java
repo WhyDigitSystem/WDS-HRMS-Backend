@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -849,5 +851,68 @@ public class AssetManagementController extends BaseController {
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@PostMapping(value = "/CreateAssetMaster", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<ResponseDTO> CreateAssetMaster(
+	        @RequestPart("dto") AssetMasterDTO assetMasterDTO,
+	        @RequestPart(value = "files", required = false) MultipartFile[] files) {
+
+	    String methodName = "CreateAssetMaster()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO;
+	    String errorMsg = null;
+
+	    try {
+	        // Attach files to DTO
+	        assetMasterDTO.setFiles(files);
+
+	        // Call service (same pattern as before)
+	        Object resultMap = assetManagementService.saveAsset(assetMasterDTO);
+
+	        // Build response map
+	        responseObjectsMap.put("assetMasterVO", resultMap);
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+	        errorMsg = e.getMessage();
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+	    return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	@GetMapping("/image")
+	public ResponseEntity<?> viewImage(@RequestParam Long imageId) {
+
+	    String methodName = "viewImage()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO;
+	    String errorMsg = null;
+
+	    try {
+	    	byte[] img = assetManagementService.viewImage(imageId);
+            if (img == null)
+                return ResponseEntity.notFound().build();
+
+            return ResponseEntity
+                    .ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(img);
+
+	    } catch (Exception e) {
+	        errorMsg = e.getMessage();
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+	        return ResponseEntity.badRequest().body(responseDTO);
+	    }
 	}
 }
