@@ -46,7 +46,10 @@ public class AssetStockVO {
 	@Column(name = "locationcode")
 	private String locationCode;
 	@Column(name = "assetstatus")
-	private int assetStatus;
+	private String  assetStatus;
+	
+	@Column(name = "qty")
+	private int qty;
 
 	@Column(name = "branch")
 	private String branch;

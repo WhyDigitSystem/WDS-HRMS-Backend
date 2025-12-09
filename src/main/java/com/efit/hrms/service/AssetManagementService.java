@@ -98,4 +98,8 @@ public interface AssetManagementService {
 
 	AssetReturnVO getAssetReturnById(Long id);
 
+	List<Map<String, Object>> getAssetAllocationDetails(Long orgId, String branchCode);
+
+	List<Map<String, Object>> getAssetAllocationListAll(Long orgId, String branchCode, String employeeCode);
+
 }

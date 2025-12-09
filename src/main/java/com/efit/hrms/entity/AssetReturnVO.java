@@ -77,7 +77,7 @@ public class AssetReturnVO {
 	private String finyear;
 
 	@Column(name = "active")
-	private boolean active;
+	private boolean active = true;
 	@Column(name = "createdby")
 	private String createdBy;
 	@Column(name = "modifiedby")
@@ -85,7 +85,7 @@ public class AssetReturnVO {
 	@Column(name = "orgid")
 	private Long orgId;
 	@Column(name = "cancel")
-	private boolean cancel;
+	private boolean cancel = false;
 
 	@Column(name = "screencode", length = 5)
 	private String screenCode = "AR";

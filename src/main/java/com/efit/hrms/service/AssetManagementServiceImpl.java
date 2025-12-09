@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -106,7 +107,8 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 			assetStockVO.setSourceScreen(assetMasterVO.getScreenName());
 			assetStockVO.setSourceScreenCode(assetMasterVO.getScreenCode());
 			assetStockVO.setOrgId(assetMasterVO.getOrgId());
-			assetStockVO.setAssetStatus(1);
+			assetStockVO.setAssetStatus("A");
+			assetStockVO.setQty(1);
 			assetStockRepo.save(assetStockVO);
 			message = "AssetMaster Created Successfully";
 
@@ -328,28 +330,62 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 			message = "AssetAllocation Updated Successfully";
 		} else {
 
-			createUpdateAssetAllocationVOByAssetAllocationDTO(assetAllocationVO, assetAllocationDTO);
 			assetAllocationVO.setCreatedBy(assetAllocationDTO.getCreatedBy());
 			assetAllocationVO.setUpdatedBy(assetAllocationDTO.getCreatedBy());
+
+			createUpdateAssetAllocationVOByAssetAllocationDTO(assetAllocationVO, assetAllocationDTO);
 			assetAllocationRepo.save(assetAllocationVO);
+			AssetMasterVO assetMasterVO = assetMasterRepo.findByAssetNameAndAssetCode(assetAllocationDTO.getAssetName(),
+					assetAllocationDTO.getAssetCode());
+			if (assetMasterVO == null) {
+				throw new ApplicationContextException("No data found for AssetName and AssetCode");
+			}
 
 			AssetStockVO assetStockVO = new AssetStockVO();
-			assetStockVO.setAssetName(assetAllocationVO.getAssetName());
-			assetStockVO.setAssetCode(assetAllocationVO.getAssetCode());
-			assetStockVO.setLocation(assetAllocationVO.getAssetCode());
-			assetStockVO.setBranch(assetAllocationVO.getBranch());
-			assetStockVO.setBranchCode(assetAllocationVO.getBranchCode());
-			assetStockVO.setFinyear(assetAllocationVO.getFinyear());
+			assetStockVO.setAssetName(assetMasterVO.getAssetName());
+			assetStockVO.setAssetCode(assetMasterVO.getAssetCode());
+			assetStockVO.setSerialNumber(assetMasterVO.getSerialNumber());
+			assetStockVO.setCategory(assetMasterVO.getCategory());
+			assetStockVO.setBrand(assetMasterVO.getBrand());
+			assetStockVO.setModel(assetMasterVO.getModel());
+			assetStockVO.setBranch(assetMasterVO.getBranch());
+			assetStockVO.setBranchCode(assetMasterVO.getBranchCode());
+			assetStockVO.setFinyear(assetAllocationDTO.getFinyear());
 			assetStockVO.setSourceId(assetAllocationVO.getId());
-			assetStockVO.setCreatedBy(assetAllocationVO.getCreatedBy());
-			assetStockVO.setUpdatedBy(assetAllocationVO.getUpdatedBy());
+			assetStockVO.setCreatedBy(assetAllocationDTO.getCreatedBy());
+			assetStockVO.setUpdatedBy(assetAllocationDTO.getCreatedBy());
 			assetStockVO.setSourceScreen(assetAllocationVO.getScreenName());
 			assetStockVO.setSourceScreenCode(assetAllocationVO.getScreenCode());
-			assetStockVO.setOrgId(assetAllocationVO.getOrgId());
-			assetStockVO.setLocationCode(assetAllocationVO.getEmployeeCode());
-			assetStockVO.setAssetStatus(-1);
+			assetStockVO.setOrgId(assetAllocationDTO.getOrgId());
+			assetStockVO.setLocation(assetMasterVO.getLocation());
+//			assetStockVO.setLocationCode(assetAllocationDTO.getEmployeeCode());
+			assetStockVO.setQty(-1);
+			assetStockVO.setAssetStatus("A");
+
 			assetStockRepo.save(assetStockVO);
 
+			AssetStockVO assetStockVO1 = new AssetStockVO();
+			assetStockVO1.setAssetName(assetMasterVO.getAssetName());
+			assetStockVO1.setAssetCode(assetMasterVO.getAssetCode());
+			assetStockVO1.setSerialNumber(assetMasterVO.getSerialNumber());
+			assetStockVO1.setCategory(assetMasterVO.getCategory());
+			assetStockVO1.setBrand(assetMasterVO.getBrand());
+			assetStockVO1.setModel(assetMasterVO.getModel());
+			assetStockVO1.setBranch(assetMasterVO.getBranch());
+			assetStockVO1.setBranchCode(assetMasterVO.getBranchCode());
+			assetStockVO1.setFinyear(assetAllocationDTO.getFinyear());
+			assetStockVO1.setSourceId(assetAllocationVO.getId());
+			assetStockVO1.setCreatedBy(assetAllocationDTO.getCreatedBy());
+			assetStockVO1.setUpdatedBy(assetAllocationDTO.getCreatedBy());
+			assetStockVO1.setSourceScreen(assetAllocationVO.getScreenName());
+			assetStockVO1.setSourceScreenCode(assetAllocationVO.getScreenCode());
+			assetStockVO1.setOrgId(assetAllocationDTO.getOrgId());
+			assetStockVO1.setLocation(assetAllocationDTO.getEmployeeName());
+			assetStockVO1.setLocationCode(assetAllocationDTO.getEmployeeCode());
+			assetStockVO1.setQty(1);
+			assetStockVO1.setAssetStatus("A");
+
+			assetStockRepo.save(assetStockVO1);
 			message = "AssetAllocation Created Successfully";
 		}
 
@@ -362,6 +398,12 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 	private void createUpdateAssetAllocationVOByAssetAllocationDTO(AssetAllocationVO assetAllocationVO,
 			AssetAllocationDTO assetAllocationDTO) {
 
+		AssetMasterVO assetMasterVO = assetMasterRepo.findByAssetNameAndAssetCode(assetAllocationDTO.getAssetName(),
+				assetAllocationDTO.getAssetCode());
+
+		if (assetMasterVO == null) {
+			throw new ApplicationContextException("No data found for AssetName and AssetCode And SerialNumber");
+		}
 		assetAllocationVO.setAssetName(assetAllocationDTO.getAssetName());
 		assetAllocationVO.setAssetCode(assetAllocationDTO.getAssetCode());
 		assetAllocationVO.setEmployeeCode(assetAllocationDTO.getEmployeeCode());
@@ -370,7 +412,7 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		assetAllocationVO.setExpectedreturndate(assetAllocationDTO.getExpectedreturndate());
 		assetAllocationVO.setAssetcondition(assetAllocationDTO.getAssetcondition());
 		assetAllocationVO.setAllocationnotes(assetAllocationDTO.getAllocationnotes());
-
+		assetAllocationVO.setSerialNumber(assetAllocationDTO.getSerialNumber());
 		assetAllocationVO.setBranch(assetAllocationDTO.getBranch());
 		assetAllocationVO.setBranchCode(assetAllocationDTO.getBranchCode());
 		assetAllocationVO.setFinyear(assetAllocationDTO.getFinyear());
@@ -836,10 +878,16 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 			message = "AssetReturn Updated Successfully";
 		} else {
 
-			createUpdateAssetReturnVOByAssetReturnDTO(assetReturnVO, assetReturnDTO);
 			assetReturnVO.setCreatedBy(assetReturnDTO.getCreatedBy());
 			assetReturnVO.setUpdatedBy(assetReturnDTO.getCreatedBy());
+
+			createUpdateAssetReturnVOByAssetReturnDTO(assetReturnVO, assetReturnDTO);
 			assetReturnRepo.save(assetReturnVO);
+			AssetMasterVO assetMasterVO = assetMasterRepo.findByAssetNameAndAssetCode(assetReturnDTO.getAssetName(),
+					assetReturnDTO.getAssetCode());
+			if (assetMasterVO == null) {
+				throw new ApplicationContextException("No data found for AssetName and AssetCode");
+			}
 
 			AssetStockVO assetStockVO = new AssetStockVO();
 			assetStockVO.setAssetName(assetReturnVO.getAssetName());
@@ -854,13 +902,42 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 			assetStockVO.setSourceScreen(assetReturnVO.getScreenName());
 			assetStockVO.setSourceScreenCode(assetReturnVO.getScreenCode());
 			assetStockVO.setOrgId(assetReturnVO.getOrgId());
-			assetStockVO.setSerialNumber(assetReturnVO.getSerialNumber());
-			assetStockVO.setModel(assetReturnVO.getModel());
-			assetStockVO.setLocation(assetReturnVO.getLocation());
-			assetStockVO.setLocationCode(assetReturnVO.getLocationCode());
+
+			assetStockVO.setSerialNumber(assetMasterVO.getSerialNumber());
+			assetStockVO.setCategory(assetMasterVO.getCategory());
+			assetStockVO.setBrand(assetMasterVO.getBrand());
+			assetStockVO.setModel(assetMasterVO.getModel());
+			assetStockVO.setAssetStatus("A");
+			assetStockVO.setLocation(assetReturnVO.getEmployeeName());
+			assetStockVO.setLocationCode(assetReturnVO.getEmployeeCode());
 			assetStockVO.setCategory(assetReturnVO.getCategory());
-			assetStockVO.setAssetStatus(1);
+			assetStockVO.setQty(-1);
 			assetStockRepo.save(assetStockVO);
+
+			AssetStockVO assetStockVO1 = new AssetStockVO();
+			assetStockVO1.setAssetName(assetReturnVO.getAssetName());
+			assetStockVO1.setAssetCode(assetReturnVO.getAssetCode());
+			assetStockVO1.setLocation(assetReturnVO.getAssetCode());
+			assetStockVO1.setBranch(assetReturnVO.getBranch());
+			assetStockVO1.setBranchCode(assetReturnVO.getBranchCode());
+			assetStockVO1.setFinyear(assetReturnVO.getFinyear());
+			assetStockVO1.setSourceId(assetReturnVO.getId());
+			assetStockVO1.setCreatedBy(assetReturnVO.getCreatedBy());
+			assetStockVO1.setUpdatedBy(assetReturnVO.getUpdatedBy());
+			assetStockVO1.setSourceScreen(assetReturnVO.getScreenName());
+			assetStockVO1.setSourceScreenCode(assetReturnVO.getScreenCode());
+			assetStockVO1.setOrgId(assetReturnVO.getOrgId());
+
+			assetStockVO1.setSerialNumber(assetMasterVO.getSerialNumber());
+			assetStockVO1.setCategory(assetMasterVO.getCategory());
+			assetStockVO1.setBrand(assetMasterVO.getBrand());
+			assetStockVO1.setModel(assetMasterVO.getModel());
+			assetStockVO1.setAssetStatus("A");
+			assetStockVO1.setLocation(assetMasterVO.getLocation());
+//			assetStockVO1.setLocationCode(assetReturnVO.getLocationCode());
+			assetStockVO1.setCategory(assetReturnVO.getCategory());
+			assetStockVO1.setQty(1);
+			assetStockRepo.save(assetStockVO1);
 
 			message = "AssetAllocation Created Successfully";
 		}
@@ -872,6 +949,13 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 	}
 
 	private void createUpdateAssetReturnVOByAssetReturnDTO(AssetReturnVO assetReturnVO, AssetReturnDTO assetReturnDTO) {
+
+		AssetMasterVO assetMasterVO = assetMasterRepo.findByAssetNameAndAssetCode(assetReturnDTO.getAssetName(),
+				assetReturnDTO.getAssetCode());
+
+		if (assetMasterVO == null) {
+			throw new ApplicationContextException("No data found for AssetName and AssetCode");
+		}
 
 		assetReturnVO.setAssetName(assetReturnDTO.getAssetName());
 		assetReturnVO.setAssetCode(assetReturnDTO.getAssetCode());
@@ -897,7 +981,7 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		assetReturnVO.setWarrantyExpiry(assetReturnDTO.getWarrantyExpiry());
 		assetReturnVO.setLocation(assetReturnDTO.getLocation());
 		assetReturnVO.setNotes(assetReturnDTO.getNotes());
-
+		assetReturnVO.setLocationCode(assetReturnDTO.getLocationCode());
 	}
 
 	@Override
@@ -909,6 +993,49 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 	@Override
 	public AssetReturnVO getAssetReturnById(Long id) {
 		return assetReturnRepo.getAssetReturnById(id);
+	}
+
+	@Override
+	public List<Map<String, Object>> getAssetAllocationDetails(Long orgId, String branchCode) {
+		List<Object[]> results = assetAllocationRepo.getAssetAllocationDetails(orgId, branchCode);
+		List<Map<String, Object>> list = new ArrayList<>();
+
+		for (Object[] row : results) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("assetCode", row[0] != null ? row[0] : "");
+			map.put("assetName", row[1] != null ? row[1] : "");
+			map.put("serialnumber", row[2] != null ? row[2] : "");
+			map.put("category", row[3] != null ? row[3] : "");
+			map.put("brand", row[4] != null ? row[4] : "");
+			map.put("model", row[5] != null ? row[5] : "");
+			map.put("total_qty", row[6] != null ? row[6] : "");
+
+			list.add(map);
+		}
+
+		return list;
+	}
+
+	@Override
+	public List<Map<String, Object>> getAssetAllocationListAll(Long orgId, String branchCode, String employeeCode) {
+		List<Object[]> results = assetAllocationRepo.getAssetAllocationListAll(orgId, branchCode,employeeCode);
+		List<Map<String, Object>> list = new ArrayList<>();
+
+		for (Object[] row : results) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("assetCode", row[0] != null ? row[0] : "");
+			map.put("assetName", row[1] != null ? row[1] : "");
+			map.put("serialnumber", row[2] != null ? row[2] : "");
+			map.put("category", row[3] != null ? row[3] : "");
+			map.put("brand", row[4] != null ? row[4] : "");
+			map.put("model", row[5] != null ? row[5] : "");
+			map.put("employeeCode", row[6] != null ? row[6] : "");
+			map.put("employeeName", row[7] != null ? row[7] : "");
+			map.put("qty", row[8] != null ? row[8] : "");
+			list.add(map);
+		}
+
+		return list;
 	}
 
 }

@@ -2,6 +2,7 @@ package com.efit.hrms.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -747,7 +748,7 @@ public class AssetManagementController extends BaseController {
 		String errorMsg = null;
 		Map<String, Object> responseObjectsMap = new HashMap<>();
 		ResponseDTO responseDTO = null;
-		AssetReturnVO assetReturnVO = null;
+		AssetReturnVO assetReturnVO = new AssetReturnVO();
 		try {
 			assetReturnVO = assetManagementService.getAssetReturnById(id);
 		} catch (Exception e) {
@@ -793,4 +794,60 @@ public class AssetManagementController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 	}
 
+	@GetMapping("/getAssetAllocationDetails")
+	public ResponseEntity<ResponseDTO> getAssetAllocationDetails(@RequestParam Long orgId,@RequestParam String branchCode) {
+		String methodName = "getAssetAllocationDetails()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<Map<String, Object>> assetAllocationDetails = new ArrayList<>();
+		try {
+			assetAllocationDetails = assetManagementService.getAssetAllocationDetails(orgId,branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE,
+					"AssetAllocationDetails information get successfully ByOrgId");
+			responseObjectsMap.put("assetAllocationDetails", assetAllocationDetails);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"AssetAllocationDetails information receive failedByOrgId", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	
+	
+	@GetMapping("getAssetAllocationListAll")
+	public ResponseEntity<ResponseDTO> getAssetAllocationListAll(@RequestParam Long orgId,
+			@RequestParam String branchCode,@RequestParam String employeeCode) {
+		String methodName = "getAssetAllocationListAll()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<Map<String, Object>> assetAllocationList = new ArrayList<>();
+		try {
+			assetAllocationList = assetManagementService.getAssetAllocationListAll(orgId,branchCode,employeeCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE,
+					"AssetAllocationList information get successfully ByOrgId");
+			responseObjectsMap.put("assetAllocationList", assetAllocationList);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"AssetAllocationList information receive failedByOrgId", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
 }
