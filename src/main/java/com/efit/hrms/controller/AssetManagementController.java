@@ -2,6 +2,7 @@ package com.efit.hrms.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +27,14 @@ import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.AssetAllocationDTO;
 import com.efit.hrms.dto.AssetMasterDTO;
+import com.efit.hrms.dto.AssetReturnDTO;
 import com.efit.hrms.dto.ExpenseClaimsDTO;
 import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.dto.TravelRequestsDTO;
 import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
+import com.efit.hrms.entity.AssetReturnVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.service.AssetManagementService;
@@ -45,7 +48,7 @@ public class AssetManagementController extends BaseController {
 
 	@Autowired
 	AssetManagementService assetManagementService;
-	
+
 	@PutMapping("/CreateUpdateAssetMaster")
 	public ResponseEntity<ResponseDTO> CreateUpdateAssetMaster(@RequestBody AssetMasterDTO assetMasterDTO) {
 		String methodName = "CreateUpdateAssetMaster()";
@@ -66,7 +69,7 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 //	@PostMapping("/uploadAssetImages/{assetMasterId}")
 //	public ResponseEntity<ResponseDTO> uploadAssetImages(
 //	        @PathVariable Long assetMasterId,
@@ -94,23 +97,20 @@ public class AssetManagementController extends BaseController {
 //	
 //	
 	@PostMapping("/upload/{assetMasterId}")
-	public ResponseEntity<?> uploadImages(
-	        @PathVariable Long assetMasterId,
-	        @RequestParam("files") List<MultipartFile> files) throws IOException {
+	public ResponseEntity<?> uploadImages(@PathVariable Long assetMasterId,
+			@RequestParam("files") List<MultipartFile> files) throws IOException {
 
-	    Map<String, Object> result = assetManagementService.uploadImages(assetMasterId, files);
+		Map<String, Object> result = assetManagementService.uploadImages(assetMasterId, files);
 
-	    return ResponseEntity.ok(result);
+		return ResponseEntity.ok(result);
 	}
 
-    // ✅ Retrieve all images (metadata only)
-    @GetMapping("/getAssetImage/{assetMasterId}")
-    public ResponseEntity<List<AssetImageVO>> getImagesByAsset(@PathVariable Long assetMasterId) {
-        return ResponseEntity.ok(assetManagementService.getImagesByAsset(assetMasterId));
-    }
+	// ✅ Retrieve all images (metadata only)
+	@GetMapping("/getAssetImage/{assetMasterId}")
+	public ResponseEntity<List<AssetImageVO>> getImagesByAsset(@PathVariable Long assetMasterId) {
+		return ResponseEntity.ok(assetManagementService.getImagesByAsset(assetMasterId));
+	}
 
-	
-	
 	@GetMapping("getAssetMasterById")
 	public ResponseEntity<ResponseDTO> getAssetMasterById(@RequestParam Long id) {
 		String methodName = "getAssetMasterById()";
@@ -136,9 +136,10 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("getAssetMasterByOrgId")
-	public ResponseEntity<ResponseDTO> getAssetMasterByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getAssetMasterByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getAssetMasterByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -146,7 +147,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<AssetMasterVO> assetMasterVO = null;
 		try {
-			assetMasterVO = assetManagementService.getAssetMasterByOrgId(orgId,branchCode);
+			assetMasterVO = assetManagementService.getAssetMasterByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -163,9 +164,8 @@ public class AssetManagementController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 	}
 
-	
-	//assetallocation
-	
+	// assetallocation
+
 	@PutMapping("/CreateUpdateAssetAllocation")
 	public ResponseEntity<ResponseDTO> CreateUpdateAssetAllocation(@RequestBody AssetAllocationDTO assetAllocationDTO) {
 		String methodName = "CreateUpdateAssetAllocation()";
@@ -174,7 +174,8 @@ public class AssetManagementController extends BaseController {
 		String errorMsg = null;
 		ResponseDTO responseDTO = null;
 		try {
-			Map<String, Object> assetAllocationVO = assetManagementService.CreateUpdateAssetAllocation(assetAllocationDTO);
+			Map<String, Object> assetAllocationVO = assetManagementService
+					.CreateUpdateAssetAllocation(assetAllocationDTO);
 			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, assetAllocationVO.get("message"));
 			responseObjectsMap.put("assetAllocationVO", assetAllocationVO.get("assetAllocationVO"));
 			responseDTO = createServiceResponse(responseObjectsMap);
@@ -186,10 +187,10 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getAssetNameCodeByOrgId")
-	public ResponseEntity<ResponseDTO> getAssetNameCodeByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getAssetNameCodeByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getAssetNameCodeByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -197,7 +198,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> assetMasterVO = null;
 		try {
-			assetMasterVO = assetManagementService.getAssetNameCodeByOrgId(orgId,branchCode);
+			assetMasterVO = assetManagementService.getAssetNameCodeByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -208,15 +209,16 @@ public class AssetManagementController extends BaseController {
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
 			errorMsg = "AssetMasterVO Name and Code  not found for orgID: " + orgId;
-			responseDTO = createServiceResponseError(responseObjectsMap, "AssetMasterVO Name and Code  not found", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "AssetMasterVO Name and Code  not found",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getAssetAllocationByOrgId")
-	public ResponseEntity<ResponseDTO> getAssetAllocationByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getAssetAllocationByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getAssetAllocationByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -224,7 +226,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<AssetAllocationVO> assetAllocationVO = null;
 		try {
-			assetAllocationVO = assetManagementService.getAssetAllocationByOrgId(orgId,branchCode);
+			assetAllocationVO = assetManagementService.getAssetAllocationByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -240,7 +242,7 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("getAssetAllocationById")
 	public ResponseEntity<ResponseDTO> getAssetAllocationById(@RequestParam Long id) {
 		String methodName = "getAssetAllocationById()";
@@ -266,10 +268,9 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getAssetCountByOrgId")
-	public ResponseEntity<ResponseDTO> getAssetCountByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getAssetCountByOrgId(@RequestParam Long orgId, @RequestParam String branchCode) {
 		String methodName = "getAssetCountByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -277,7 +278,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> assetAllocationVO = null;
 		try {
-			assetAllocationVO = assetManagementService.getAssetCountByOrgId(orgId,branchCode);
+			assetAllocationVO = assetManagementService.getAssetCountByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -293,10 +294,10 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getAssetDashboardByOrgId")
-	public ResponseEntity<ResponseDTO> getAssetDashboardByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getAssetDashboardByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getAssetDashboardByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -304,7 +305,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> assetAllocationVO = null;
 		try {
-			assetAllocationVO = assetManagementService.getAssetDashboardByOrgId(orgId,branchCode);
+			assetAllocationVO = assetManagementService.getAssetDashboardByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -320,10 +321,10 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getAssetAllocationReportByOrgId")
-	public ResponseEntity<ResponseDTO> getAssetAllocationReportByOrgId(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String employeeCode) {
+	public ResponseEntity<ResponseDTO> getAssetAllocationReportByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode, @RequestParam String employeeCode) {
 		String methodName = "getAssetDashboardByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -331,7 +332,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> assetAllocationVO = null;
 		try {
-			assetAllocationVO = assetManagementService.getAssetAllocationReportByOrgId(orgId,branchCode,employeeCode);
+			assetAllocationVO = assetManagementService.getAssetAllocationReportByOrgId(orgId, branchCode, employeeCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -347,10 +348,9 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
-	//ExpenseClaims
-	
+
+	// ExpenseClaims
+
 	@PutMapping("/CreateUpdateExpenseClaims")
 	public ResponseEntity<ResponseDTO> CreateUpdateExpenseClaims(@RequestBody ExpenseClaimsDTO expenseClaimsDTO) {
 		String methodName = "CreateUpdateExpenseClaims()";
@@ -371,10 +371,10 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getExpenseClaimsByOrgId")
-	public ResponseEntity<ResponseDTO> getExpenseClaimsByOrgId(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String employeeCode) {
+	public ResponseEntity<ResponseDTO> getExpenseClaimsByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode, @RequestParam String employeeCode) {
 		String methodName = "getExpenseClaimsByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -382,7 +382,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<ExpenseClaimsVO> expenseClaimsVO = null;
 		try {
-			expenseClaimsVO = assetManagementService.getExpenseClaimsByOrgId(orgId,branchCode,employeeCode);
+			expenseClaimsVO = assetManagementService.getExpenseClaimsByOrgId(orgId, branchCode, employeeCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -398,7 +398,7 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("getExpenseClaimsById")
 	public ResponseEntity<ResponseDTO> getExpenseClaimsById(@RequestParam Long id) {
 		String methodName = "getExpenseClaimsById()";
@@ -424,21 +424,20 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
-	
+
 	@PutMapping("/createApprovalExpenseClaims")
 	public ResponseEntity<ResponseDTO> createApprovalExpenseClaims(@RequestParam Long orgId, @RequestParam Long id,
 			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
-			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam(required = false) String email,@RequestParam BigDecimal approvedAmount) {
+			@RequestParam String notifyCode, @RequestParam String notify, @RequestParam String screenName,
+			@RequestParam(required = false) String email, @RequestParam BigDecimal approvedAmount) {
 		String methodName = "createApprovalExpenseClaims()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
 		Map<String, Object> responseObjectsMap = new HashMap<>();
 		ResponseDTO responseDTO = null;
 		try {
-			Map<String, Object> result = assetManagementService.createApprovalExpenseClaims(orgId, id, employeeCode, action,
-					actionBy, notifyCode, notify,screenName,email,approvedAmount);
+			Map<String, Object> result = assetManagementService.createApprovalExpenseClaims(orgId, id, employeeCode,
+					action, actionBy, notifyCode, notify, screenName, email, approvedAmount);
 
 			// ✅ Correct keys from the returned map
 			responseObjectsMap.put("expenseClaimsVO", result.get("expenseClaimsVO"));
@@ -453,10 +452,9 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
-	//TravelRequests
-	
+
+	// TravelRequests
+
 	@PutMapping("/CreateUpdateTravelRequests")
 	public ResponseEntity<ResponseDTO> CreateUpdateTravelRequests(@RequestBody TravelRequestsDTO travelRequestsDTO) {
 		String methodName = "CreateUpdateTravelRequests()";
@@ -477,10 +475,10 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getTravelRequestsByOrgId")
-	public ResponseEntity<ResponseDTO> getTravelRequestsByOrgId(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String employeeCode) {
+	public ResponseEntity<ResponseDTO> getTravelRequestsByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode, @RequestParam String employeeCode) {
 		String methodName = "getTravelRequestsByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -488,7 +486,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<TravelRequestsVO> travelRequestsVO = null;
 		try {
-			travelRequestsVO = assetManagementService.getTravelRequestsByOrgId(orgId,branchCode,employeeCode);
+			travelRequestsVO = assetManagementService.getTravelRequestsByOrgId(orgId, branchCode, employeeCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -504,8 +502,7 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getTravelRequestsById")
 	public ResponseEntity<ResponseDTO> getTravelRequestsById(@RequestParam Long id) {
 		String methodName = "getTravelRequestsById()";
@@ -531,21 +528,20 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
-	
+
 	@PutMapping("/createApprovalTravelRequests")
 	public ResponseEntity<ResponseDTO> createApprovalTravelRequests(@RequestParam Long orgId, @RequestParam Long id,
 			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
-			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam(required = false) String email,@RequestParam BigDecimal approvedAmount) {
+			@RequestParam String notifyCode, @RequestParam String notify, @RequestParam String screenName,
+			@RequestParam(required = false) String email, @RequestParam BigDecimal approvedAmount) {
 		String methodName = "createApprovalTravelRequests()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
 		Map<String, Object> responseObjectsMap = new HashMap<>();
 		ResponseDTO responseDTO = null;
 		try {
-			Map<String, Object> result = assetManagementService.createApprovalTravelRequests(orgId, id, employeeCode, action,
-					actionBy, notifyCode, notify,screenName,email,approvedAmount);
+			Map<String, Object> result = assetManagementService.createApprovalTravelRequests(orgId, id, employeeCode,
+					action, actionBy, notifyCode, notify, screenName, email, approvedAmount);
 
 			// ✅ Correct keys from the returned map
 			responseObjectsMap.put("travelRequestsVO", result.get("travelRequestsVO"));
@@ -560,8 +556,7 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("/getTravelRequestsForDashBoard")
 	public ResponseEntity<ResponseDTO> getTravelRequestsForDashBoard(@RequestParam Long orgId,
 			@RequestParam String reportingPersonCode, @RequestParam String branchCode) {
@@ -574,7 +569,8 @@ public class AssetManagementController extends BaseController {
 		List<TravelRequestsVO> travelRequestsVO;
 
 		try {
-			travelRequestsVO = assetManagementService.getTravelRequestsForDashBoard(orgId, reportingPersonCode, branchCode);
+			travelRequestsVO = assetManagementService.getTravelRequestsForDashBoard(orgId, reportingPersonCode,
+					branchCode);
 			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "TravelRequests details retrieved successfully");
 			responseObjectsMap.put("travelRequestsVO", travelRequestsVO); // ✅ Correct key name
 			responseDTO = createServiceResponse(responseObjectsMap);
@@ -588,8 +584,7 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("/getExpenseClaimsForDashBoard")
 	public ResponseEntity<ResponseDTO> getExpenseClaimsForDashBoard(@RequestParam Long orgId,
 			@RequestParam String reportingPersonCode, @RequestParam String branchCode) {
@@ -602,7 +597,8 @@ public class AssetManagementController extends BaseController {
 		List<ExpenseClaimsVO> expenseClaimsVO;
 
 		try {
-			expenseClaimsVO = assetManagementService.getExpenseClaimsForDashBoard(orgId, reportingPersonCode, branchCode);
+			expenseClaimsVO = assetManagementService.getExpenseClaimsForDashBoard(orgId, reportingPersonCode,
+					branchCode);
 			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "ExpenseClaims details retrieved successfully");
 			responseObjectsMap.put("expenseClaimsVO", expenseClaimsVO); // ✅ Correct key name
 			responseDTO = createServiceResponse(responseObjectsMap);
@@ -616,8 +612,7 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@PostMapping("/uploadExpenseClaimsImageInBloob")
 	public ResponseEntity<ResponseDTO> uploadExpenseClaimsImageInBloob(@RequestParam("files") MultipartFile file,
 			@RequestParam Long id) {
@@ -643,9 +638,10 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("getApprovalExpenseAndTravelByOrgId")
-	public ResponseEntity<ResponseDTO> getApprovalExpenseAndTravelByOrgId(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String employeeCode) {
+	public ResponseEntity<ResponseDTO> getApprovalExpenseAndTravelByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode, @RequestParam String employeeCode) {
 		String methodName = "getApprovalExpenseAndTravelByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -653,7 +649,7 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> approval = null;
 		try {
-			approval = assetManagementService.getApprovalExpenseAndTravelByOrgId(orgId,branchCode,employeeCode);
+			approval = assetManagementService.getApprovalExpenseAndTravelByOrgId(orgId, branchCode, employeeCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -669,10 +665,10 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getExpenseCountByOrgId")
-	public ResponseEntity<ResponseDTO> getExpenseCountByOrgId(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String employeeCode,@RequestParam Long month,@RequestParam Long year) {
+	public ResponseEntity<ResponseDTO> getExpenseCountByOrgId(@RequestParam Long orgId, @RequestParam String branchCode,
+			@RequestParam String employeeCode, @RequestParam Long month, @RequestParam Long year) {
 		String methodName = "getExpenseCountByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -680,7 +676,8 @@ public class AssetManagementController extends BaseController {
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> expenseClaimsVO = null;
 		try {
-			expenseClaimsVO = assetManagementService.getExpenseCountByOrgId(orgId,branchCode,employeeCode,month,year);
+			expenseClaimsVO = assetManagementService.getExpenseCountByOrgId(orgId, branchCode, employeeCode, month,
+					year);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -696,36 +693,161 @@ public class AssetManagementController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("getExpenseGraphByOrgId")
-	 public ResponseEntity<ResponseDTO> getExpenseGraphByOrgId(
-	         @RequestParam Long orgId,
-	         @RequestParam String branchCode,
-	         @RequestParam String employeeCode,
-	         @RequestParam Long year,@RequestParam Long month) {
+	public ResponseEntity<ResponseDTO> getExpenseGraphByOrgId(@RequestParam Long orgId, @RequestParam String branchCode,
+			@RequestParam String employeeCode, @RequestParam Long year, @RequestParam Long month) {
 
-	     String methodName = "getExpenseCountByOrgId()";
-	     LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
-	     ResponseDTO responseDTO;
-	     Map<String, Object> responseObjectsMap = new HashMap<>();
+		String methodName = "getExpenseCountByOrgId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		ResponseDTO responseDTO;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
 
-	     try {
-	         Map<String, List<Map<String, Object>>> graphData = assetManagementService.getExpenseGraphByOrgId(orgId, branchCode, employeeCode, year,month);
-	         responseObjectsMap.put("message", "ExpenseGraph found by ORGID");
-	         responseObjectsMap.put("graphData", graphData);
-	         responseDTO = createServiceResponse(responseObjectsMap);
-	     } catch (Exception e) {
-	         LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
-	         responseDTO = createServiceResponseError(responseObjectsMap, "ExpenseGraph not found", e.getMessage());
-	     }
+		try {
+			Map<String, List<Map<String, Object>>> graphData = assetManagementService.getExpenseGraphByOrgId(orgId,
+					branchCode, employeeCode, year, month);
+			responseObjectsMap.put("message", "ExpenseGraph found by ORGID");
+			responseObjectsMap.put("graphData", graphData);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
+			responseDTO = createServiceResponseError(responseObjectsMap, "ExpenseGraph not found", e.getMessage());
+		}
 
-	     LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	     return ResponseEntity.ok().body(responseDTO);
-	 }
-	
-	
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+//AssetReturn
+
+	@PutMapping("/CreateUpdateAssetReturn")
+	public ResponseEntity<ResponseDTO> CreateUpdateAssetReturn(@RequestBody AssetReturnDTO assetReturnDTO) {
+		String methodName = "CreateUpdateAssetReturn()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		Map<String, Object> responseObjectsMap = new HashMap<String, Object>();
+		String errorMsg = null;
+		ResponseDTO responseDTO = null;
+		try {
+			Map<String, Object> assetReturnVO = assetManagementService.CreateUpdateAssetReturn(assetReturnDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, assetReturnVO.get("message"));
+			responseObjectsMap.put("assetReturnVO", assetReturnVO.get("assetReturnVO"));
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("getAssetReturnById")
+	public ResponseEntity<ResponseDTO> getAssetReturnById(@RequestParam Long id) {
+		String methodName = "getAssetReturnById()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		AssetReturnVO assetReturnVO = new AssetReturnVO();
+		try {
+			assetReturnVO = assetManagementService.getAssetReturnById(id);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "AssetReturn found by ID");
+			responseObjectsMap.put("assetReturnVO", assetReturnVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "AssetReturn not found for ID: " + id;
+			responseDTO = createServiceResponseError(responseObjectsMap, "AssetReturn not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("getAssetReturnByOrgId")
+	public ResponseEntity<ResponseDTO> getAssetReturnByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
+		String methodName = "getAssetReturnByOrgId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<AssetReturnVO> assetReturnVO = null;
+		try {
+			assetReturnVO = assetManagementService.getAssetReturnByOrgId(orgId, branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "AssetReturn found by ORGID");
+			responseObjectsMap.put("assetReturnVO", assetReturnVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "AssetReturn not found for orgID: " + orgId;
+			responseDTO = createServiceResponseError(responseObjectsMap, "AssetReturn not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("/getAssetAllocationDetails")
+	public ResponseEntity<ResponseDTO> getAssetAllocationDetails(@RequestParam Long orgId,@RequestParam String branchCode) {
+		String methodName = "getAssetAllocationDetails()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<Map<String, Object>> assetAllocationDetails = new ArrayList<>();
+		try {
+			assetAllocationDetails = assetManagementService.getAssetAllocationDetails(orgId,branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE,
+					"AssetAllocationDetails information get successfully ByOrgId");
+			responseObjectsMap.put("assetAllocationDetails", assetAllocationDetails);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"AssetAllocationDetails information receive failedByOrgId", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
 
 	
 	
-	
+	@GetMapping("getAssetAllocationListAll")
+	public ResponseEntity<ResponseDTO> getAssetAllocationListAll(@RequestParam Long orgId,
+			@RequestParam String branchCode,@RequestParam String employeeCode) {
+		String methodName = "getAssetAllocationListAll()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<Map<String, Object>> assetAllocationList = new ArrayList<>();
+		try {
+			assetAllocationList = assetManagementService.getAssetAllocationListAll(orgId,branchCode,employeeCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE,
+					"AssetAllocationList information get successfully ByOrgId");
+			responseObjectsMap.put("assetAllocationList", assetAllocationList);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"AssetAllocationList information receive failedByOrgId", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
 }
