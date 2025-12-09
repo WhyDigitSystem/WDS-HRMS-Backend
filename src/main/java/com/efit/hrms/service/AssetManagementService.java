@@ -101,5 +101,13 @@ public interface AssetManagementService {
 	List<Map<String, Object>> getAssetAllocationDetails(Long orgId, String branchCode);
 
 	List<Map<String, Object>> getAssetAllocationListAll(Long orgId, String branchCode, String employeeCode);
+	
+	Object saveAsset(AssetMasterDTO dto) throws IOException, Exception;
+
+	AssetMasterVO getAssetById(Long id);
+
+	byte[] viewImage(Long imageId) throws IOException;
+
+	String getImageFileType(Long imageId) throws IOException;
 
 }

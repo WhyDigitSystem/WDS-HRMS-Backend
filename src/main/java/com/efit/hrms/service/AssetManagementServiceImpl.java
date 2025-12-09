@@ -1,7 +1,11 @@
 package com.efit.hrms.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -63,6 +67,11 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	@Autowired
 	AssetReturnRepo assetReturnRepo;
+	
+
+	
+	@Autowired
+	AssetImageRepo imageRepo;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -1018,7 +1027,7 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	@Override
 	public List<Map<String, Object>> getAssetAllocationListAll(Long orgId, String branchCode, String employeeCode) {
-		List<Object[]> results = assetAllocationRepo.getAssetAllocationListAll(orgId, branchCode,employeeCode);
+		List<Object[]> results = assetAllocationRepo.getAssetAllocationListAll(orgId, branchCode, employeeCode);
 		List<Map<String, Object>> list = new ArrayList<>();
 
 		for (Object[] row : results) {
@@ -1036,6 +1045,94 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		}
 
 		return list;
+	}
+
+	@Override
+	public AssetMasterVO saveAsset(AssetMasterDTO dto) throws Exception {
+
+		AssetMasterVO asset = new AssetMasterVO();
+		asset.setAssetName(dto.getAssetName());
+		asset.setAssetCode(dto.getAssetCode());
+		asset.setCategory(dto.getCategory());
+		asset.setBrand(dto.getBrand());
+		asset.setModel(dto.getModel());
+		asset.setSerialNumber(dto.getSerialNumber());
+		asset.setPurchaseDate(dto.getPurchaseDate());
+		asset.setPurchaseCost(dto.getPurchaseCost());
+		asset.setWarrantyExpiry(dto.getWarrantyExpiry());
+		asset.setLocation(dto.getLocation());
+		asset.setNotes(dto.getNotes());
+		asset.setBranch(dto.getBranch());
+		asset.setBranchCode(dto.getBranchCode());
+		asset.setFinyear(dto.getFinyear());
+		asset.setActive(dto.isActive());
+		asset.setCreatedBy(dto.getCreatedBy());
+		asset.setUpdatedBy(dto.getCreatedBy());
+		asset.setOrgId(dto.getOrgId());
+
+		List<AssetImageVO> image1 = new ArrayList<>();
+		// ⭐ Save images (BLOB)
+		if (dto.getFiles() != null) {
+			for (MultipartFile file : dto.getFiles()) {
+
+				if (file != null && !file.isEmpty()) {
+
+					AssetImageVO img = new AssetImageVO();
+
+					File folder = new File(uploadDir);
+					if (!folder.exists()) {
+						folder.mkdirs();
+					}
+
+					// Unique filename
+					String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+					Path path = Paths.get(uploadDir + fileName);
+
+					// Save file
+					Files.write(path, file.getBytes());
+
+					img.setFileName(fileName);
+					img.setAssetMaster(asset);
+					image1.add(img);
+
+				}
+			}
+		}
+		asset.setAssetImages(image1);
+		AssetMasterVO savedAsset = assetMasterRepo.save(asset);
+
+		return savedAsset;
+	}
+
+	@Override
+	public AssetMasterVO getAssetById(Long id) {
+		return assetMasterRepo.findById(id).orElse(null);
+	}
+
+	@Override
+	public byte[] viewImage(Long id) throws IOException {
+		AssetImageVO asset = imageRepo.findById(id).orElse(null);
+
+		if (asset == null || asset.getFileName() == null) {
+			return null;
+		}
+
+		Path path = Paths.get(uploadDir + asset.getFileName());
+
+		if (!Files.exists(path)) {
+			throw new IOException("File not found on server");
+		}
+
+		return Files.readAllBytes(path);
+	}
+
+	public String getImageFileType(Long id) throws IOException {
+		AssetImageVO asset = imageRepo.findById(id).orElse(null);
+		if (asset == null)
+			return null;
+
+		Path path = Paths.get(uploadDir + asset.getFileName());
+		return Files.probeContentType(path);
 	}
 
 }
