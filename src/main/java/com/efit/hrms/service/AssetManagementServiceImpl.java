@@ -475,10 +475,11 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 			map.put("assetCode", row[0] != null ? row[0] : "");
 			map.put("assetName", row[1] != null ? row[1] : "");
 			map.put("serialNumber", row[2] != null ? row[2] : "");
-			map.put("mod", row[3] != null ? row[3] : "");
-			map.put("status", row[4] != null ? row[4] : "");
-			map.put("location", row[5] != null ? row[5] : "");
-			map.put("locationCode", row[6] != null ? row[6] : "");
+			map.put("model", row[3] != null ? row[3] : "");
+			map.put("category", row[4] != null ? row[4] : "");
+			map.put("status", row[5] != null ? row[5] : "");
+			map.put("location", row[6] != null ? row[6] : "");
+			map.put("locationCode", row[7] != null ? row[7] : "");
 
 			list.add(map);
 		}
