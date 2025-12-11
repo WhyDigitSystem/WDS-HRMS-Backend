@@ -1046,59 +1046,90 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 	@Override
 	public AssetMasterVO saveAsset(AssetMasterDTO dto) throws Exception {
 
-		AssetMasterVO asset = new AssetMasterVO();
-		asset.setAssetName(dto.getAssetName());
-		asset.setAssetCode(dto.getAssetCode());
-		asset.setCategory(dto.getCategory());
-		asset.setBrand(dto.getBrand());
-		asset.setModel(dto.getModel());
-		asset.setSerialNumber(dto.getSerialNumber());
-		asset.setPurchaseDate(dto.getPurchaseDate());
-		asset.setPurchaseCost(dto.getPurchaseCost());
-		asset.setWarrantyExpiry(dto.getWarrantyExpiry());
-		asset.setLocation(dto.getLocation());
-		asset.setNotes(dto.getNotes());
-		asset.setBranch(dto.getBranch());
-		asset.setBranchCode(dto.getBranchCode());
-		asset.setFinyear(dto.getFinyear());
-		asset.setActive(dto.isActive());
-		asset.setCreatedBy(dto.getCreatedBy());
-		asset.setUpdatedBy(dto.getCreatedBy());
-		asset.setOrgId(dto.getOrgId());
+		 // Create new AssetMaster
+        AssetMasterVO asset = new AssetMasterVO();
 
-		List<AssetImageVO> image1 = new ArrayList<>();
-		// ⭐ Save images (BLOB)
-		if (dto.getFiles() != null) {
-			for (MultipartFile file : dto.getFiles()) {
+        asset.setAssetName(dto.getAssetName());
+        asset.setAssetCode(dto.getAssetCode());
+        asset.setCategory(dto.getCategory());
+        asset.setBrand(dto.getBrand());
+        asset.setModel(dto.getModel());
+        asset.setSerialNumber(dto.getSerialNumber());
+        asset.setPurchaseDate(dto.getPurchaseDate());
+        asset.setPurchaseCost(dto.getPurchaseCost());
+        asset.setWarrantyExpiry(dto.getWarrantyExpiry());
+        asset.setLocation(dto.getLocation());
+        asset.setNotes(dto.getNotes());
+        asset.setActive(dto.isActive());
+        asset.setBranch(dto.getBranch());
+        asset.setBranchCode(dto.getBranchCode());
+        asset.setFinyear(dto.getFinyear());
+        asset.setOrgId(dto.getOrgId());
+        asset.setCreatedBy(dto.getCreatedBy());
+        asset.setUpdatedBy(dto.getCreatedBy());
 
-				if (file != null && !file.isEmpty()) {
+        List<AssetImageVO> images = new ArrayList<>();
 
-					AssetImageVO img = new AssetImageVO();
+        // Save uploaded files to folder + DB
+        if (dto.getFiles() != null) {
+            File folder = new File(uploadDir);
+            if (!folder.exists()) folder.mkdirs();
 
-					File folder = new File(uploadDir);
-					if (!folder.exists()) {
-						folder.mkdirs();
-					}
+            for (MultipartFile file : dto.getFiles()) {
 
-					// Unique filename
-					String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-					Path path = Paths.get(uploadDir + fileName);
+                if (file != null && !file.isEmpty()) {
 
-					// Save file
-					Files.write(path, file.getBytes());
+                    String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                    Path path = Paths.get(uploadDir + "/" + fileName);
 
-					img.setFileName(fileName);
-					img.setAssetMaster(asset);
-					image1.add(img);
+                    // Save file to disk
+                    Files.write(path, file.getBytes());
 
-				}
-			}
-		}
-		asset.setAssetImages(image1);
-		AssetMasterVO savedAsset = assetMasterRepo.save(asset);
+                    // Save record to DB
+                    AssetImageVO img = new AssetImageVO();
+                    img.setFileName(fileName);
+                    img.setAssetMaster(asset);
 
-		return savedAsset;
+                    images.add(img);
+                }
+            }
+        }
+
+        // Set images to master
+        asset.setAssetImages(images);
+
+        // Save master + images (cascade)
+        AssetMasterVO savedAsset = assetMasterRepo.save(asset);
+
+        // Create AssetStock after master saved
+        AssetStockVO stock = new AssetStockVO();
+
+        stock.setAssetName(savedAsset.getAssetName());
+        stock.setAssetCode(savedAsset.getAssetCode());
+        stock.setCategory(savedAsset.getCategory());
+        stock.setBrand(savedAsset.getBrand());
+        stock.setModel(savedAsset.getModel());
+        stock.setSerialNumber(savedAsset.getSerialNumber());
+        stock.setLocation(savedAsset.getLocation());
+        stock.setBranch(savedAsset.getBranch());
+        stock.setSourceScreen(savedAsset.getScreenName());
+        stock.setSourceScreenCode(savedAsset.getScreenCode());
+        stock.setBranchCode(savedAsset.getBranchCode());
+        stock.setFinyear(savedAsset.getFinyear());
+        stock.setSourceId(savedAsset.getId());
+        stock.setCreatedBy(savedAsset.getCreatedBy());
+        stock.setUpdatedBy(savedAsset.getUpdatedBy());
+        stock.setOrgId(savedAsset.getOrgId());
+        stock.setAssetStatus("A");
+        stock.setAStatus("S");
+        stock.setQty(1);
+
+        assetStockRepo.save(stock);
+
+        return savedAsset;
 	}
+	
+	
 
 	@Override
 	public AssetMasterVO getAssetById(Long id) {
