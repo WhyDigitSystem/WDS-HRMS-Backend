@@ -59,6 +59,8 @@ public class AssetStockVO {
 	private String finyear;
 	@Column(name = "sourceid")
 	private Long sourceId;
+	@Column(name = "astatus")
+	private String aStatus;
 
 	@Column(name = "active")
 	private boolean active = true;
