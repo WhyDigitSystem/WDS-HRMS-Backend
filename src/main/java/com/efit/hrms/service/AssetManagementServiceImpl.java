@@ -105,13 +105,14 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 			message = "AssetMaster Updated Successfully";
 		} else {
 
-//			String docId = documentTypeService.getDocid(assetMasterDTO.getBranchCode(),screenCode);
-//			assetMasterVO.setAssetCode(docId);
-//
-//			// GETDOCID LASTNO +1
-//			 DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo.findByBranchCodeAndScreenCode(assetMasterDTO.getBranchCode(), screenCode);
-//			 docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
-//			 docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);	
+			String docId = documentTypeService.getDocid(assetMasterDTO.getBranchCode(), screenCode);
+			assetMasterVO.setAssetCode(docId);
+
+			// GETDOCID LASTNO +1
+			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+					.findByBranchCodeAndScreenCode(assetMasterDTO.getBranchCode(), screenCode);
+			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
 			createUpdateAssetMasterVOByAssetMasterDTO(assetMasterVO, assetMasterDTO);
 			assetMasterVO.setCreatedBy(assetMasterDTO.getCreatedBy());
 			assetMasterVO.setUpdatedBy(assetMasterDTO.getCreatedBy());
