@@ -19,4 +19,9 @@ public interface AssetMasterRepo extends JpaRepository<AssetMasterVO, Long> {
 
 	AssetMasterVO findByAssetNameAndAssetCode(String assetName, String assetCode);
 
+//	@Query(nativeQuery = true, value = "select  AS docid from documenttypemappingdetails where orgid=?1 and  screencode=?2")
+//	String getAssetDocId(Long orgId, String screenCode);
+//
+//	String generateDocId(Long orgId, String screenCode);
+
 }

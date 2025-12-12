@@ -18,7 +18,7 @@ public class DocTypeMappingDetailsDTO {
 	private String screenName;
 	private String docCode;
 	private String prefix;
-	private int lastNo;
+//	private int lastNo;
 	
 
 }
