@@ -35,6 +35,7 @@ import com.efit.hrms.entity.AssetMasterVO;
 import com.efit.hrms.entity.AssetReturnVO;
 import com.efit.hrms.entity.AssetStockVO;
 import com.efit.hrms.entity.DocTypeMappingDetailsVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.exception.ApplicationException;
@@ -44,6 +45,7 @@ import com.efit.hrms.repo.AssetMasterRepo;
 import com.efit.hrms.repo.AssetReturnRepo;
 import com.efit.hrms.repo.AssetStockRepo;
 import com.efit.hrms.repo.DocTypeMappingDetailsRepo;
+import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.ExpenseClaimsRepo;
 import com.efit.hrms.repo.TravelRequestsRepo;
 
@@ -76,6 +78,9 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	@Autowired
 	DocumentTypeService documentTypeService;
+	
+	@Autowired
+	EmployeeRepo employeeRepo;	 
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -579,6 +584,10 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	private void createUpdateExpenseClaimsVOByExpenseClaimsDTO(ExpenseClaimsVO expenseClaimsVO,
 			ExpenseClaimsDTO expenseClaimsDTO) {
+		
+		EmployeeVO employeeVO = employeeRepo.findByEmployeeCode(expenseClaimsDTO.getEmployeeCode());
+		
+
 
 		expenseClaimsVO.setEmployeeName(expenseClaimsDTO.getEmployeeName());
 		expenseClaimsVO.setEmployeeCode(expenseClaimsDTO.getEmployeeCode());
@@ -590,9 +599,9 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		expenseClaimsVO.setExpenseDate(expenseClaimsDTO.getExpenseDate());
 		expenseClaimsVO.setReceiptAttached(expenseClaimsDTO.getReceiptAttached());
 		expenseClaimsVO.setDescription(expenseClaimsDTO.getDescription());
-		expenseClaimsVO.setReportingPerson("ABINAYA K");
-		expenseClaimsVO.setReportingPersonCode("WDS051");
-		expenseClaimsVO.setReportingPersonEmail("abinaya@whydigit.in");
+		expenseClaimsVO.setReportingPerson(employeeVO.getReportingPerson());
+	    expenseClaimsVO.setReportingPersonCode(employeeVO.getReportingPersonCode());
+	    expenseClaimsVO.setReportingPersonEmail(employeeVO.getReportingPersonEmail());
 		expenseClaimsVO.setApproveStatus("PENDING");
 		expenseClaimsVO.setBranchCode(expenseClaimsDTO.getBranchCode());
 		expenseClaimsVO.setBranch(expenseClaimsDTO.getBranch());
@@ -644,6 +653,8 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	private void createUpdateTravelRequestsVOByTravelRequestsDTO(TravelRequestsVO travelRequestsVO,
 			TravelRequestsDTO travelRequestsDTO) {
+		
+		EmployeeVO employeeVO = employeeRepo.findByEmployeeCode(travelRequestsDTO.getEmployeeCode());
 
 		travelRequestsVO.setEmployeeName(travelRequestsDTO.getEmployeeName());
 		travelRequestsVO.setEmployeeCode(travelRequestsDTO.getEmployeeCode());
@@ -661,9 +672,9 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		travelRequestsVO.setBranch(travelRequestsDTO.getBranch());
 		travelRequestsVO.setCreatedBy(travelRequestsDTO.getCreatedBy());
 		travelRequestsVO.setOrgId(travelRequestsDTO.getOrgId());
-		travelRequestsVO.setReportingPerson("ABINAYA K");
-		travelRequestsVO.setReportingPersonCode("WDS051");
-		travelRequestsVO.setReportingPersonEmail("abinaya@whydigit.in");
+		travelRequestsVO.setReportingPerson(employeeVO.getReportingPerson());
+		travelRequestsVO.setReportingPersonCode(employeeVO.getReportingPersonCode());
+		travelRequestsVO.setReportingPersonEmail(employeeVO.getReportingPersonEmail());
 		travelRequestsVO.setApproveStatus("PENDING");
 	}
 

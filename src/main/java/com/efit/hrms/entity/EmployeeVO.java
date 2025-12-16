@@ -189,4 +189,10 @@ public class EmployeeVO {
 	
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
+
+	public EmployeeVO orElseThrow(Object object) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
