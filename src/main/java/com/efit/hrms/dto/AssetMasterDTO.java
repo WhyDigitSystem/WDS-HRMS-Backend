@@ -15,7 +15,7 @@ public class AssetMasterDTO {
 
 	private Long id;
 	private String assetName;
-	private String assetCode;
+//	private String assetCode;
 	private String category;
 	private String brand;	
 	private String model;

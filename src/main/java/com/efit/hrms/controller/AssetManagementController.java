@@ -856,6 +856,7 @@ public class AssetManagementController extends BaseController {
 	@PostMapping(value = "/CreateAssetMaster", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<ResponseDTO> CreateAssetMaster(
 	        @RequestPart("dto") AssetMasterDTO assetMasterDTO,
+//	        @RequestBody AssetMasterDTO assetMasterDTO,
 	        @RequestPart(value = "files", required = false) MultipartFile[] files) {
 
 	    String methodName = "CreateAssetMaster()";

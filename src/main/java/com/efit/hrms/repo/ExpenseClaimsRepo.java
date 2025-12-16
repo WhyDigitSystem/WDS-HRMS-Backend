@@ -22,54 +22,59 @@ public interface ExpenseClaimsRepo extends JpaRepository<ExpenseClaimsVO, Long>{
 	@Query(nativeQuery = true,value = "select * from expenseclaims a where a.orgid=?1 and reportingPersonCode=?2 and branchcode=?3 and approvestatus='PENDING' ")
 	List<ExpenseClaimsVO> getExpenseClaimsForDashBoard(Long orgId, String reportingPersonCode, String branchCode);
 
-	@Query(nativeQuery = true,value = "SELECT \r\n"
-			+ "    a.expenseclaimsid AS id,\r\n"
-			+ "    a.screenname AS type,\r\n"
-			+ "    a.expensetitle AS title,\r\n"
-			+ "    a.employeename AS employeename,\r\n"
-			+ "    a.employeecode AS employeeCode,\r\n"
-			+ "    a.amount AS amount,\r\n"
-			+ "    a.createdon AS submitted,\r\n"
-			+ "    a.approvestatus AS status,\r\n"
-			+ "    des.expenselimit AS expenselimit,"
-			+ "    a.expenseattachment As expenseAttachment\r\n"
-			+ "FROM expenseclaims a\r\n"
-			+ "JOIN travelrequests b \r\n"
-			+ "    ON a.employeecode = b.employeecode\r\n"
-			+ "JOIN employee e \r\n"
-			+ "    ON a.employeecode = e.employeecode\r\n"
-			+ "JOIN designation des \r\n"
-			+ "    ON des.designationname= e.designation\r\n"
-			+ "   AND des.orgid = a.orgid\r\n"
-			+ "WHERE a.orgid = ?1\r\n"
-			+ "  AND a.branchcode = ?2\r\n"
-			+ "  AND (a.employeecode = ?3 OR a.reportingpersoncode = ?3 )\r\n"
-			+ "\r\n"
-			+ "UNION\r\n"
-			+ "\r\n"
-			+ "SELECT \r\n"
-			+ "    c.travelrequestsid AS id,\r\n"
-			+ "    c.screenname AS type,\r\n"
-			+ "    c.traveltitle AS title,\r\n"
-			+ "    c.employeename AS employeename,\r\n"
-			+ "    c.employeecode AS employeeCode,\r\n"
-			+ "    c.estimatedcost AS amount,\r\n"
-			+ "    c.createdon AS submitted,\r\n"
-			+ "    c.approvestatus AS status,\r\n"
-			+ "    des.expenselimit AS expenselimit,"
-			+ "    '' As expenseAttachment\r\n"
-			+ "FROM travelrequests c\r\n"
-			+ "JOIN expenseclaims d \r\n"
-			+ "    ON c.employeecode = d.employeecode\r\n"
-			+ "JOIN employee e \r\n"
-			+ "    ON c.employeecode = e.employeecode\r\n"
-			+ "JOIN designation des \r\n"
-			+ "    ON des.designationname = e.designation\r\n"
-			+ "   AND des.orgid = c.orgid\r\n"
-			+ "WHERE c.orgid = ?1\r\n"
-			+ "  AND c.branchcode = ?2\r\n"
-			+ "  AND (c.employeecode = ?3 OR c.reportingpersoncode = ?3 )")
-	List<Object[]> getApprovalExpenseAndTravelByOrgId(Long orgId, String branchCode, String employeeCode);
+	@Query(
+		    nativeQuery = true,
+		    value =
+		        "SELECT \r\n"
+		      + "    a.expenseclaimsid    AS id,\r\n"
+		      + "    a.screenname         AS type,\r\n"
+		      + "    a.expensetitle       AS title,\r\n"
+		      + "    a.employeename       AS employeename,\r\n"
+		      + "    a.employeecode       AS employeeCode,\r\n"
+		      + "    a.amount             AS amount,\r\n"
+		      + "    a.createdon          AS submitted,\r\n"
+		      + "    a.approvestatus      AS status,\r\n"
+		      + "    des.expenselimit     AS expenselimit,\r\n"
+		      + "    a.expenseattachment AS expenseAttachment\r\n"
+		      + "FROM expenseclaims a\r\n"
+		      + "INNER JOIN employee e\r\n"
+		      + "    ON e.employeecode = a.employeecode\r\n"
+		      + "INNER JOIN designation des\r\n"
+		      + "    ON des.designationname = e.designation\r\n"
+		      + "   AND des.orgid = a.orgid\r\n"
+		      + "WHERE a.orgid = ?1\r\n"
+		      + "  AND a.branchcode = ?2\r\n"
+		      + "  AND (a.employeecode = ?3 OR a.reportingpersoncode = ?3)\r\n"
+		      + "\r\n"
+		      + "UNION ALL\r\n"
+		      + "\r\n"
+		      + "SELECT \r\n"
+		      + "    c.travelrequestsid   AS id,\r\n"
+		      + "    c.screenname         AS type,\r\n"
+		      + "    c.traveltitle        AS title,\r\n"
+		      + "    c.employeename       AS employeename,\r\n"
+		      + "    c.employeecode       AS employeeCode,\r\n"
+		      + "    c.estimatedcost      AS amount,\r\n"
+		      + "    c.createdon          AS submitted,\r\n"
+		      + "    c.approvestatus      AS status,\r\n"
+		      + "    des.expenselimit     AS expenselimit,\r\n"
+		      + "    NULL                 AS expenseAttachment\r\n"
+		      + "FROM travelrequests c\r\n"
+		      + "INNER JOIN employee e\r\n"
+		      + "    ON e.employeecode = c.employeecode\r\n"
+		      + "INNER JOIN designation des\r\n"
+		      + "    ON des.designationname = e.designation\r\n"
+		      + "   AND des.orgid = c.orgid\r\n"
+		      + "WHERE c.orgid = ?1\r\n"
+		      + "  AND c.branchcode = ?2\r\n"
+		      + "  AND (c.employeecode = ?3 OR c.reportingpersoncode = ?3)\r\n"
+		      + "ORDER BY submitted DESC"
+		)
+		List<Object[]> getApprovalExpenseAndTravelByOrgId(
+		    Long orgId,
+		    String branchCode,
+		    String employeeCode
+		);
 
 	@Query(nativeQuery = true,value = "SELECT \r\n"
 			+ "    -- Expense Summary\r\n"
@@ -191,6 +196,8 @@ public interface ExpenseClaimsRepo extends JpaRepository<ExpenseClaimsVO, Long>{
 	        + "GROUP BY category ORDER BY category",
 	        nativeQuery = true)
 	List<Object[]> getExpenseGraphByOrgId(Long orgId, String branchCode, String employeeCode, Long year, Long month);
+
+
 
 
 

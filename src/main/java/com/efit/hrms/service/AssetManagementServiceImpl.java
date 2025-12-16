@@ -34,6 +34,8 @@ import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
 import com.efit.hrms.entity.AssetReturnVO;
 import com.efit.hrms.entity.AssetStockVO;
+import com.efit.hrms.entity.DocTypeMappingDetailsVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
 import com.efit.hrms.exception.ApplicationException;
@@ -42,6 +44,8 @@ import com.efit.hrms.repo.AssetImageRepo;
 import com.efit.hrms.repo.AssetMasterRepo;
 import com.efit.hrms.repo.AssetReturnRepo;
 import com.efit.hrms.repo.AssetStockRepo;
+import com.efit.hrms.repo.DocTypeMappingDetailsRepo;
+import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.ExpenseClaimsRepo;
 import com.efit.hrms.repo.TravelRequestsRepo;
 
@@ -72,13 +76,26 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 	@Autowired
 	AssetImageRepo imageRepo;
 
+	@Autowired
+	DocumentTypeService documentTypeService;
+	
+	@Autowired
+	EmployeeRepo employeeRepo;	 
+
 	@Value("${file.upload-dir}")
 	private String uploadDir;
+
+	@Autowired
+	DocTypeMappingDetailsRepo docTypeMappingDetailsRepo;
+
+//	@Autowired
+//	DocumentTypeMappingDetailsRepo documentTypeMappingDetailsRepo;
 
 	@Override
 	public Map<String, Object> CreateUpdateAssetMaster(AssetMasterDTO assetMasterDTO) throws ApplicationException {
 
 		AssetMasterVO assetMasterVO = new AssetMasterVO();
+		String screenCode = "AM";
 		String message;
 
 		if (ObjectUtils.isNotEmpty(assetMasterDTO.getId())) {
@@ -93,6 +110,14 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 			message = "AssetMaster Updated Successfully";
 		} else {
 
+			String docId = documentTypeService.getDocid(assetMasterDTO.getBranchCode(), screenCode);
+			assetMasterVO.setAssetCode(docId);
+
+			// GETDOCID LASTNO +1
+			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+					.findByBranchCodeAndScreenCode(assetMasterDTO.getBranchCode(), screenCode);
+			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
 			createUpdateAssetMasterVOByAssetMasterDTO(assetMasterVO, assetMasterDTO);
 			assetMasterVO.setCreatedBy(assetMasterDTO.getCreatedBy());
 			assetMasterVO.setUpdatedBy(assetMasterDTO.getCreatedBy());
@@ -129,7 +154,7 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	private void createUpdateAssetMasterVOByAssetMasterDTO(AssetMasterVO assetMasterVO, AssetMasterDTO assetMasterDTO) {
 		assetMasterVO.setAssetName(assetMasterDTO.getAssetName());
-		assetMasterVO.setAssetCode(assetMasterDTO.getAssetCode());
+//		assetMasterVO.setAssetCode(assetMasterDTO.getAssetCode());
 		assetMasterVO.setCategory(assetMasterDTO.getCategory());
 		assetMasterVO.setBrand(assetMasterDTO.getBrand());
 		assetMasterVO.setModel(assetMasterDTO.getModel());
@@ -559,6 +584,10 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	private void createUpdateExpenseClaimsVOByExpenseClaimsDTO(ExpenseClaimsVO expenseClaimsVO,
 			ExpenseClaimsDTO expenseClaimsDTO) {
+		
+		EmployeeVO employeeVO = employeeRepo.findByEmployeeCode(expenseClaimsDTO.getEmployeeCode());
+		
+
 
 		expenseClaimsVO.setEmployeeName(expenseClaimsDTO.getEmployeeName());
 		expenseClaimsVO.setEmployeeCode(expenseClaimsDTO.getEmployeeCode());
@@ -570,9 +599,9 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		expenseClaimsVO.setExpenseDate(expenseClaimsDTO.getExpenseDate());
 		expenseClaimsVO.setReceiptAttached(expenseClaimsDTO.getReceiptAttached());
 		expenseClaimsVO.setDescription(expenseClaimsDTO.getDescription());
-		expenseClaimsVO.setReportingPerson("ABINAYA K");
-		expenseClaimsVO.setReportingPersonCode("WDS051");
-		expenseClaimsVO.setReportingPersonEmail("abinaya@whydigit.in");
+		expenseClaimsVO.setReportingPerson(employeeVO.getReportingPerson());
+	    expenseClaimsVO.setReportingPersonCode(employeeVO.getReportingPersonCode());
+	    expenseClaimsVO.setReportingPersonEmail(employeeVO.getReportingPersonEmail());
 		expenseClaimsVO.setApproveStatus("PENDING");
 		expenseClaimsVO.setBranchCode(expenseClaimsDTO.getBranchCode());
 		expenseClaimsVO.setBranch(expenseClaimsDTO.getBranch());
@@ -624,6 +653,8 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	private void createUpdateTravelRequestsVOByTravelRequestsDTO(TravelRequestsVO travelRequestsVO,
 			TravelRequestsDTO travelRequestsDTO) {
+		
+		EmployeeVO employeeVO = employeeRepo.findByEmployeeCode(travelRequestsDTO.getEmployeeCode());
 
 		travelRequestsVO.setEmployeeName(travelRequestsDTO.getEmployeeName());
 		travelRequestsVO.setEmployeeCode(travelRequestsDTO.getEmployeeCode());
@@ -641,9 +672,9 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		travelRequestsVO.setBranch(travelRequestsDTO.getBranch());
 		travelRequestsVO.setCreatedBy(travelRequestsDTO.getCreatedBy());
 		travelRequestsVO.setOrgId(travelRequestsDTO.getOrgId());
-		travelRequestsVO.setReportingPerson("ABINAYA K");
-		travelRequestsVO.setReportingPersonCode("WDS051");
-		travelRequestsVO.setReportingPersonEmail("abinaya@whydigit.in");
+		travelRequestsVO.setReportingPerson(employeeVO.getReportingPerson());
+		travelRequestsVO.setReportingPersonCode(employeeVO.getReportingPersonCode());
+		travelRequestsVO.setReportingPersonEmail(employeeVO.getReportingPersonEmail());
 		travelRequestsVO.setApproveStatus("PENDING");
 	}
 
@@ -1046,90 +1077,99 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 	@Override
 	public AssetMasterVO saveAsset(AssetMasterDTO dto) throws Exception {
 
-		 // Create new AssetMaster
-        AssetMasterVO asset = new AssetMasterVO();
+		String screenCode = "AM";
+		// Create new AssetMaster
+		AssetMasterVO asset = new AssetMasterVO();
 
-        asset.setAssetName(dto.getAssetName());
-        asset.setAssetCode(dto.getAssetCode());
-        asset.setCategory(dto.getCategory());
-        asset.setBrand(dto.getBrand());
-        asset.setModel(dto.getModel());
-        asset.setSerialNumber(dto.getSerialNumber());
-        asset.setPurchaseDate(dto.getPurchaseDate());
-        asset.setPurchaseCost(dto.getPurchaseCost());
-        asset.setWarrantyExpiry(dto.getWarrantyExpiry());
-        asset.setLocation(dto.getLocation());
-        asset.setNotes(dto.getNotes());
-        asset.setActive(dto.isActive());
-        asset.setBranch(dto.getBranch());
-        asset.setBranchCode(dto.getBranchCode());
-        asset.setFinyear(dto.getFinyear());
-        asset.setOrgId(dto.getOrgId());
-        asset.setCreatedBy(dto.getCreatedBy());
-        asset.setUpdatedBy(dto.getCreatedBy());
+		String docId = documentTypeService.getDocid(dto.getBranchCode(), screenCode);
+		asset.setAssetCode(docId);
 
-        List<AssetImageVO> images = new ArrayList<>();
+		// GETDOCID LASTNO +1
+		DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+				.findByBranchCodeAndScreenCode(dto.getBranchCode(), screenCode);
+		docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+		docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
 
-        // Save uploaded files to folder + DB
-        if (dto.getFiles() != null) {
-            File folder = new File(uploadDir);
-            if (!folder.exists()) folder.mkdirs();
+		asset.setAssetName(dto.getAssetName());
+//        asset.setAssetCode(dto.getAssetCode());
+		asset.setCategory(dto.getCategory());
+		asset.setBrand(dto.getBrand());
+		asset.setModel(dto.getModel());
+		asset.setSerialNumber(dto.getSerialNumber());
+		asset.setPurchaseDate(dto.getPurchaseDate());
+		asset.setPurchaseCost(dto.getPurchaseCost());
+		asset.setWarrantyExpiry(dto.getWarrantyExpiry());
+		asset.setLocation(dto.getLocation());
+		asset.setNotes(dto.getNotes());
+		asset.setActive(dto.isActive());
+		asset.setBranch(dto.getBranch());
+		asset.setBranchCode(dto.getBranchCode());
+		asset.setFinyear(dto.getFinyear());
+		asset.setOrgId(dto.getOrgId());
+		asset.setCreatedBy(dto.getCreatedBy());
+		asset.setUpdatedBy(dto.getCreatedBy());
 
-            for (MultipartFile file : dto.getFiles()) {
+		List<AssetImageVO> images = new ArrayList<>();
 
-                if (file != null && !file.isEmpty()) {
+		// Save uploaded files to folder + DB
+		if (dto.getFiles() != null) {
+			File folder = new File(uploadDir);
+			if (!folder.exists())
+				folder.mkdirs();
 
-                    String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                    Path path = Paths.get(uploadDir + "/" + fileName);
+			for (MultipartFile file : dto.getFiles()) {
 
-                    // Save file to disk
-                    Files.write(path, file.getBytes());
+				if (file != null && !file.isEmpty()) {
 
-                    // Save record to DB
-                    AssetImageVO img = new AssetImageVO();
-                    img.setFileName(fileName);
-                    img.setAssetMaster(asset);
+					String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+					Path path = Paths.get(uploadDir + "/" + fileName);
 
-                    images.add(img);
-                }
-            }
-        }
+					// Save file to disk
+					Files.write(path, file.getBytes());
 
-        // Set images to master
-        asset.setAssetImages(images);
+					// Save record to DB
+					AssetImageVO img = new AssetImageVO();
+					img.setFileName(fileName);
+					img.setAssetMaster(asset);
 
-        // Save master + images (cascade)
-        AssetMasterVO savedAsset = assetMasterRepo.save(asset);
+					images.add(img);
+				}
+			}
+		}
 
-        // Create AssetStock after master saved
-        AssetStockVO stock = new AssetStockVO();
+		// Set images to master
+		asset.setAssetImages(images);
 
-        stock.setAssetName(savedAsset.getAssetName());
-        stock.setAssetCode(savedAsset.getAssetCode());
-        stock.setCategory(savedAsset.getCategory());
-        stock.setBrand(savedAsset.getBrand());
-        stock.setModel(savedAsset.getModel());
-        stock.setSerialNumber(savedAsset.getSerialNumber());
-        stock.setLocation(savedAsset.getLocation());
-        stock.setBranch(savedAsset.getBranch());
-        stock.setSourceScreen(savedAsset.getScreenName());
-        stock.setSourceScreenCode(savedAsset.getScreenCode());
-        stock.setBranchCode(savedAsset.getBranchCode());
-        stock.setFinyear(savedAsset.getFinyear());
-        stock.setSourceId(savedAsset.getId());
-        stock.setCreatedBy(savedAsset.getCreatedBy());
-        stock.setUpdatedBy(savedAsset.getUpdatedBy());
-        stock.setOrgId(savedAsset.getOrgId());
-        stock.setAssetStatus("A");
-        stock.setAStatus("S");
-        stock.setQty(1);
+		// Save master + images (cascade)
+		AssetMasterVO savedAsset = assetMasterRepo.save(asset);
 
-        assetStockRepo.save(stock);
+		// Create AssetStock after master saved
+		AssetStockVO stock = new AssetStockVO();
 
-        return savedAsset;
+		stock.setAssetName(savedAsset.getAssetName());
+		stock.setAssetCode(savedAsset.getAssetCode());
+		stock.setCategory(savedAsset.getCategory());
+		stock.setBrand(savedAsset.getBrand());
+		stock.setModel(savedAsset.getModel());
+		stock.setSerialNumber(savedAsset.getSerialNumber());
+		stock.setLocation(savedAsset.getLocation());
+		stock.setBranch(savedAsset.getBranch());
+		stock.setSourceScreen(savedAsset.getScreenName());
+		stock.setSourceScreenCode(savedAsset.getScreenCode());
+		stock.setBranchCode(savedAsset.getBranchCode());
+		stock.setFinyear(savedAsset.getFinyear());
+		stock.setSourceId(savedAsset.getId());
+		stock.setCreatedBy(savedAsset.getCreatedBy());
+		stock.setUpdatedBy(savedAsset.getUpdatedBy());
+		stock.setOrgId(savedAsset.getOrgId());
+		stock.setAssetStatus("A");
+		stock.setAStatus("S");
+		stock.setQty(1);
+
+		assetStockRepo.save(stock);
+
+		return savedAsset;
 	}
-	
-	
 
 	@Override
 	public AssetMasterVO getAssetById(Long id) {
