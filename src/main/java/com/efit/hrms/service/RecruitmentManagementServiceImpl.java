@@ -168,6 +168,7 @@ public class RecruitmentManagementServiceImpl implements RecruitmentManagementSe
 	    candidatesVO.setBranchCode(candidatesDTO.getBranchCode());
 	    candidatesVO.setBranch(candidatesDTO.getBranch());
 	    candidatesVO.setActive(candidatesDTO.isActive());
+	    candidatesVO.setInterviewStatus(candidatesDTO.getInterviewStatus());
 	}
 
 	
