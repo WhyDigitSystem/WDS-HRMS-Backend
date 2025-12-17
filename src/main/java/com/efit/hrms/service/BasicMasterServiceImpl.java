@@ -870,7 +870,7 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 			checkInVO.setEntryTime(entryTime);
 			
 			
-			AttendanceProcessVO attendanceProcessVO = attendanceProcessRepo.findBySourceId(checkInVO.getId());
+			AttendanceProcessVO attendanceProcessVO = attendanceProcessRepo.findBySourceIdAndAttendanceMode(checkInVO.getId(),checkInVO.getAttendanceMode());
 			if (attendanceProcessVO != null) {
 			    attendanceProcessVO.setEntryTime(entryTime);
 			    attendanceProcessVO.setStatus("Out");	
@@ -2294,9 +2294,9 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 	}
 
 	@Override
-	public List<Map<String, Object>> getpayslipemployeedetails(Long orgId, String employeeCode) {
+	public List<Map<String, Object>> getpayslipemployeedetails(Long orgId, String employeeCode,Long month,Long year) {
 		// Fetch the raw data (salary process details)
-		Set<Object[]> salaryProcessVO = salaryProcessRepo.findpayslipemployeeandearningsdetails(orgId, employeeCode);
+		Set<Object[]> salaryProcessVO = salaryProcessRepo.findpayslipemployeeandearningsdetails(orgId, employeeCode,month,year);
 
 		// Process the fetched data
 		return getPayslipEmployeeDetails(salaryProcessVO);

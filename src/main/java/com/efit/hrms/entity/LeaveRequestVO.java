@@ -64,6 +64,8 @@ public class LeaveRequestVO {
 	private String employeeName;
 	@Column(name = "employeecode")
 	private String employeeCode;
+	@Column(name = "email")
+	private String email;
 	@Column(name = "department")
 	private String department;
 	@Column(name = "designation")

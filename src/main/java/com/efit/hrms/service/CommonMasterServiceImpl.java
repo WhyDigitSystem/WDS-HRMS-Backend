@@ -1664,6 +1664,8 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		designationVO.setDesignationCode(designationDTO.getDesignationCode().toUpperCase());
 		designationVO.setActive(designationDTO.isActive());
 		designationVO.setOrgId(designationDTO.getOrgId());
+		designationVO.setExpenseLimit(designationDTO.getExpenseLimit());
+
 
 	}
 

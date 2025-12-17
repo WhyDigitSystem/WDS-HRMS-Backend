@@ -32,6 +32,8 @@ public class ApprovalLeavesVO {
 	private String employeeName;
 	@Column(name = "employeecode")
 	private String employeeCode;
+	@Column(name="email")
+	private String email;
 	@Column(name = "leavetype")
 	private String leaveType;
 	@Column(name = "leavedate")
@@ -44,6 +46,8 @@ public class ApprovalLeavesVO {
 	private String approveBy;
 	@Column(name = "orgid")
 	private Long orgId;
+	
+	
 	
 	@Column(name = "branchcode")
 	private String branchCode;
