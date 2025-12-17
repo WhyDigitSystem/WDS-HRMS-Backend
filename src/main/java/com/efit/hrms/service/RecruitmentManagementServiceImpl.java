@@ -158,19 +158,21 @@ public class RecruitmentManagementServiceImpl implements RecruitmentManagementSe
 	}
 
 	private void createUpdateCandidatesVOFromCandidatesDTO(CandidatesVO candidatesVO, CandidatesDTO candidatesDTO) {
-		candidatesVO.setCandidatesName(candidatesDTO.getCandidatesName());
-		candidatesVO.setEmail(candidatesDTO.getEmail());
-		candidatesVO.setPositionApplied(candidatesDTO.getPositionApplied());
-		candidatesVO.setResumeScore(candidatesDTO.getResumeScore());
-		candidatesVO.setInterviewDate(candidatesDTO.getInterviewDate());
-		candidatesVO.setInterviewTime(candidatesDTO.getInterviewTime());
-		candidatesVO.setInterviewer(candidatesDTO.getInterviewer());
-		candidatesVO.setRating(candidatesDTO.getRating());
-		candidatesVO.setFeedBack(candidatesDTO.getFeedBack());
-		candidatesVO.setOrgId(candidatesDTO.getOrgId());
-		candidatesVO.setBranchCode(candidatesDTO.getBranchCode());
-		candidatesVO.setBranch(candidatesDTO.getBranch());
-		candidatesVO.setActive(candidatesDTO.isActive());
+
+	    candidatesVO.setCandidatesName(candidatesDTO.getCandidatesName());
+	    candidatesVO.setEmail(candidatesDTO.getEmail());
+	    candidatesVO.setPositionApplied(candidatesDTO.getPositionApplied());
+	    candidatesVO.setResumeScore(candidatesDTO.getResumeScore());
+	    candidatesVO.setInterviewDate(candidatesDTO.getInterviewDate());
+	    candidatesVO.setInterviewTime(candidatesDTO.getInterviewTime());
+	    candidatesVO.setInterviewer(candidatesDTO.getInterviewer());
+	    candidatesVO.setRating(candidatesDTO.getRating());
+	    candidatesVO.setFeedBack(candidatesDTO.getFeedBack());
+	    candidatesVO.setOrgId(candidatesDTO.getOrgId());
+	    candidatesVO.setBranchCode(candidatesDTO.getBranchCode());
+	    candidatesVO.setBranch(candidatesDTO.getBranch());
+	    candidatesVO.setActive(candidatesDTO.isActive());
+	    candidatesVO.setInterviewStatus(candidatesDTO.getInterviewStatus());
 	}
 
 	@Override

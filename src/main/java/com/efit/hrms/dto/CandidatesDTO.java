@@ -23,6 +23,7 @@ public class CandidatesDTO {
 	private int rating;
 	private String feedBack;
 	private boolean active ;
+	private String interviewStatus;
 
 
 	private String createdBy;
