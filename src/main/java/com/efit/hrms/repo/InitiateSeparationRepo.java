@@ -26,24 +26,13 @@ public interface InitiateSeparationRepo  extends JpaRepository<InitiateSeparatio
 			+ "		      AND active = 1 ")
 	List<InitiateSeparationVO> getInitiateSeparationByDepartment(Long orgId, String branchCode,String department, String type);
 
-	@Query(nativeQuery = true, value = " SELECT\r\n"
-			+ "        totalcount,\r\n"
-			+ "        pendingcount,\r\n"
-			+ "        approvedcount\r\n"
-			+ "    FROM (\r\n"
-			+ "        SELECT \r\n"
-			+ "            (SELECT COUNT(*) \r\n"
-			+ "             FROM initiateseparation \r\n"
-			+ "             WHERE orgid = ?1 AND branchcode = ?2 AND active = 1) AS totalcount,\r\n"
-			+ "             \r\n"
-			+ "            (SELECT COUNT(*) \r\n"
-			+ "             FROM initiateseparation \r\n"
-			+ "             WHERE orgid = ?1 AND branchcode = ?2 AND status = 'PENDING' AND active = 1) AS pendingcount,\r\n"
-			+ "             \r\n"
-			+ "            (SELECT COUNT(*) \r\n"
-			+ "             FROM initiateseparation \r\n"
-			+ "             WHERE orgid = ?1 AND branchcode = ?2 AND status = 'APPROVED' AND active = 1) AS approvedcount\r\n"
-			+ "    ) AS initiateseparation_summary")
+	@Query(nativeQuery = true, value = "select sum(totalcount) totalcount ,sum(pendingcount)pendingcount,sum(approvedcount)approvedcount from (\r\n"
+			+ "select count(*) totalcount,0 pendingcount,0 approvedcount   from initiateseparation  where orgid=?1 and branchcode=?2\r\n"
+			+ "union \r\n"
+			+ "select 0 totalcount,count(*) pendingcount,0 approvedcount  from initiateseparation  where orgid=?1 and branchcode=?2  and  status='PENDING' \r\n"
+			+ "union \r\n"
+			+ "select 0 totalcount,0 pendingcount,count(*) approvedcount  from initiateseparation  where orgid=?1 and branchcode=?2  and  status='APPROVED' \r\n"
+			+ ") a")
 	List<Object[]> getInitiateSeparationCountByOrgId(Long orgId, String branchCode);
 
 }

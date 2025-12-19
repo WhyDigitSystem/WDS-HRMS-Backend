@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class InitiateSeparationDTO {
-
+	
 	private Long id;
 	private String employeeName;
 	private String employeeCode;
