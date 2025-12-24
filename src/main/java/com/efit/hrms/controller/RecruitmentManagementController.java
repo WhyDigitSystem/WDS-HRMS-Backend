@@ -1,6 +1,5 @@
 package com.efit.hrms.controller;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -522,5 +521,34 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	
+	
+	@GetMapping("getSelectedCandidates")
+	public ResponseEntity<ResponseDTO> getSelectedCandidates(@RequestParam Long orgId,@RequestParam String branchCode) {
+		String methodName = "getSelectedCandidates()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<CandidatesVO> candidatesVO = null;
+		try {
+			candidatesVO = recruitmentManagementService.getSelectedCandidates(orgId,branchCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Get Selected Candidates");
+			responseObjectsMap.put("candidatesVO", candidatesVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "candidates not found for orgID: " + orgId;
+			responseDTO = createServiceResponseError(responseObjectsMap, "Candidates not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
 	
 }

@@ -1,6 +1,5 @@
 package com.efit.hrms.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +59,8 @@ public interface RecruitmentManagementService {
 			String actionBy, String notifyCode, String notify, String screenName, String email) throws Exception;
 
 	List<Map<String, Object>> getCreateOfferCountByOrgId(Long orgId, String branchCode);
+
+	List<CandidatesVO> getSelectedCandidates(Long orgId, String branchCode);
 
 
 

@@ -1400,18 +1400,18 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 						String branchName = getStringCellValue1(row.getCell(4));
 						String festival = getStringCellValue1(row.getCell(5));
 						// String createdBy
-						String activeString = getStringCellValue1(row.getCell(6));
-
-						// Convert activeString to integer and handle the conditions
-						boolean active;
-						if ("1".equals(activeString)) {
-							active = true; // If the value is '1', set active to true
-						} else if ("0".equals(activeString)) {
-							active = false; // If the value is '0', set active to false
-						} else {
-							throw new ApplicationException(
-									"Invalid value for 'active' field. Expected '1' or '0', but got: " + activeString);
-						}
+//						String activeString = getStringCellValue1(row.getCell(6));
+//
+//						// Convert activeString to integer and handle the conditions
+//						boolean active;
+//						if ("1".equals(activeString)) {
+//							active = true; // If the value is '1', set active to true
+//						} else if ("0".equals(activeString)) {
+//							active = false; // If the value is '0', set active to false
+//						} else {
+//							throw new ApplicationException(
+//									"Invalid value for 'active' field. Expected '1' or '0', but got: " + activeString);
+//						}
 						HolidayVO holidayVO = new HolidayVO();
 
 						if (holidayRepo.existsByOrgIdAndHolidayDate(orgId, holidayDate)) {
@@ -1424,7 +1424,7 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 						holidayVO.setBranchCode(branchCode.toUpperCase());
 						holidayVO.setBranchName(branchName.toUpperCase());
 						holidayVO.setFestival(festival.toUpperCase());
-						holidayVO.setActive(active);
+						holidayVO.setActive(true);
 						holidayVO.setOrgId(orgId);
 
 						holidayRepo.save(holidayVO);
