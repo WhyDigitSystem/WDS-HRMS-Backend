@@ -1393,12 +1393,12 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 					totalRows++; // Increment totalRows
 					try {
 						// Retrieve cell values based on the provided order
-						String department = getStringCellValue1(row.getCell(0));
-						LocalDate holidayDate = getDateCellValue(row.getCell(1));
-						String day = getStringCellValue1(row.getCell(2));
-						String branchCode = getStringCellValue1(row.getCell(3));
-						String branchName = getStringCellValue1(row.getCell(4));
-						String festival = getStringCellValue1(row.getCell(5));
+//						String department = getStringCellValue1(row.getCell(0));
+						LocalDate holidayDate = getDateCellValue(row.getCell(0));
+						String day = getStringCellValue1(row.getCell(1));
+						String branchCode = getStringCellValue1(row.getCell(2));
+						String branchName = getStringCellValue1(row.getCell(3));
+						String festival = getStringCellValue1(row.getCell(4));
 						// String createdBy
 //						String activeString = getStringCellValue1(row.getCell(6));
 //
@@ -1418,7 +1418,7 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 							throw new ApplicationException("The given holidayDate already exists.");
 						}
 						// Create CoaVO and add to appropriate list
-						holidayVO.setDepartment(department.toUpperCase());
+//						holidayVO.setDepartment(department.toUpperCase());
 						holidayVO.setHolidayDate(holidayDate);
 						holidayVO.setDay(day.toUpperCase());
 						holidayVO.setBranchCode(branchCode.toUpperCase());
