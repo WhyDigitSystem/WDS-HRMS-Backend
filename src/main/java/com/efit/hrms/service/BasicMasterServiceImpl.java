@@ -1393,38 +1393,38 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 					totalRows++; // Increment totalRows
 					try {
 						// Retrieve cell values based on the provided order
-						String department = getStringCellValue1(row.getCell(0));
-						LocalDate holidayDate = getDateCellValue(row.getCell(1));
-						String day = getStringCellValue1(row.getCell(2));
-						String branchCode = getStringCellValue1(row.getCell(3));
-						String branchName = getStringCellValue1(row.getCell(4));
-						String festival = getStringCellValue1(row.getCell(5));
+//						String department = getStringCellValue1(row.getCell(0));
+						LocalDate holidayDate = getDateCellValue(row.getCell(0));
+						String day = getStringCellValue1(row.getCell(1));
+						String branchCode = getStringCellValue1(row.getCell(2));
+						String branchName = getStringCellValue1(row.getCell(3));
+						String festival = getStringCellValue1(row.getCell(4));
 						// String createdBy
-						String activeString = getStringCellValue1(row.getCell(6));
-
-						// Convert activeString to integer and handle the conditions
-						boolean active;
-						if ("1".equals(activeString)) {
-							active = true; // If the value is '1', set active to true
-						} else if ("0".equals(activeString)) {
-							active = false; // If the value is '0', set active to false
-						} else {
-							throw new ApplicationException(
-									"Invalid value for 'active' field. Expected '1' or '0', but got: " + activeString);
-						}
+//						String activeString = getStringCellValue1(row.getCell(6));
+//
+//						// Convert activeString to integer and handle the conditions
+//						boolean active;
+//						if ("1".equals(activeString)) {
+//							active = true; // If the value is '1', set active to true
+//						} else if ("0".equals(activeString)) {
+//							active = false; // If the value is '0', set active to false
+//						} else {
+//							throw new ApplicationException(
+//									"Invalid value for 'active' field. Expected '1' or '0', but got: " + activeString);
+//						}
 						HolidayVO holidayVO = new HolidayVO();
 
 						if (holidayRepo.existsByOrgIdAndHolidayDate(orgId, holidayDate)) {
 							throw new ApplicationException("The given holidayDate already exists.");
 						}
 						// Create CoaVO and add to appropriate list
-						holidayVO.setDepartment(department.toUpperCase());
+//						holidayVO.setDepartment(department.toUpperCase());
 						holidayVO.setHolidayDate(holidayDate);
 						holidayVO.setDay(day.toUpperCase());
 						holidayVO.setBranchCode(branchCode.toUpperCase());
 						holidayVO.setBranchName(branchName.toUpperCase());
 						holidayVO.setFestival(festival.toUpperCase());
-						holidayVO.setActive(active);
+						holidayVO.setActive(true);
 						holidayVO.setOrgId(orgId);
 
 						holidayRepo.save(holidayVO);

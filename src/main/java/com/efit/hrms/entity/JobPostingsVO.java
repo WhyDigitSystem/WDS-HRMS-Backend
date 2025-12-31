@@ -47,7 +47,7 @@ public class JobPostingsVO {
 
 	@Column(name = "skills")
 	private String skills;
-	@Column(name = "description")
+	@Column(name = "description", columnDefinition = "TEXT")
 	private String description;
 	@Column(name = "keywords")
 	private String keywords;

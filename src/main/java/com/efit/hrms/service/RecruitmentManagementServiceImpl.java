@@ -159,26 +159,32 @@ public class RecruitmentManagementServiceImpl implements RecruitmentManagementSe
 
 	private void createUpdateCandidatesVOFromCandidatesDTO(CandidatesVO candidatesVO, CandidatesDTO candidatesDTO) {
 
-	    candidatesVO.setCandidatesName(candidatesDTO.getCandidatesName());
-	    candidatesVO.setEmail(candidatesDTO.getEmail());
-	    candidatesVO.setPositionApplied(candidatesDTO.getPositionApplied());
-	    candidatesVO.setResumeScore(candidatesDTO.getResumeScore());
-	    candidatesVO.setInterviewDate(candidatesDTO.getInterviewDate());
-	    candidatesVO.setInterviewTime(candidatesDTO.getInterviewTime());
-	    candidatesVO.setInterviewer(candidatesDTO.getInterviewer());
-	    candidatesVO.setRating(candidatesDTO.getRating());
-	    candidatesVO.setFeedBack(candidatesDTO.getFeedBack());
-	    candidatesVO.setOrgId(candidatesDTO.getOrgId());
-	    candidatesVO.setBranchCode(candidatesDTO.getBranchCode());
-	    candidatesVO.setBranch(candidatesDTO.getBranch());
-	    candidatesVO.setActive(candidatesDTO.isActive());
-	    candidatesVO.setInterviewStatus(candidatesDTO.getInterviewStatus());
+		candidatesVO.setCandidatesName(candidatesDTO.getCandidatesName());
+		candidatesVO.setEmail(candidatesDTO.getEmail());
+		candidatesVO.setPositionApplied(candidatesDTO.getPositionApplied());
+		candidatesVO.setResumeScore(candidatesDTO.getResumeScore());
+		candidatesVO.setInterviewDate(candidatesDTO.getInterviewDate());
+		candidatesVO.setInterviewTime(candidatesDTO.getInterviewTime());
+		candidatesVO.setInterviewer(candidatesDTO.getInterviewer());
+		candidatesVO.setRating(candidatesDTO.getRating());
+		candidatesVO.setFeedBack(candidatesDTO.getFeedBack());
+		candidatesVO.setOrgId(candidatesDTO.getOrgId());
+		candidatesVO.setBranchCode(candidatesDTO.getBranchCode());
+		candidatesVO.setBranch(candidatesDTO.getBranch());
+		candidatesVO.setActive(candidatesDTO.isActive());
+		candidatesVO.setInterviewStatus(candidatesDTO.getInterviewStatus());
 	}
 
 	@Override
 	public List<CandidatesVO> getCandidatesByOrgId(Long orgId, String branchCode) {
 		// TODO Auto-generated method stub
 		return candidatesRepo.getCandidatesByOrgId(orgId, branchCode);
+	}
+
+	@Override
+	public List<CandidatesVO> getSelectedCandidates(Long orgId, String branchCode) {
+		// TODO Auto-generated method stub
+		return candidatesRepo.getSelectedCandidates(orgId, branchCode);
 	}
 
 	@Override
@@ -532,10 +538,10 @@ public class RecruitmentManagementServiceImpl implements RecruitmentManagementSe
 
 		for (Object[] row : results) {
 			Map<String, Object> map = new HashMap<>();
-			map.put("pendingCount", row[0]);
-			map.put("approvedCount", row[1]);
-			map.put("rejectedCount", row[2]);
-			map.put("totalCount", row[3]);
+			map.put("totalCount", row[0]);
+			map.put("pendingCount", row[1]);
+			map.put("approvedCount", row[2]);
+			map.put("rejectedCount", row[3]);
 
 			list.add(map);
 		}
