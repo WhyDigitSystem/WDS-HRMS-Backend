@@ -342,7 +342,7 @@ public interface CheckInStatusRepo extends JpaRepository<CheckInStatusVO, Long>{
 	@Query(nativeQuery = true, value = "WITH \r\n"
 			+ "MonthRange AS (\r\n"
 			+ "    SELECT\r\n"
-			+ "        MAKEDATE(2025, 1) + INTERVAL (?2 - 1) MONTH AS start_date,\r\n"
+			+ "        MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL (?2 - 1) MONTH AS start_date,\r\n"
 			+ "        LAST_DAY(MAKEDATE(2025, 1) + INTERVAL (?2 - 1) MONTH) AS end_date\r\n"
 			+ "),\r\n"
 			+ "Numbers AS (\r\n"
