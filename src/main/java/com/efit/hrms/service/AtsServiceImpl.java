@@ -29,8 +29,8 @@ public class AtsServiceImpl implements AtsService {
     private RestTemplate restTemplate;
 
     private static final String PYTHON_ATS_URL =
-            "http://127.0.0.1:8000/api/v1/ats/analyze";
-
+//            "http://127.0.0.1:8000/api/v1/ats/analyze";
+    "http://139.5.190.244:8000/api/v1/ats/analyze";
     @Override
     @Transactional
     public AtsResponseDTO processAts(
