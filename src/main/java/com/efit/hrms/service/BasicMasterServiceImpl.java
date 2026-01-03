@@ -1362,8 +1362,8 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 	}
 
 	public List<Map<String, Object>> getAttendanceByEmpcode(String empcode, int month, String orgId,
-			String branchCode) {
-		return checkInStatusRepo.findByEmpcode(empcode, month, orgId, branchCode);
+			String branchCode,String finYear) {
+		return checkInStatusRepo.findByEmpcode(empcode, month, orgId, branchCode,finYear);
 	}
 
 	// holiday excel upload

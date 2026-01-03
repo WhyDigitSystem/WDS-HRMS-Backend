@@ -53,7 +53,7 @@ public interface BasicMasterService {
 
 	List<Map<String, Object>> getStatusByEmpcode(String empcode);
 
-	List<Map<String, Object>> getAttendanceByEmpcode(String empcode, int  month, String orgId, String branchcode);
+	List<Map<String, Object>> getAttendanceByEmpcode(String empcode, int  month, String orgId, String branchcode,String finYear);
 
 	void excelUploadForHolidays(MultipartFile[] files, String createdBy, Long orgId)
 			throws EncryptedDocumentException, ApplicationException, java.io.IOException;
