@@ -426,7 +426,7 @@ public class BasicMasterController extends BaseController {
 
 	@GetMapping("/attendance")
 	public ResponseEntity<ResponseDTO> getAttendanceByEmpcode(@RequestParam String empcode, @RequestParam String month,
-			@RequestParam String orgId,  @RequestParam String branchCode) {
+			@RequestParam String orgId,  @RequestParam String branchCode,@RequestParam String finYear) {
 
 		String methodName = "getAttendanceByEmpcode()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
@@ -439,7 +439,7 @@ public class BasicMasterController extends BaseController {
 			Integer monthInt = Integer.parseInt(month);
 
 			List<Map<String, Object>> attendanceList = basicMasterService.getAttendanceByEmpcode(empcode, monthInt,
-					orgId, branchCode);
+					orgId, branchCode,finYear);
 
 			if (attendanceList.isEmpty()) {
 				errorMsg = "No attendance data found for empcode: " + empcode;
