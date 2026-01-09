@@ -24,6 +24,8 @@ public class TicketDTO {
 	private Long orgId;
 
 	private String status;
+	
+	private String email;
 
 }
 
