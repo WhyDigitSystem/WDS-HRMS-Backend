@@ -43,7 +43,7 @@ public class SecurityConfig {
 						,"/api/employeemaster/**","/api/sequenceConfig/**","/api/leaveprocess/**","/api/employeedocuments/**","/api/timesheet/**","/api/ticketcontroller/**","/api/managetax/**",
 						"/api/shiftmaster/**","/api/advance/**",
 						"/api/shiftmaster/**","/api/checkinout/**","/api/roles/**","/api/AttendanceLogController/**","/api/performancegoals/**","/api/incrementmanagement/**","/api/assetmanagement/**",
-						"/api/assetmanagementuploadAssetImages/**","/api/documenttypecontroller/**","/api/recruitmentmanagement/**","/api/employeseparation/**"
+						"/api/assetmanagementuploadAssetImages/**","/api/documenttypecontroller/**","/api/recruitmentmanagement/**","/api/employeseparation/**","/api/ats/**","/v3/api-docs/**"
 )
 
 
