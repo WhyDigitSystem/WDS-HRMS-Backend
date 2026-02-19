@@ -42,12 +42,12 @@ import com.efit.hrms.dto.AnnouncementDTO;
 import com.efit.hrms.dto.BioMetricDTO;
 import com.efit.hrms.dto.CalendarDTO;
 import com.efit.hrms.dto.CheckInOutAdjustmentDTO;
-import com.efit.hrms.dto.CheckInOutBiometricDTO;
 import com.efit.hrms.dto.CheckinRequestDTO;
 import com.efit.hrms.dto.CircularDTO;
 import com.efit.hrms.dto.EmployeeCodeConfigDTO;
 import com.efit.hrms.dto.EmployeeDTOnew;
 import com.efit.hrms.dto.HolidayDTO;
+import com.efit.hrms.dto.PendingRequestProjection;
 import com.efit.hrms.dto.PollDetailsDTO;
 import com.efit.hrms.dto.PollVoteDTO;
 import com.efit.hrms.dto.PollsDTO;
@@ -93,6 +93,7 @@ import com.efit.hrms.repo.EmployeeCodeConfigRepo;
 import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.EsslDeviceLogRepo;
 import com.efit.hrms.repo.HolidayRepo;
+import com.efit.hrms.repo.PendingRequestRepository;
 import com.efit.hrms.repo.PollDetailsRepo;
 import com.efit.hrms.repo.PollVoteRepo;
 import com.efit.hrms.repo.PollsRepo;
@@ -170,6 +171,9 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 
 	@Autowired
 	EsslDeviceLogRepo esslDeviceLogRepo;
+	
+	 @Autowired
+	 private PendingRequestRepository repo;
 
 	// DAY,GENERAL,NIGHT SHIFT
 //	@Override
@@ -2917,6 +2921,13 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 			response.put("checkInVO", todayCheck);
 			return response;
 		}
+		
+		
+		
+           @Override
+		   public List<PendingRequestProjection> getDashBoardApprovalStatusDetails(String empCode){
+		        return repo.getPendingRequests(empCode);
+		    }
 		
 	
 
