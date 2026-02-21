@@ -8,6 +8,9 @@ public interface PendingRequestProjection {
     String getTime();
     String getStatus();
     String getApprovalstatus();
+    String getReason();
+    String getDuration();
+
+
 
 }
-

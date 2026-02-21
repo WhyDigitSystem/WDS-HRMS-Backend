@@ -20,7 +20,10 @@ public interface PendingRequestRepository extends JpaRepository<LeaveRequestVO, 
         "        lr.todate AS todate, " +
         "        NULL AS time, " +
         "        NULL AS status, " +
-        "        lr.approvestatus AS approvalstatus " +
+        "        lr.approvestatus AS approvalstatus ,"
+        + "      lr.notes As reason,"
+        + "		 CAST(lr.totaldays AS SIGNED) AS duration\r\n"
+        + "" +
         " FROM leaverequest lr " +
         " WHERE lr.employeecode = ?1 AND lr.approvestatus = 'PENDING' " +
         " ORDER BY lr.leaverequestid DESC LIMIT 10 " +
@@ -36,7 +39,9 @@ public interface PendingRequestRepository extends JpaRepository<LeaveRequestVO, 
         "        pr.date AS todate, " +
         "        NULL AS time, " +
         "        NULL AS status, " +
-        "        pr.approvestatus AS approvalstatus " +
+        "        pr.approvestatus AS approvalstatus,"
+        + "      NULL As reason ,"
+        + "		 NULL As duration " +
         " FROM permissionrequest pr " +
         " WHERE pr.employeecode = ?1 AND pr.approvestatus = 'PENDING' " +
         " ORDER BY pr.permissionrequestid DESC LIMIT 10 " +
@@ -52,7 +57,9 @@ public interface PendingRequestRepository extends JpaRepository<LeaveRequestVO, 
         "        co.compoffdate AS todate, " +
         "        NULL AS time, " +
         "        NULL AS status, " +
-        "        co.approvalstatus AS approvalstatus " +
+        "        co.approvalstatus AS approvalstatus,"
+        + "		 NULL As reason ,"
+        + "		 NULL As duration" +
         " FROM compensatoryoff co " +
         " WHERE co.employeecode = ?1 AND co.approvalstatus = 'PENDING' " +
         " ORDER BY co.compensatoryoffid DESC LIMIT 10 " +
@@ -64,11 +71,13 @@ public interface PendingRequestRepository extends JpaRepository<LeaveRequestVO, 
         "SELECT * FROM ( " +
 
         " SELECT 'CHECKINOUT_ADJUSTMENT' AS type, " +
-        "        NULL AS fromdate, " +
-        "        NULL AS todate, " +
+        "        ca.checkindate AS fromdate, " +
+        "        ca.checkindate AS todate, " +
         "        ca.entrytime AS time, " +
         "        ca.status AS status, " +
-        "        ca.approvalstatus AS approvalstatus " +
+        "        ca.approvalstatus AS approvalstatus,"
+        + "		 NULL As reason ,"
+        + "		 NULL As duration" +
         " FROM checkinoutadjustment ca " +
         " WHERE ca.empcode = ?1 AND ca.approvalstatus = 'PENDING' " +
         " ORDER BY ca.checkinoutadjustmentid DESC LIMIT 10 " +
