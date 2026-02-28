@@ -300,8 +300,8 @@ public class TimeSheetController extends BaseController {
 			
 			@GetMapping("/getAllEmployeeTask")
 			public ResponseEntity<ResponseDTO> getAllEmployeeTask(
-			        @RequestParam String month,
-			        @RequestParam String year,
+			        @RequestParam String fromDate,
+			        @RequestParam String toDate,
 			        @RequestParam Long orgId,
 			        @RequestParam String branchCode,
 			        @RequestParam String department,
@@ -316,9 +316,8 @@ public class TimeSheetController extends BaseController {
 			    List<Map<String, Object>> timeSheetVO = null;
 
 			    try {
-			        // Call your service method which returns List<TimeSheetVO>
 			        timeSheetVO = timeSheetService.getAllTimeSheetDescByOrgId(
-			                month, year, orgId, branchCode, department, employeecode
+			                fromDate, toDate, orgId, branchCode, department, employeecode
 			        );
 			    } catch (Exception e) {
 			        errorMsg = e.getMessage();
@@ -326,7 +325,7 @@ public class TimeSheetController extends BaseController {
 			    }
 
 			    if (StringUtils.isEmpty(errorMsg)) {
-			        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Task Details Get Succesfully ");
+			        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Task Details Get Successfully");
 			        responseObjectsMap.put("timeSheetVO", timeSheetVO);
 			        responseDTO = createServiceResponse(responseObjectsMap);
 			    } else {

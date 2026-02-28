@@ -105,11 +105,11 @@ public interface TimeSheetRepo extends JpaRepository<TimeSheetVO, Long>{
 	
 	
 	@Query(value = "WITH RECURSIVE all_dates AS (\r\n"
-			+ "    SELECT DATE(CONCAT(?2,'-',LPAD(?1,2,'0'),'-01')) AS work_date\r\n"
+			+ "    SELECT DATE(?1) AS work_date\r\n"
 			+ "    UNION ALL\r\n"
 			+ "    SELECT DATE_ADD(work_date, INTERVAL 1 DAY)\r\n"
 			+ "    FROM all_dates\r\n"
-			+ "    WHERE work_date < LAST_DAY(CONCAT(?2,'-',LPAD(?1,2,'0'),'-01'))\r\n"
+			+ "    WHERE work_date < DATE(?2)\r\n"
 			+ "),\r\n"
 			+ "employee_list AS (\r\n"
 			+ "    SELECT e.employeecode, e.employee, e.department, e.branchcode\r\n"
@@ -213,7 +213,12 @@ public interface TimeSheetRepo extends JpaRepository<TimeSheetVO, Long>{
 			+ " \r\n"
 			+ "",
 	nativeQuery = true)
-	List<Object[]> getAllTimeSheetDescByOrgId(String month, String year, Long orgId, String branchCode, String department, String employeeCode);
-
+	List<Object[]> getAllTimeSheetDescByOrgId(
+		    String fromDate,
+		    String toDate,
+		    Long orgId,
+		    String branchCode,
+		    String department,
+		    String employeeCode);
 	
 }
