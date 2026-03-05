@@ -346,6 +346,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 			for (CompanyWeekOffDTO companyWeekOffDTO : companyDTO.getCompanyWeekOffDTO()) {
 				CompanyWeekOffVO companyWeekOffVO = new CompanyWeekOffVO();
 				companyWeekOffVO.setWeekOffDays(companyWeekOffDTO.getWeekOffDays());
+				companyWeekOffVO.setType(companyWeekOffDTO.getType());
 				companyWeekOffVO.setWeekNumbers(companyWeekOffDTO.getWeekNumbers());
 //				companyWeekOffVO.setOrgId(companyWeekOffDTO.getOrgId());
 				companyWeekOffVO.setCompanyVO(companyVO);
