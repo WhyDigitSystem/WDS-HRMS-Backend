@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class CompanyWeekOffDTO {
 
 	private String weekOffDays;
-	private String type; 
+	private List<String> type;
 	private List<Integer> weekNumbers; // e.g., [1, 3], or [-1] for ALL
 
 //	private String orgId;
