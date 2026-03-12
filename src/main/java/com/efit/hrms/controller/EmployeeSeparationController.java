@@ -5,26 +5,27 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.ui.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.servlet.ModelAndView;
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.InitiateSeparationDTO;
 import com.efit.hrms.dto.ResponseDTO;
-import com.efit.hrms.entity.AssetMasterVO;
 import com.efit.hrms.entity.InitiateSeparationVO;
 import com.efit.hrms.service.EmployeeSeparationService;
 
-import org.springframework.web.bind.annotation.RequestBody;
 
 @CrossOrigin
 @RestController
@@ -124,7 +125,7 @@ public class EmployeeSeparationController extends BaseController{
 	
 	
 	@GetMapping("getInitiateSeparationByDepartment")
-	public ResponseEntity<ResponseDTO> getInitiateSeparationByDepartment(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String department,@RequestParam String type) {
+	public ResponseEntity<ResponseDTO> getInitiateSeparationByDepartment(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String department,@RequestParam String type,@RequestParam String empCode) {
 		String methodName = "getInitiateSeparationByDepartment()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -132,7 +133,7 @@ public class EmployeeSeparationController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<InitiateSeparationVO> initiateSeparationVO = null;
 		try {
-			initiateSeparationVO = employeeSeparationService.getInitiateSeparationByDepartment(orgId,branchCode,department,type);
+			initiateSeparationVO = employeeSeparationService.getInitiateSeparationByDepartment(orgId,branchCode,department,type,empCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -175,5 +176,76 @@ public class EmployeeSeparationController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	@GetMapping("getInitiateSeparationByOrgIdforclearance")
+	public ResponseEntity<ResponseDTO> getInitiateSeparationByOrgIdforclearance(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String empCode) {
+		String methodName = "getInitiateSeparationByOrgIdforclearance()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<InitiateSeparationVO> initiateSeparationVO = null;
+		try {
+			initiateSeparationVO = employeeSeparationService.getInitiateSeparationByOrgIdforclearance(orgId,branchCode,empCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isEmpty(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "InitiateSeparation found by ORGID");
+			responseObjectsMap.put("initiateSeparationVO", initiateSeparationVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			errorMsg = "InitiateSeparation not found for orgID: " + orgId;
+			responseDTO = createServiceResponseError(responseObjectsMap, "InitiateSeparation not found", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@GetMapping("/approve/{id}")
+	public ModelAndView approveSeparation(@PathVariable Long id) {
+
+	    String message = employeeSeparationService.updateSeparationStatus(id,"APPROVED");
+
+	    ModelAndView mv = new ModelAndView("separation_approved.html");
+	    mv.addObject("message", message);
+
+	    return mv;
+	}
+	
+	@GetMapping("/reject/{id}")
+	public ModelAndView rejectSeparation(@PathVariable Long id) {
+
+	    String message = employeeSeparationService.updateSeparationStatus(id,"REJECTED");
+
+	    ModelAndView mv = new ModelAndView("separation_approved.html");
+	    mv.addObject("message", message);
+
+	    return mv;
+	}
+	 
+//	@GetMapping("/approve/{id}")
+//	public ModelAndView approveSeparation(@PathVariable Long id) {
+//
+//	    String message = employeeSeparationService.updateSeparationStatus(id,"APPROVED");
+//
+//	    ModelAndView mv = new ModelAndView();
+//	    mv.setViewName("forward:/separation_result.html");
+//	    mv.addObject("message", message);
+//
+//	    return mv;
+//	}
+//
+//	@GetMapping("/reject/{id}")
+//	public ModelAndView rejectSeparation(@PathVariable Long id) {
+//
+//	    String message = employeeSeparationService.updateSeparationStatus(id,"REJECTED");
+//
+//	    ModelAndView mv = new ModelAndView();
+//	    mv.setViewName("forward:/separation_result.html");
+//	    mv.addObject("message", message);
+//
+//	    return mv;
+//	}
 	
 }

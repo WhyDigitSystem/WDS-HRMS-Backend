@@ -11,7 +11,10 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.efit.hrms.dto.ClearanceManagementDTO;
@@ -36,7 +39,13 @@ public class EmployeeSeparationServiceImpl implements EmployeeSeparationService 
 
 	@Autowired
 	ClearanceManagementRepo clearanceManagementRepo;
+	
+	@Autowired
+	SeparationMailService separationMailService;
 
+	@Value("${spring.mail.from}")
+	private String fromEmail;
+	
 	EmployeeSeparationServiceImpl(EmployeeRepo employeeRepo) {
 		this.employeeRepo = employeeRepo;
 	}
@@ -95,6 +104,51 @@ public class EmployeeSeparationServiceImpl implements EmployeeSeparationService 
 		// 4️⃣ Save parent (Hibernate will cascade to children automatically)
 		InitiateSeparationVO savedVO = initiateSeparationRepo.save(initiateSeparationVO);
 
+		// 1️⃣ First Time HR Initiates Separation → Send Mail to Employee
+		if (initiateSeparationDTO.getClearanceManagementDTO() == null
+		        || initiateSeparationDTO.getClearanceManagementDTO().isEmpty()) {
+
+		    String employeeEmail =
+		            employeeRepo.getEmployeeEmail(initiateSeparationDTO.getEmployeeCode());
+
+		    if (employeeEmail != null) {
+
+		        separationMailService.sendSeparationMail(
+		                employeeEmail,
+		                initiateSeparationDTO.getEmployeeName()
+		        );
+		    }
+
+		}
+
+		// 2️⃣ Employee Filled Clearance → Send Mail to HR
+		else {
+			String hrCode =
+					initiateSeparationRepo.getCreatedBy(initiateSeparationDTO.getEmployeeCode());
+
+		    String hrEmail =
+		            employeeRepo.getEmployeeEmail(hrCode);
+
+		    if (hrEmail != null) {
+
+		        separationMailService.sendClearanceCompletedMail(
+		                hrEmail,
+		                initiateSeparationDTO.getEmployeeName()
+		        );
+		    }
+		}
+		// 3️⃣ Exit interview completed → mail reporting persons
+		if (savedVO.getInterviewDate() != null && savedVO.getReportingPersonEmail() != null) {
+
+		    String[] emailArray = savedVO.getReportingPersonEmail().split(",");
+
+		    separationMailService.sendInterviewCompletedMail(
+		            emailArray,
+		            savedVO.getEmployeeName(),
+		            savedVO.getInterviewDate(),
+		            savedVO.getId()   // pass separation ID
+		    );
+		}
 		// 5️⃣ Prepare Response
 		response.put("statusFlag", "Ok");
 		response.put("status", true);
@@ -112,16 +166,17 @@ public class EmployeeSeparationServiceImpl implements EmployeeSeparationService 
 		vo.setEmployeeName(dto.getEmployeeName());
 		vo.setEmployeeCode(dto.getEmployeeCode());
 
-		EmployeeVO emplpoyeeVO = employeeRepo.findByEmployeeNameAndEmployeeCode(dto.getEmployeeName(),
-				dto.getEmployeeCode());
+//		EmployeeVO emplpoyeeVO = employeeRepo.findByEmployeeNameAndEmployeeCode(dto.getEmployeeName(),
+//				dto.getEmployeeCode());
+//
+//		if (emplpoyeeVO == null) {
+//			throw new ApplicationContextException("employeeDetails is null");
+//		} else {
+//			emplpoyeeVO.setActive(false);
+//			employeeRepo.save(emplpoyeeVO);
+//		}
 
-		if (emplpoyeeVO == null) {
-			throw new ApplicationContextException("employeeDetails is null");
-		} else {
-			emplpoyeeVO.setActive(false);
-			employeeRepo.save(emplpoyeeVO);
-		}
-
+		vo.setReportingManager(dto.getReportingManager());
 		vo.setDepartment(dto.getDepartment());
 		vo.setPosition(dto.getPosition());
 		vo.setJoiningDate(dto.getJoiningDate());
@@ -135,15 +190,31 @@ public class EmployeeSeparationServiceImpl implements EmployeeSeparationService 
 		vo.setBranchCode(dto.getBranchCode());
 		vo.setBranch(dto.getBranch());
 		vo.setOrgId(dto.getOrgId());
-		vo.setReportingPerson(dto.getReportingPerson());
-		vo.setReportingPersonCode(dto.getReportingPersonCode());
-		vo.setReportingPersonEmail(dto.getReportingPersonEmail());
+		vo.setReportingPerson(
+		        dto.getReportingPerson() != null
+		        ? String.join(",", dto.getReportingPerson())
+		        : null
+		);
+
+		vo.setReportingPersonCode(
+		        dto.getReportingPersonCode() != null
+		        ? String.join(",", dto.getReportingPersonCode())
+		        : null
+		);
+
+		vo.setReportingPersonEmail(
+		        dto.getReportingPersonEmail() != null
+		        ? String.join(",", dto.getReportingPersonEmail())
+		        : null
+		);
+
 		vo.setInterviewDate(dto.getInterviewDate());
 		vo.setExperienceRating(dto.getExperienceRating());
 		vo.setExitInterviewFeedback(dto.getExitInterviewFeedback());
 
 	}
 
+	
 	@Override
 	public InitiateSeparationVO getInitiateSeparationById(Long id) {
 		return initiateSeparationRepo.getInitiateSeparationById(id);
@@ -157,9 +228,9 @@ public class EmployeeSeparationServiceImpl implements EmployeeSeparationService 
 
 	@Override
 	public List<InitiateSeparationVO> getInitiateSeparationByDepartment(Long orgId, String branchCode,
-			String department, String type) {
+			String department, String type,String empCode) {
 		// TODO Auto-generated method stub
-		return initiateSeparationRepo.getInitiateSeparationByDepartment(orgId, branchCode, department, type);
+		return initiateSeparationRepo.getInitiateSeparationByDepartment(orgId, branchCode, department, type,empCode);
 	}
 
 	@Override
@@ -178,4 +249,36 @@ public class EmployeeSeparationServiceImpl implements EmployeeSeparationService 
 
 		return list;
 	}
+	
+	@Override
+	public List<InitiateSeparationVO> getInitiateSeparationByOrgIdforclearance(Long orgId, String branchCode,String empCode) {
+		// TODO Auto-generated method stub
+		return initiateSeparationRepo.getInitiateSeparationByOrgIdforclearance(orgId, branchCode,empCode);
+	}
+	
+	   @Override
+	   public String updateSeparationStatus(Long id, String status) {
+
+		    InitiateSeparationVO vo =
+		            initiateSeparationRepo.findById(id)
+		            .orElseThrow(() -> new RuntimeException("Separation not found"));
+
+		    if("APPROVED".equals(vo.getStatus())) {
+		        return "This separation request is already approved.";
+		    }
+
+		    if("REJECTED".equals(vo.getStatus())) {
+		        return "This separation request is already rejected.";
+		    }
+
+		    vo.setStatus(status);
+
+		    initiateSeparationRepo.save(vo);
+
+		    if("APPROVED".equals(status)) {
+		        return "Separation approved successfully.";
+		    } else {
+		        return "Separation rejected successfully.";
+		    }
+		}
 }

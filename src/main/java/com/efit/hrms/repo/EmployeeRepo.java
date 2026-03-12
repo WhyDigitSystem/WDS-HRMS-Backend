@@ -1,16 +1,15 @@
 package com.efit.hrms.repo;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.efit.hrms.entity.CurrencyVO;
 import com.efit.hrms.entity.EmployeeVO;
-import com.efit.hrms.entity.ShiftAssignDetailsVO;
 
 public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 
@@ -198,6 +197,9 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	EmployeeVO findByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
 
 	EmployeeVO findByEmployeeNameAndEmployeeCode(String employeeName, String employeeCode);
+	
+	@Query(value = "SELECT email FROM employee WHERE employeecode = :empCode", nativeQuery = true)
+	String getEmployeeEmail(@Param("empCode") String empCode);
 
 
 

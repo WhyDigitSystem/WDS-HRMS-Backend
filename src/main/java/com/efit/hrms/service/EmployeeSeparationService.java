@@ -20,8 +20,12 @@ public interface EmployeeSeparationService {
 
 
 	List<InitiateSeparationVO> getInitiateSeparationByDepartment(Long orgId, String branchCode, String department,
-			String type);
+			String type, String empCode);
 
 	List<Map<String, Object>> getInitiateSeparationCountByOrgId(Long orgId, String branchCode);
+
+	List<InitiateSeparationVO> getInitiateSeparationByOrgIdforclearance(Long orgId, String branchCode, String empCode);
+
+	String updateSeparationStatus(Long id, String string);
 
 }

@@ -251,7 +251,9 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		companyVO.setOtPolicy(companyDTO.getOtPolicy());
 		companyVO.setOtEligibleHours(companyDTO.getOtEligibleHours());
 		companyVO.setShiftHours(companyDTO.getShiftHours());
-
+		companyVO.setSeparation(
+		        String.join(",", companyDTO.getSeparation())
+		);
 
 		companyVO.setLocationAddress(companyDTO.getLocationAddress());
 		if (companyDTO.getAttendanceMode() != null && !companyDTO.getAttendanceMode().isEmpty()) {
@@ -334,7 +336,9 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		companyVO.setOtPolicy(companyDTO.getOtPolicy());
 		companyVO.setOtEligibleHours(companyDTO.getOtEligibleHours());
 		companyVO.setShiftHours(companyDTO.getShiftHours());
-
+		companyVO.setSeparation(
+		        String.join(",", companyDTO.getSeparation())
+		);
 		 if (companyDTO.getAttendanceMode() != null && !companyDTO.getAttendanceMode().isEmpty()) {
 		        String modeString = String.join(",", companyDTO.getAttendanceMode());
 		        companyVO.setAttendanceMode(modeString);

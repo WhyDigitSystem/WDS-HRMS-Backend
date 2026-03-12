@@ -21,6 +21,7 @@ public class CompanyDTO {
 	private String companyName;
 	private String country;
 	private String currency;
+	private List<String> separation;
 	// private String mainCurrency;
 	private String address;
 	private String zip;

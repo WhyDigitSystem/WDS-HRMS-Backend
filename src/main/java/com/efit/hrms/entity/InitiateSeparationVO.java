@@ -61,7 +61,8 @@ public class InitiateSeparationVO {
 	
 	@Column(name = "noticedate")
 	private int noticeDate;
-	
+	@Column(name = "reportingmanager")
+	private String reportingManager;
 	@Column(name = "reasoncategory")
 	private String reasonCategory;
 	@Column(name = "rehireeligible")

@@ -23,8 +23,9 @@ public interface InitiateSeparationRepo  extends JpaRepository<InitiateSeparatio
 			+ "		      AND branchcode = ?2 \r\n"
 			+ "		      AND (department = ?3 OR ?3 = 'ALL')\r\n"
 			+ "		      AND (separationtype = ?4 OR ?4 = 'ALL')\r\n"
+			+ "		      AND ( ?5 = 'ALL' OR employeecode = ?5)\r\n"
 			+ "		      AND active = 1 ")
-	List<InitiateSeparationVO> getInitiateSeparationByDepartment(Long orgId, String branchCode,String department, String type);
+	List<InitiateSeparationVO> getInitiateSeparationByDepartment(Long orgId, String branchCode,String department, String type, String empCode);
 
 	@Query(nativeQuery = true, value = "select sum(totalcount) totalcount ,sum(pendingcount)pendingcount,sum(approvedcount)approvedcount from (\r\n"
 			+ "select count(*) totalcount,0 pendingcount,0 approvedcount   from initiateseparation  where orgid=?1 and branchcode=?2\r\n"
@@ -34,5 +35,11 @@ public interface InitiateSeparationRepo  extends JpaRepository<InitiateSeparatio
 			+ "select 0 totalcount,0 pendingcount,count(*) approvedcount  from initiateseparation  where orgid=?1 and branchcode=?2  and  status='APPROVED' \r\n"
 			+ ") a")
 	List<Object[]> getInitiateSeparationCountByOrgId(Long orgId, String branchCode);
+
+	@Query("SELECT i.createdBy FROM InitiateSeparationVO i")
+	String getCreatedBy(String employeeCode);
+
+	@Query(nativeQuery = true,value="select * from initiateseparation where orgid=?1 and branchcode=?2  AND ( ?3 = 'ALL' OR employeecode = ?3) and active=1 ")
+	List<InitiateSeparationVO> getInitiateSeparationByOrgIdforclearance(Long orgId, String branchCode, String empCode);
 
 }
