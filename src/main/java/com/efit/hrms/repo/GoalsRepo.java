@@ -13,4 +13,10 @@ public interface GoalsRepo extends JpaRepository<GoalsVO, Long>{
 	@Query(nativeQuery =true,value= "select * from goals where orgid=?1")
 	List<GoalsVO> getGoals(Long orgId);
 
+	@Query(nativeQuery =true,value= "select * from goals where orgid=?1")
+	String getAppraisalDocId(Long orgId);
+
+	@Query(nativeQuery = true, value = "select concat(prefix,lpad(lastno,5,0)) AS docid from documenttypemappingdetails where orgid=?1  and screencode=?2")
+	String getGoalsDocId(Long orgId, String screenCode);
+
 }

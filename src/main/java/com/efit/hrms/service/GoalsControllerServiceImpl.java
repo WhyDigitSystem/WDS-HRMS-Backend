@@ -41,6 +41,7 @@ import com.efit.hrms.entity.AppraiseeDetailsVO;
 import com.efit.hrms.entity.AppraiseeVO;
 import com.efit.hrms.entity.AppraiserDetailsVO;
 import com.efit.hrms.entity.AppraiserVO;
+import com.efit.hrms.entity.DocTypeMappingDetailsVO;
 import com.efit.hrms.entity.GoalsDetailsVO;
 import com.efit.hrms.entity.GoalsVO;
 import com.efit.hrms.entity.GradeVO;
@@ -62,6 +63,7 @@ import com.efit.hrms.repo.AppraiseeDetailsRepo;
 import com.efit.hrms.repo.AppraiseeRepo;
 import com.efit.hrms.repo.AppraiserDetailsRepo;
 import com.efit.hrms.repo.AppraiserRepo;
+import com.efit.hrms.repo.DocTypeMappingDetailsRepo;
 import com.efit.hrms.repo.GoalsDetailsRepo;
 import com.efit.hrms.repo.GoalsRepo;
 import com.efit.hrms.repo.GradeRepo;
@@ -141,6 +143,9 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 	@Autowired
 	AdditionalGoalsRepo additionalGoalsRepo;
+
+	@Autowired
+	DocTypeMappingDetailsRepo docTypeMappingDetailsRepo;
 
 	@Override
 	public Map<String, Object> createUpdatePreGoals(@Valid PreGoalsDTO preGoalsDTO) throws ApplicationException {
@@ -535,11 +540,20 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 		String message;
 
-		GoalsVO goalsVO;
+		GoalsVO goalsVO = new GoalsVO();
+
+		String screenCode = "GO";
 
 		if (ObjectUtils.isEmpty(goalsDTO.getId())) {
 
-			goalsVO = new GoalsVO();
+			String docId = goalsRepo.getGoalsDocId(goalsDTO.getOrgId(), screenCode);
+			goalsVO.setAppraisalId(docId);
+
+			// GETDOCID LASTNO +1
+			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+					.findByOrgIdAndScreenCode(goalsDTO.getOrgId(), screenCode);
+			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
 
 			goalsVO.setCreatedBy(goalsDTO.getCreatedBy());
 			goalsVO.setUpdatedBy(goalsDTO.getCreatedBy());
@@ -570,7 +584,6 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	private GoalsVO getGoalsVoFromGoalsDTO(GoalsVO goalsVO, @Valid GoalsDTO goalsDTO) {
 
 		goalsVO.setActive(goalsDTO.isActive());
-		goalsVO.setAppraisalId(goalsDTO.getAppraisalId());
 		goalsVO.setDepartment(goalsDTO.getDepartment());
 		goalsVO.setOrgId(goalsDTO.getOrgId());
 		goalsVO.setFinYear(goalsDTO.getFinYear());
@@ -1245,9 +1258,10 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		additionalGoalsVO.setKeyPerformanceIndicator(additionalGoalsDTO.getKeyPerformanceIndicator());
 		additionalGoalsVO.setPerformanceIndicator(additionalGoalsDTO.getPerformanceIndicator());
 		additionalGoalsVO.setGoal(additionalGoalsDTO.getGoal());
-		//additionalGoalsVO.setRemarks(additionalGoalsDTO.getRemarks());
+		// additionalGoalsVO.setRemarks(additionalGoalsDTO.getRemarks());
 		additionalGoalsVO.setFinYear(additionalGoalsDTO.getFinYear());
-	//	additionalGoalsVO.setCancel(additionalGoalsDTO.isCancel()); // boolean field uses `isCancel()`
+		// additionalGoalsVO.setCancel(additionalGoalsDTO.isCancel()); // boolean field
+		// uses `isCancel()`
 		additionalGoalsVO.setOrgId(additionalGoalsDTO.getOrgId());
 
 		return additionalGoalsVO;
@@ -1266,7 +1280,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	@Override
 	public List<Map<String, Object>> getAdditionalGoalsDropDownApis(Long orgId, String finYear, String branchCode,
 			String designation) {
-		Set<Object[]> chType = additionalGoalsRepo.getAdditionalGoals(orgId, finYear, branchCode,designation);
+		Set<Object[]> chType = additionalGoalsRepo.getAdditionalGoals(orgId, finYear, branchCode, designation);
 		return getAdditional(chType);
 	}
 
@@ -1277,15 +1291,21 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 			map.put("areaOfImportance", (ch != null && ch.length > 0 && ch[0] != null) ? ch[0].toString() : "");
 			map.put("keyPerformanceIndicators", (ch != null && ch.length > 1 && ch[1] != null) ? ch[1].toString() : "");
-			
+
 			List1.add(map);
 		}
 		return List1;
 	}
-
 //	@Override
 //	public List<AdditionalGoalsVO> getAllAdditionalGoals() {
 //		// TODO Auto-generated method stub
 //		return additionalGoalsRepo.findAll();
 //	}
+
+	@Override
+	public String getGoalsDocId(Long orgId) {
+		String ScreenCode = "GO";
+		String result = goalsRepo.getGoalsDocId(orgId, ScreenCode);
+		return result;
+	}
 }

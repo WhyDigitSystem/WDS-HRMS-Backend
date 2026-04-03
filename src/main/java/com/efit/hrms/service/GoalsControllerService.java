@@ -167,6 +167,8 @@ public interface GoalsControllerService {
 	List<Map<String, Object>> getAdditionalGoalsDropDownApis(Long orgId, String finYear, String branchCode,
 			String designation);
 
+	String getGoalsDocId(Long orgId);
+
 	// List<AdditionalGoalsVO> getAllAdditionalGoals();
 
 }

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class GoalsDTO {
 
 	private Long id;
-	private Long appraisalId;
+//	private String appraisalId;
 	private String department;
 	private Long orgId;
 	private String createdBy;
