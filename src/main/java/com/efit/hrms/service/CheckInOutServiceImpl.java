@@ -2925,11 +2925,11 @@ public class CheckInOutServiceImpl implements CheckInOutService {
 	}
 
 	@Override
-	public Map<String, Object> deleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode) {
+	public Map<String, Object> deleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode,String department) {
 
 		Map<String, Object> result = new HashMap<>();
 
-		int deletedCount = attendanceSummaryRepo.deleteAttendanceSummary(orgId, month, finYear, branchCode);
+		int deletedCount = attendanceSummaryRepo.deleteAttendanceSummary(orgId, month, finYear, branchCode,department);
 
 		if (deletedCount > 0) {
 			result.put("message", "AttendanceSummary deleted successfully");

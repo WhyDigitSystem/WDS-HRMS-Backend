@@ -29,7 +29,7 @@ public interface AttendanceSummaryRepo extends JpaRepository<AttendanceSummaryVO
 
 	@Modifying
 	@Transactional
-	@Query(value = "DELETE FROM attendancesummary WHERE orgid = ?1 AND month = ?2 AND finyear = ?3 AND branchcode = ?4", nativeQuery = true)
-	int deleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode);
+	@Query(value = " delete from attendancesummary where  orgid = ?1 and month = ?2 and finyear = ?3 and branchcode = ?4  and (department=?5 or  ?5='ALL')", nativeQuery = true)
+	int deleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode,String department);
 
 }

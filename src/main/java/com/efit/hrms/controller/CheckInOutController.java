@@ -763,7 +763,7 @@ public class CheckInOutController extends BaseController {
 
 	@DeleteMapping("/deleteAttendanceSummary")
 	public ResponseEntity<ResponseDTO> deleteAttendanceSummary(@RequestParam Long orgId, @RequestParam Long month,
-			@RequestParam String finYear, @RequestParam String branchCode) {
+			@RequestParam String finYear, @RequestParam String branchCode, @RequestParam String department) {
 
 		String methodName = "deleteAttendanceSummary()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
@@ -773,7 +773,7 @@ public class CheckInOutController extends BaseController {
 
 		try {
 			Map<String, Object> serviceResponse = checkInOutService.deleteAttendanceSummary(orgId, month, finYear,
-					branchCode);
+					branchCode, department);
 
 			responseObjectsMap.putAll(serviceResponse);
 

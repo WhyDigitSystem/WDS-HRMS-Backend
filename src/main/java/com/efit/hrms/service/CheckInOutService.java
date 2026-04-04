@@ -93,7 +93,7 @@ public interface CheckInOutService {
 
 //	AttendanceSummaryVO getDeleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode);
 
-	Map<String, Object> deleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode);
+	Map<String, Object> deleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode,String department);
 
 //	List<AttendanceRecordVO> processExcel(MultipartFile file) throws Exception;
 
