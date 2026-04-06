@@ -51,9 +51,10 @@ public class KpiKraVO {
 	@Column(name="finyear")
 	private String finYear;
 
-	private boolean active;
+	@Column(name = "active")
+	private boolean active=true;
 	@Column(name = "cancel")
-	private boolean cancel;
+	private boolean cancel=false;
 	
 	@OneToMany(mappedBy = "kpiKraVO",cascade = CascadeType.ALL)
 	@JsonManagedReference

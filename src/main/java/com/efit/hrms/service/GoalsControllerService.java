@@ -38,58 +38,59 @@ import com.efit.hrms.exception.ApplicationException;
 
 @Service
 public interface GoalsControllerService {
-	
-	//PREGOALS
+
+	// PREGOALS
 
 	Map<String, Object> createUpdatePreGoals(@Valid PreGoalsDTO preGoalsDTO) throws ApplicationException;
 
 	List<PreGoalsVO> getPreGoalsByOrgId(Long orgId);
 
 	Optional<PreGoalsVO> getPreGoalsById(Long id);
-	
-	//MASTER
-	
-	//APPRAISAL Period
 
-	Map<String, Object> createUpdateAppraisalPeriod(@Valid AppraisalPeriodDTO appraisalPeriodDTO) throws ApplicationException;
+	// MASTER
+
+	// APPRAISAL Period
+
+	Map<String, Object> createUpdateAppraisalPeriod(@Valid AppraisalPeriodDTO appraisalPeriodDTO)
+			throws ApplicationException;
 
 	List<AppraisalPeriodVO> getAppraisalPeriodByOrgId(Long orgId);
 
 	Optional<AppraisalPeriodVO> getAppraisalPeriodById(Long id);
-	
-	//Weightage
+
+	// Weightage
 
 	Map<String, Object> createUpdateWeightage(@Valid WeightageDTO weightageDTO) throws ApplicationException;
 
 	List<WeightageVO> getWeightageByOrgId(Long orgId);
 
 	Optional<WeightageVO> getWeightageById(Long id);
-	
+
 	// GRADE
-	
+
 	Map<String, Object> createUpdateGrade(@Valid GradeDTO gradeDTO) throws ApplicationException;
 
 	List<GradeVO> getGradeByOrgId(Long orgId);
 
 	Optional<GradeVO> getGradeById(Long id);
-	
-	//KPIKRA
+
+	// KPIKRA
 
 	Map<String, Object> createUpdateKpiKra(@Valid KpiKraDTO kpiKraDTO) throws ApplicationException;
 
 	List<KpiKraVO> getKpiKraByOrgId(Long orgId);
 
 	Optional<KpiKraVO> getKpiKraById(Long id);
-	
-	//GOALS
+
+	// GOALS
 
 	Map<String, Object> createUpdateGoals(@Valid GoalsDTO goalsDTO) throws ApplicationException;
 
 	List<GoalsVO> getGoalsByOrgId(Long orgId);
 
 	Optional<GoalsVO> getGoalsById(Long id);
-	
-	//APPRAISEE
+
+	// APPRAISEE
 
 	Map<String, Object> createUpdateAppraisee(@Valid AppraiseeDTO appraiseeDTO) throws ApplicationException;
 
@@ -98,8 +99,8 @@ public interface GoalsControllerService {
 	Optional<AppraiseeVO> getAppraiseeById(Long id);
 
 	List<Map<String, Object>> getEmployeeDetails(Long orgId, String employeeCode);
-	
-	//SELFGOALS
+
+	// SELFGOALS
 
 	Map<String, Object> createUpdateSelfGoals(@Valid SelfGoalsDTO selfGoalsDTO) throws ApplicationException;
 
@@ -108,8 +109,8 @@ public interface GoalsControllerService {
 	Optional<SelfGoalsVO> getSelfGoalsById(Long id);
 
 	List<Map<String, Object>> getAppraiseeFillGrid(Long orgId, String employeeCode);
-	
-	//APPRAISER
+
+	// APPRAISER
 
 	Map<String, Object> createUpdateAppraiser(@Valid AppraiserDTO appraiserDTO) throws ApplicationException;
 
@@ -122,16 +123,16 @@ public interface GoalsControllerService {
 	List<Map<String, Object>> getEmpUnderReportingPerson(Long orgId, String reportingPersonCode);
 
 	List<Map<String, Object>> getAppraiserFillGrid(Long orgId, String empCode);
-	
-	//SCORE
+
+	// SCORE
 
 	Map<String, Object> createUpdateScore(@Valid ScoreDTO scoreDTO) throws ApplicationException;
 
 	List<ScoreVO> getScoreByOrgId(Long orgId);
 
 	Optional<ScoreVO> getScoreById(Long id);
-	
-	//HRREVIEW
+
+	// HRREVIEW
 
 	Map<String, Object> createUpdateHrReview(@Valid HrReviewDTO hrReviewDTO) throws ApplicationException;
 
@@ -139,35 +140,42 @@ public interface GoalsControllerService {
 
 	Optional<HrReviewVO> getHrReviewById(Long id);
 
-	//AppraiseeVO updateTestingAppraisee(Long orgId, String reportingHead);
-	
+	// AppraiseeVO updateTestingAppraisee(Long orgId, String reportingHead);
+
 //	SUPERVISOR1FEEDBACK
 
-	Map<String, Object> createUpdateSupervisor1FeedBack(@Valid Supervisor1FeedBackDTO supervisor1FeedBackDTO) throws ApplicationException;
+	Map<String, Object> createUpdateSupervisor1FeedBack(@Valid Supervisor1FeedBackDTO supervisor1FeedBackDTO)
+			throws ApplicationException;
 
 	List<Supervisor1FeedBackVO> getSupervisor1FeedbackByOrgId(Long orgId);
 
 	Optional<Supervisor1FeedBackVO> getSupervisor1FeedbackById(Long id);
-	
-	//PreGoals Approved Report
+
+	// PreGoals Approved Report
 
 	List<Map<String, Object>> getPreGoalsApprovedReport(Long orgId, String finYear, String supCode);
-	
-	//AdditionalGoals
 
-	Map<String, Object> createUpdateAdditionalGoals(@Valid AdditionalGoalsDTO additionalGoalsDTO) throws ApplicationException;
+	// AdditionalGoals
+
+	Map<String, Object> createUpdateAdditionalGoals(@Valid AdditionalGoalsDTO additionalGoalsDTO)
+			throws ApplicationException;
 
 	Optional<AdditionalGoalsVO> getAdditionalGoalsById(Long id);
 
 	List<AdditionalGoalsVO> getAdditionalGoalsByOrgId(Long orgId);
 
-	
-	//Additional Goals DropDown
+	// Additional Goals DropDown
 
 	List<Map<String, Object>> getAdditionalGoalsDropDownApis(Long orgId, String finYear, String branchCode,
 			String designation);
 
 	String getGoalsDocId(Long orgId);
+
+	List<Map<String, Object>> getAppraisalDocId(Long orgId);
+
+	String getKpiDocId(Long orgId);
+
+	String getKraDocId(Long orgId);
 
 	// List<AdditionalGoalsVO> getAllAdditionalGoals();
 

@@ -31,9 +31,12 @@ public class KpiVO {
 	private Long id;
 	
 	@Column(name = "kpiid")
-	private Long kpiId;
+	private String kpiId;
 	@Column(name = "kpidescription")
 	private String kpiDescription;
+	
+	@Column(name = "screencode")
+	private String screenCode="KPI";
 	
 	@ManyToOne
 	@JsonBackReference

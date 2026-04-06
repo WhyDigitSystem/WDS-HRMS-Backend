@@ -30,12 +30,12 @@ public class KpiKraDetailsVO {
 	private Long id;
 
 	@Column(name="kraid")
-	private Long kraId;
+	private String kraId;
 	@Column(name="kradescription")
 	private String kraDescription;
 	private String ro;
 	@Column(name="kpiid")
-	private Long kpiId;
+	private String kpiId;
 	@Column(name="kpidescription")
 	private String kpiDescription;
 	

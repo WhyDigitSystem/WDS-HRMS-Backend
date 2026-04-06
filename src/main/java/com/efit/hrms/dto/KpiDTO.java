@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class KpiDTO {
-
-	private Long kpiId;
 	private String kpiDescription;
 	
 }
