@@ -105,14 +105,14 @@ public interface TimeSheetRepo extends JpaRepository<TimeSheetVO, Long>{
 	
 	
 	@Query(value = "WITH RECURSIVE all_dates AS (\r\n"
-			+ "    SELECT DATE(CONCAT(?2,'-',LPAD(?1,2,'0'),'-01')) AS work_date\r\n"
+			+ "    SELECT DATE(?1) AS work_date\r\n"
 			+ "    UNION ALL\r\n"
 			+ "    SELECT DATE_ADD(work_date, INTERVAL 1 DAY)\r\n"
 			+ "    FROM all_dates\r\n"
-			+ "    WHERE work_date < LAST_DAY(CONCAT(?2,'-',LPAD(?1,2,'0'),'-01'))\r\n"
+			+ "    WHERE work_date < DATE(?2)\r\n"
 			+ "),\r\n"
 			+ "employee_list AS (\r\n"
-			+ "    SELECT e.employeecode, e.employee, e.department, e.branchcode\r\n"
+			+ "    SELECT e.employeecode, e.employee, e.department, e.branchcode,  e.designation\r\n"
 			+ "    FROM employee e\r\n"
 			+ "    WHERE e.orgid = ?3\r\n"
 			+ "      AND (?4 = 'ALL' OR e.branchcode = ?4)\r\n"
@@ -203,6 +203,11 @@ public interface TimeSheetRepo extends JpaRepository<TimeSheetVO, Long>{
 			+ "LEFT JOIN companyweekoff w\r\n"
 			+ "       ON w.companyid = ?3\r\n"
 			+ "      AND FIND_IN_SET(DAYNAME(d.work_date), w.weekoffdays) > 0\r\n"
+			+ "      AND (\r\n"
+			+ "            LOWER(TRIM(w.type)) = 'all'\r\n"
+			+ "         OR LOWER(TRIM(w.type)) LIKE CONCAT('%', LOWER(TRIM(e.designation)), '%')\r\n"
+			+ "      )\r\n"
+			+ "\r\n"
 			+ "LEFT JOIN weekoffoccurrences ww\r\n"
 			+ "       ON ww.companyweekoffid = w.companyweekoffid\r\n"
 			+ "      AND (ww.weeknumber = -1 OR ww.weeknumber = FLOOR((DAY(d.work_date)-1)/7)+1)\r\n"
@@ -213,7 +218,12 @@ public interface TimeSheetRepo extends JpaRepository<TimeSheetVO, Long>{
 			+ " \r\n"
 			+ "",
 	nativeQuery = true)
-	List<Object[]> getAllTimeSheetDescByOrgId(String month, String year, Long orgId, String branchCode, String department, String employeeCode);
-
+	List<Object[]> getAllTimeSheetDescByOrgId(
+		    String fromDate,
+		    String toDate,
+		    Long orgId,
+		    String branchCode,
+		    String department,
+		    String employeeCode);
 	
 }

@@ -1,16 +1,15 @@
 package com.efit.hrms.repo;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.efit.hrms.entity.CurrencyVO;
 import com.efit.hrms.entity.EmployeeVO;
-import com.efit.hrms.entity.ShiftAssignDetailsVO;
 
 public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 
@@ -126,21 +125,24 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	
 	
 	
-	@Query(nativeQuery = true,value ="SELECT \r\n"
-			+ "    employeeid, \r\n"
-			+ "    department, \r\n"
-			+ "    designation,  \r\n"
-			+ "    employeecode, \r\n"
-			+ "    employee, \r\n"
-			+ "    gender, \r\n"
-			+ "    orgid, \r\n"
-			+ "    TIMESTAMPDIFF(YEAR, joiningdate, CURDATE()) AS noofyears,"
+	@Query(nativeQuery = true,value ="SELECT\r\n"
+			+ "    employeeid,\r\n"
+			+ "    department,\r\n"
+			+ "    designation,\r\n"
+			+ "    employeecode,\r\n"
+			+ "    employee,\r\n"
+			+ "    gender,\r\n"
+			+ "    orgid,\r\n"
+			+ "    TIMESTAMPDIFF(YEAR, joiningdate, CURDATE()) AS noofyears,\r\n"
 			+ "    profileimage\r\n"
 			+ "FROM employee\r\n"
-			+ "WHERE \r\n"
-			+ "    MONTH(joiningdate) = MONTH(CURDATE()) \r\n"
-			+ "    AND DAY(joiningdate) = DAY(CURDATE())"
-			+ "    AND YEAR(joiningdate) < YEAR(CURDATE()) and active=1 \r\n"
+			+ "WHERE\r\n"
+			+ "    DAYOFYEAR(joiningdate)\r\n"
+			+ "    BETWEEN DAYOFYEAR(CURDATE())\r\n"
+			+ "    AND DAYOFYEAR(DATE_ADD(CURDATE(), INTERVAL 3 DAY))\r\n"
+			+ "    AND YEAR(joiningdate) < YEAR(CURDATE())\r\n"
+			+ "    AND active = 1 \r\n"
+			+ "\r\n"
 			+ "\r\n"
 			+ "")
 	Set<Object[]> findWorkaniversaryByOrgId(Long orgid);
@@ -195,6 +197,9 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	EmployeeVO findByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
 
 	EmployeeVO findByEmployeeNameAndEmployeeCode(String employeeName, String employeeCode);
+	
+	@Query(value = "SELECT email FROM employee WHERE employeecode = :empCode", nativeQuery = true)
+	String getEmployeeEmail(@Param("empCode") String empCode);
 
 
 

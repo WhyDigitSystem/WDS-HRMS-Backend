@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<meta charset="UTF-8">
+<title>Separation Approved</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:linear-gradient(135deg,#6a85f1,#9fb8f7);
+}
+
+/* Card */
+
+.container{
+    width:420px;
+    background:#ffffff;
+    border-radius:12px;
+    padding:40px 30px;
+    text-align:center;
+    box-shadow:0 10px 35px rgba(0,0,0,0.15);
+}
+
+/* Check circle */
+
+.icon-wrapper{
+    width:90px;
+    height:90px;
+    margin:auto;
+    background:#eafaf1;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* Check icon */
+
+.icon{
+    font-size:50px;
+    color:#27ae60;
+    animation:pop 0.6s ease;
+}
+
+/* Title */
+
+.title{
+    font-size:22px;
+    font-weight:600;
+    color:#2c3e50;
+    margin-top:20px;
+}
+
+/* Message */
+
+.message{
+    font-size:15px;
+    color:#666;
+    margin-top:10px;
+}
+
+/* Button */
+
+.button{
+    margin-top:25px;
+    display:inline-block;
+    padding:12px 28px;
+    background:#27ae60;
+    color:#fff;
+    text-decoration:none;
+    border-radius:6px;
+    font-size:14px;
+    transition:0.3s;
+}
+
+.button:hover{
+    background:#219150;
+}
+
+/* Animation */
+
+@keyframes pop{
+    0%{transform:scale(0.3);}
+    70%{transform:scale(1.1);}
+    100%{transform:scale(1);}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="icon-wrapper">
+<div class="icon">✔</div>
+</div>
+
+<!-- <div class="title">
+Separation Approved
+</div> -->
+
+<div class="message" th:text="${message}">
+Separation Approved Successfully
+</div>
+
+<!-- <a href="#" class="button">
+Close Page
+</a> -->
+
+</div>
+
+</body>
+</html>

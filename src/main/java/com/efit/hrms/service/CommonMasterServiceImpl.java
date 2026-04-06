@@ -251,7 +251,9 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		companyVO.setOtPolicy(companyDTO.getOtPolicy());
 		companyVO.setOtEligibleHours(companyDTO.getOtEligibleHours());
 		companyVO.setShiftHours(companyDTO.getShiftHours());
-
+		companyVO.setSeparation(
+		        String.join(",", companyDTO.getSeparation())
+		);
 
 		companyVO.setLocationAddress(companyDTO.getLocationAddress());
 		if (companyDTO.getAttendanceMode() != null && !companyDTO.getAttendanceMode().isEmpty()) {
@@ -334,7 +336,9 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		companyVO.setOtPolicy(companyDTO.getOtPolicy());
 		companyVO.setOtEligibleHours(companyDTO.getOtEligibleHours());
 		companyVO.setShiftHours(companyDTO.getShiftHours());
-
+		companyVO.setSeparation(
+		        String.join(",", companyDTO.getSeparation())
+		);
 		 if (companyDTO.getAttendanceMode() != null && !companyDTO.getAttendanceMode().isEmpty()) {
 		        String modeString = String.join(",", companyDTO.getAttendanceMode());
 		        companyVO.setAttendanceMode(modeString);
@@ -346,7 +350,9 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 			for (CompanyWeekOffDTO companyWeekOffDTO : companyDTO.getCompanyWeekOffDTO()) {
 				CompanyWeekOffVO companyWeekOffVO = new CompanyWeekOffVO();
 				companyWeekOffVO.setWeekOffDays(companyWeekOffDTO.getWeekOffDays());
-				companyWeekOffVO.setWeekNumbers(companyWeekOffDTO.getWeekNumbers());
+				  if(companyWeekOffDTO.getType() != null){
+			            companyWeekOffVO.setType(String.join(",", companyWeekOffDTO.getType()));
+			        }				companyWeekOffVO.setWeekNumbers(companyWeekOffDTO.getWeekNumbers());
 //				companyWeekOffVO.setOrgId(companyWeekOffDTO.getOrgId());
 				companyWeekOffVO.setCompanyVO(companyVO);
 

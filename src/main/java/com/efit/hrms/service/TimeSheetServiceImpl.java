@@ -423,33 +423,36 @@ public class TimeSheetServiceImpl implements TimeSheetService {
 		return timeSheetRepo.getTimeSheetDescByOrgId(orgId, empCode, branchCode, fromDate, toDate);
 	}
 
-	public List<Map<String, Object>> getAllTimeSheetDescByOrgId(String month, String year, Long orgId, String branch, String department, String employeecode) {
-		List<Object[]> results = timeSheetRepo.getAllTimeSheetDescByOrgId( month,  year,  orgId,  branch,  department,  employeecode);
+	public List<Map<String, Object>> getAllTimeSheetDescByOrgId(
+	        String fromDate, String toDate, Long orgId,
+	        String branch, String department, String employeecode) {
 
-		List<Map<String, Object>> response = new ArrayList<>();
-		for (Object[] row : results) {
-			Map<String, Object> map = new HashMap<>();
-			map.put("empcodename", row[0]);
-			map.put("employeename",  row[1]);
-			map.put("employeecode",  row[2]);
+	    List<Object[]> results = timeSheetRepo.getAllTimeSheetDescByOrgId(
+	            fromDate, toDate, orgId, branch, department, employeecode);
 
+	    List<Map<String, Object>> response = new ArrayList<>();
 
-			try {
-				// Parse JSON string into List of Maps
-				String timesheetJson = (String) row[3];
-				List<Map<String, Object>> timesheetList = objectMapper.readValue(timesheetJson,
-						new TypeReference<List<Map<String, Object>>>() {
-						});
-				map.put("timesheets", timesheetList);
-			} catch (Exception e) {
-				map.put("timesheets", new ArrayList<>()); // fallback empty
-			}
+	    for (Object[] row : results) {
+	        Map<String, Object> map = new HashMap<>();
+	        map.put("empcodename", row[0]);
+	        map.put("employeename", row[1]);
+	        map.put("employeecode", row[2]);
 
-			response.add(map);
-		}
-		return response;
+	        try {
+	            String timesheetJson = (String) row[3];
+	            List<Map<String, Object>> timesheetList = objectMapper.readValue(
+	                    timesheetJson,
+	                    new TypeReference<List<Map<String, Object>>>() {});
+	            map.put("timesheets", timesheetList);
+	        } catch (Exception e) {
+	            map.put("timesheets", new ArrayList<>());
+	        }
+
+	        response.add(map);
+	    }
+
+	    return response;
 	}
-	
 	
 	@Override
 	public List<Map<String, Object>> getEmployeeDetailsForAllTaskReport(Long orgId, String branchCode, String department) {

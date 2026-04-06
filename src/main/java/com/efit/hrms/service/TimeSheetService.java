@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.efit.hrms.dto.TimeSheetDTO;
 import com.efit.hrms.entity.EmployeeVO;
@@ -32,7 +33,8 @@ public interface TimeSheetService {
 	List<Map<String, Object>> getHolidaysForTimeSheetReport(Long orgId, LocalDate fromDate, LocalDate toDate,
 			String branchCode);
 
-    List<Map<String, Object>> getAllTimeSheetDescByOrgId(String month, String year, Long orgId, String branch, String department, String employeecode);
+    List<Map<String, Object>> getAllTimeSheetDescByOrgId( @RequestParam String fromDate,
+	        @RequestParam String toDate, Long orgId, String branch, String department, String employeecode);
 
 	List<Map<String, Object>> getEmployeeDetailsForAllTaskReport(Long orgId, String branchCode, String department);
 

@@ -34,6 +34,7 @@ import com.efit.hrms.dto.CircularDTO;
 import com.efit.hrms.dto.EmployeeCodeConfigDTO;
 import com.efit.hrms.dto.EmployeeDTOnew;
 import com.efit.hrms.dto.HolidayDTO;
+import com.efit.hrms.dto.PendingRequestProjection;
 import com.efit.hrms.dto.PollVoteDTO;
 import com.efit.hrms.dto.PollsDTO;
 import com.efit.hrms.dto.PraiseDTO;
@@ -43,9 +44,7 @@ import com.efit.hrms.dto.UserNameDTO;
 import com.efit.hrms.entity.AnnouncementVO;
 import com.efit.hrms.entity.CalendarVO;
 import com.efit.hrms.entity.CheckInOutAdjustmentVO;
-import com.efit.hrms.entity.CheckInVO;
 import com.efit.hrms.entity.CircularVO;
-import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.EmployeeCodeConfigVO;
 import com.efit.hrms.entity.HolidayVO;
 import com.efit.hrms.entity.PollsVO;
@@ -1603,5 +1602,41 @@ public class BasicMasterController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	@GetMapping("/getDashBoardApprovalStatusDetails/{empCode}")
+	public ResponseEntity<ResponseDTO> getDashBoardApprovalStatusDetails(
+	        @PathVariable String empCode) {
+
+	    String methodName = "getDashBoardApprovalStatusDetails()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO;
+
+	    try {
+
+	        List<PendingRequestProjection> dashBoard =
+	                basicMasterService.getDashBoardApprovalStatusDetails(empCode);
+
+	        responseObjectsMap.put("dashBoard", dashBoard);
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
+
+	        responseDTO = createServiceResponseError(
+	                responseObjectsMap,
+	                e.getMessage(),
+	                e.getMessage()
+	        );
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+	    return ResponseEntity.ok(responseDTO);
+	}
+
 
 }

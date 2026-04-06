@@ -17,6 +17,7 @@ import com.efit.hrms.dto.CircularDTO;
 import com.efit.hrms.dto.EmployeeCodeConfigDTO;
 import com.efit.hrms.dto.EmployeeDTOnew;
 import com.efit.hrms.dto.HolidayDTO;
+import com.efit.hrms.dto.PendingRequestProjection;
 import com.efit.hrms.dto.PollVoteDTO;
 import com.efit.hrms.dto.PollsDTO;
 import com.efit.hrms.dto.PraiseDTO;
@@ -184,6 +185,9 @@ List<Map<String, Object>> GetCountofNewAssignedTask(Long Orgid,String Assignedby
 	String generateEmployeeCodeByOrgId(EmployeeDTOnew employeeDTOnew);
 
 	List<Map<String, Object>> getpayslipPayOnHandAmount(Long orgId, String employeecode, Long month, String year);
+
+	List<PendingRequestProjection> getDashBoardApprovalStatusDetails(String empCode);
+
 
 	
 	

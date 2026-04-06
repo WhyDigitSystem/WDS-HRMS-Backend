@@ -1,6 +1,7 @@
 package com.efit.hrms.repo;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -52,5 +53,8 @@ public interface PerformanceGoalsRepo extends JpaRepository<PerformanceGoalsVO, 
 	
 	@Query(nativeQuery = true, value = "select  * from performancegoals  where orgid = ?1 and  pmonth = ?2 and     appraisalyear = ?3 and empcode=?4")
 	List<PerformanceGoalsVO> getDashBoardDetails(Long orgId,String pmonth,String appraisalYear,String employeeCode);
+
+	Optional<PerformanceGoalsVO>
+	findTopByEmpCodeOrderByCreatedUpdatedDateCreatedonDesc(String empCode);
 
 }

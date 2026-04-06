@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -55,6 +57,38 @@ public class PerformanceGoalsServiceImpl implements PerformanceGoalsService {
 
 		if (ObjectUtils.isEmpty(performanceGoalsDTO.getId())) {
 
+
+			 // 🔥 Get latest record
+	        Optional<PerformanceGoalsVO> lastRecord =
+	                performanceGoalsRepo
+	                        .findTopByEmpCodeOrderByCreatedUpdatedDateCreatedonDesc(
+	                                performanceGoalsDTO.getEmpCode());
+
+	        if (lastRecord.isPresent()) {
+
+	        	String createdOnStr =
+	        			 lastRecord.get()
+	        			           .getCreatedUpdatedDate()
+	        			           .getCreatedon();
+
+	        			DateTimeFormatter formatter =
+	        			 DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+
+	        			LocalDateTime lastCreated =
+	        			 LocalDateTime.parse(createdOnStr, formatter);
+
+	            LocalDateTime nextAllowedDate =
+	                    lastCreated.plusMonths(6);
+
+	            if (LocalDateTime.now().isBefore(nextAllowedDate)) {
+
+	                throw new ApplicationException(
+	                        "Performance Goals can be created only once in 6 months. "
+	                      + "Next allowed after : " + nextAllowedDate.toLocalDate());
+	            }
+	        }
+
+			
 			performanceGoalsVO = new PerformanceGoalsVO();
 
 			performanceGoalsVO.setCreatedBy(performanceGoalsDTO.getCreatedBy());

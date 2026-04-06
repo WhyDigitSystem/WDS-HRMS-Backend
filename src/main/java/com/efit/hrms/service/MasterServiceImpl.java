@@ -324,7 +324,6 @@ public class MasterServiceImpl implements MasterService {
 	    employeeVO.setBioId(employeeDTO.getBioId());
 	    employeeVO.setPayslipEffectiveDate(employeeDTO.getPayslipEffectiveDate());
 
-
 	    UserVO userVO = userRepo.findByEmployeeCodeAndOrgId(employeeDTO.getEmployeeCode(), employeeDTO.getOrgId());
 	    if (userVO != null) {
 	        userVO.setDepartment(employeeDTO.getDepartment());
