@@ -35,7 +35,7 @@ public class GoalsVO {
 	private Long id;
 	
 	@Column(name = "appraisalid")
-	private Long appraisalId;
+	private String appraisalId;
 	
 	private String department;
 	
@@ -52,6 +52,12 @@ public class GoalsVO {
 	private boolean active;
 	@Column(name = "cancel")
 	private boolean cancel;
+	
+	@Column(name = "screencode", length = 5)
+	private String screenCode = "GO";
+
+	@Column(name = "screenname", length = 25)
+	private String screenName = "GOALS";
 	
 	@OneToMany(mappedBy = "goalsVO",cascade = CascadeType.ALL)
 	@JsonManagedReference

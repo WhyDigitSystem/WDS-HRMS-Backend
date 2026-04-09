@@ -10,5 +10,7 @@ public interface DocTypeMappingDetailsRepo extends JpaRepository<DocTypeMappingD
 
 	DocTypeMappingDetailsVO findByBranchCodeAndScreenCode(String branchCode, String screenCode);
 
+	DocTypeMappingDetailsVO findByOrgIdAndScreenCode(Long orgId, String screenCode);
+
 
 }
