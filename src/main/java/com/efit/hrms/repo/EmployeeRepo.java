@@ -142,7 +142,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "    BETWEEN DAYOFYEAR(CURDATE())\r\n"
 			+ "    AND DAYOFYEAR(DATE_ADD(CURDATE(), INTERVAL 3 DAY))\r\n"
 			+ "    AND YEAR(joiningdate) < YEAR(CURDATE())\r\n"
-			+ "    AND active = 1 \r\n"
+			+ "    AND active = 1  and orgid=?1\r\n"
 			+ "\r\n"
 			+ "\r\n"
 			+ "")
