@@ -41,6 +41,7 @@ import com.efit.hrms.entity.AppraiseeDetailsVO;
 import com.efit.hrms.entity.AppraiseeVO;
 import com.efit.hrms.entity.AppraiserDetailsVO;
 import com.efit.hrms.entity.AppraiserVO;
+import com.efit.hrms.entity.DocTypeMappingDetailsVO;
 import com.efit.hrms.entity.GoalsDetailsVO;
 import com.efit.hrms.entity.GoalsVO;
 import com.efit.hrms.entity.GradeVO;
@@ -62,6 +63,7 @@ import com.efit.hrms.repo.AppraiseeDetailsRepo;
 import com.efit.hrms.repo.AppraiseeRepo;
 import com.efit.hrms.repo.AppraiserDetailsRepo;
 import com.efit.hrms.repo.AppraiserRepo;
+import com.efit.hrms.repo.DocTypeMappingDetailsRepo;
 import com.efit.hrms.repo.GoalsDetailsRepo;
 import com.efit.hrms.repo.GoalsRepo;
 import com.efit.hrms.repo.GradeRepo;
@@ -141,6 +143,9 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 	@Autowired
 	AdditionalGoalsRepo additionalGoalsRepo;
+
+	@Autowired
+	DocTypeMappingDetailsRepo docTypeMappingDetailsRepo;
 
 	@Override
 	public Map<String, Object> createUpdatePreGoals(@Valid PreGoalsDTO preGoalsDTO) throws ApplicationException {
@@ -428,31 +433,197 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		return gradeRepo.findById(id);
 	}
 
+//		@Override
+//		public Map<String, Object> createUpdateKpiKra(@Valid KpiKraDTO kpiKraDTO) throws ApplicationException {
+//	
+//			String message;
+//	
+//			KpiKraVO kpiKraVO = null;
+//	
+//			if (ObjectUtils.isEmpty(kpiKraDTO.getId())) {
+//	
+//				kpiKraVO = new KpiKraVO();
+//	
+//				kpiKraVO.setCreatedBy(kpiKraDTO.getCreatedBy());
+//				kpiKraVO.setUpdatedBy(kpiKraDTO.getCreatedBy());
+//	
+//				message = "KpiKra Creation SuccessFully";
+//	
+//			} else {
+//	
+//				kpiKraVO = kpiKraRepo.findById(kpiKraDTO.getId())
+//						.orElseThrow(() -> new ApplicationException("KpiKra  not found with id: " + kpiKraDTO.getId()));
+//	
+//				kpiKraVO.setUpdatedBy(kpiKraDTO.getCreatedBy());
+//	
+//				message = "KpiKra Updation SuccessFully";
+//	
+//			}
+//	
+//			kpiKraVO = getKpiKraVOkpiKraDTO(kpiKraVO, kpiKraDTO);
+//			kpiKraRepo.save(kpiKraVO);
+//	
+//			Map<String, Object> response = new HashMap<>();
+//			response.put("message", message);
+//			response.put("kpiKraVO", kpiKraVO);
+//			return response;
+//	
+//		}
+//	
+//		private KpiKraVO getKpiKraVOkpiKraDTO(KpiKraVO kpiKraVO, @Valid KpiKraDTO kpiKraDTO) {
+//	
+//			kpiKraVO.setAppraisalId(kpiKraDTO.getAppraisalId());
+//			kpiKraVO.setActive(kpiKraDTO.isActive());
+//			kpiKraVO.setOrgId(kpiKraDTO.getOrgId());
+//			kpiKraVO.setFinYear(kpiKraDTO.getFinYear());
+//			kpiKraVO.setBranchCode(kpiKraDTO.getBranchCode());
+//			kpiKraVO.setBranch(kpiKraDTO.getBranch());
+//	
+//			Long SourceOrgId = kpiKraDTO.getOrgId();
+//	
+//			if (ObjectUtils.isNotEmpty(kpiKraDTO.getId())) {
+//	
+//				List<KpiKraDetailsVO> kpiKraDetailsVOs = kpiKraDetailsRepo.findByKpiKraVO(kpiKraVO);
+//				kpiKraDetailsRepo.deleteAll(kpiKraDetailsVOs);
+//	
+//				List<KpiVO> kpiVOs = kpiRepo.findByKpiKraVO(kpiKraVO);
+//				kpiRepo.deleteAll(kpiVOs);
+//	
+//			}
+//	
+//	//		String screenCode="KPI";
+//	//		List<KpiVO> kpiVOs = new ArrayList<>();
+//	//		for (KpiDTO kpiDTO : kpiKraDTO.getKpiDTO()) {
+//	//			KpiVO kpiVO = new KpiVO();		
+//	//			String docId = kpiKraRepo.getKpiDocId(SourceOrgId screenCode);
+//	//			kpiVO.setKpiId(docId);
+//	//
+//	//			// GETDOCID LASTNO +1
+//	//			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+//	//					.findByOrgIdAndScreenCode(SourceOrgId, screenCode);
+//	//			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+//	//			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
+//	//			kpiVO.setKpiDescription(kpiDTO.getKpiDescription());
+//	//
+//	//			kpiVO.setKpiKraVO(kpiKraVO);
+//	//			kpiVOs.add(kpiVO);
+//	//
+//	//		}
+//	//
+//	//		kpiKraVO.setKpiVO(kpiVOs);
+//	
+//			String screenCode = "KPI";
+//			String screenKriCode = "KRA";
+//	
+//			List<KpiVO> kpiVOs = new ArrayList<>();
+//			List<KpiKraDetailsVO> kpiKraDetailsVOs = new ArrayList<>();
+//	
+//			Map<String, String> kpiMap = new HashMap<>();
+//	
+//			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+//					.findByOrgIdAndScreenCode(SourceOrgId, screenCode);
+//	
+//			if (docTypeMappingDetailsVO == null) {
+//				throw new RuntimeException("DocTypeMappingDetails not found for KPI");
+//			}
+//	
+//			DocTypeMappingDetailsVO docTypeMappingDetailsVO1 = docTypeMappingDetailsRepo
+//					.findByOrgIdAndScreenCode(SourceOrgId, screenKriCode);
+//	
+//			if (docTypeMappingDetailsVO1 == null) {
+//				throw new RuntimeException("DocTypeMappingDetails not found for KRI");
+//			}
+//	
+//			int lastNo = docTypeMappingDetailsVO.getLastNo(); // KPI counter
+//			int kriLastNo = docTypeMappingDetailsVO1.getLastNo(); // KRA counter
+//	
+//			for (KpiDTO kpiDTO : kpiKraDTO.getKpiDTO()) {
+//	
+//				if (kpiDTO.getKpiDescription() == null) {
+//					throw new RuntimeException("KPI Description cannot be null");
+//				}
+//	
+//				KpiVO kpiVO = new KpiVO();
+//	
+//				lastNo++;
+//	
+//				String kpiId = screenCode + String.format("%05d", lastNo);
+//	
+//				kpiVO.setKpiId(kpiId);
+//				kpiVO.setKpiDescription(kpiDTO.getKpiDescription().trim());
+//				kpiVO.setKpiKraVO(kpiKraVO);
+//	
+//				kpiVOs.add(kpiVO);
+//	
+//				// Mapping KPI description → KPI Id
+//				kpiMap.put(kpiDTO.getKpiDescription().trim(), kpiId);
+//			}
+//	
+//			// Update KPI sequence
+//			docTypeMappingDetailsVO.setLastNo(lastNo);
+//			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
+//	
+//			kpiKraVO.setKpiVO(kpiVOs);
+//	
+//			for (KpiKraDetailsDTO dto : kpiKraDTO.getKpiKraDetailsDTO()) {
+//	
+//				if (dto.getKpiDescription() == null) {
+//					throw new RuntimeException("KPI Description missing in details");
+//				}
+//	
+//				String kpiId = kpiMap.get(dto.getKpiDescription().trim());
+//	
+//				if (kpiId == null) {
+//					throw new RuntimeException("No matching KPI found for : " + dto.getKpiDescription());
+//				}
+//	
+//				KpiKraDetailsVO vo = new KpiKraDetailsVO();
+//	
+//				vo.setKpiId(kpiId);
+//				vo.setKpiDescription(dto.getKpiDescription().trim());
+//	
+//				// Generate KRA Id
+//				kriLastNo++;
+//				String kraId = screenKriCode + String.format("%05d", kriLastNo);
+//	
+//				vo.setKraId(kraId);
+//				vo.setRo(dto.getRo());
+//				vo.setKraDescription(dto.getKraDescription());
+//				vo.setKpiKraVO(kpiKraVO);
+//	
+//				kpiKraDetailsVOs.add(vo);
+//			}
+//	
+//			docTypeMappingDetailsVO1.setLastNo(kriLastNo);
+//			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO1);
+//	
+//			kpiKraVO.setKpiKraDetailsVO(kpiKraDetailsVOs);
+//	
+//			return kpiKraVO;
+//		}
+
 	@Override
 	public Map<String, Object> createUpdateKpiKra(@Valid KpiKraDTO kpiKraDTO) throws ApplicationException {
 
 		String message;
-
-		KpiKraVO kpiKraVO = null;
+		KpiKraVO kpiKraVO;
 
 		if (ObjectUtils.isEmpty(kpiKraDTO.getId())) {
 
 			kpiKraVO = new KpiKraVO();
-
 			kpiKraVO.setCreatedBy(kpiKraDTO.getCreatedBy());
 			kpiKraVO.setUpdatedBy(kpiKraDTO.getCreatedBy());
 
-			message = "KpiKra Creation SuccessFully";
+			message = "KpiKra Creation Successfully";
 
 		} else {
 
 			kpiKraVO = kpiKraRepo.findById(kpiKraDTO.getId())
-					.orElseThrow(() -> new ApplicationException("KpiKra  not found with id: " + kpiKraDTO.getId()));
+					.orElseThrow(() -> new ApplicationException("KpiKra not found with id: " + kpiKraDTO.getId()));
 
 			kpiKraVO.setUpdatedBy(kpiKraDTO.getCreatedBy());
 
-			message = "KpiKra Updation SuccessFully";
-
+			message = "KpiKra Updation Successfully";
 		}
 
 		kpiKraVO = getKpiKraVOkpiKraDTO(kpiKraVO, kpiKraDTO);
@@ -462,10 +633,9 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		response.put("message", message);
 		response.put("kpiKraVO", kpiKraVO);
 		return response;
-
 	}
 
-	private KpiKraVO getKpiKraVOkpiKraDTO(KpiKraVO kpiKraVO, @Valid KpiKraDTO kpiKraDTO) {
+	private KpiKraVO getKpiKraVOkpiKraDTO(KpiKraVO kpiKraVO, KpiKraDTO kpiKraDTO) {
 
 		kpiKraVO.setAppraisalId(kpiKraDTO.getAppraisalId());
 		kpiKraVO.setActive(kpiKraDTO.isActive());
@@ -474,46 +644,108 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		kpiKraVO.setBranchCode(kpiKraDTO.getBranchCode());
 		kpiKraVO.setBranch(kpiKraDTO.getBranch());
 
-		if (ObjectUtils.isNotEmpty(kpiKraDTO.getId())) {
+		Long orgId = kpiKraDTO.getOrgId();
+		boolean isUpdate = ObjectUtils.isNotEmpty(kpiKraDTO.getId());
 
-			List<KpiKraDetailsVO> kpiKraDetailsVOs = kpiKraDetailsRepo.findByKpiKraVO(kpiKraVO);
-			kpiKraDetailsRepo.deleteAll(kpiKraDetailsVOs);
+		String KPI = "KPI";
+		String KRA = "KRA";
 
-			List<KpiVO> kpiVOs = kpiRepo.findByKpiKraVO(kpiKraVO);
-			kpiRepo.deleteAll(kpiVOs);
+		DocTypeMappingDetailsVO kpiDoc = docTypeMappingDetailsRepo.findByOrgIdAndScreenCode(orgId, KPI);
 
-		}
+		DocTypeMappingDetailsVO kraDoc = docTypeMappingDetailsRepo.findByOrgIdAndScreenCode(orgId, KRA);
 
-		List<KpiVO> kpiVOs = new ArrayList<>();
+		int kpiLastNo = kpiDoc.getLastNo();
+		int kraLastNo = kraDoc.getLastNo();
+
+		List<KpiVO> newKpiList = new ArrayList<>();
+		List<KpiKraDetailsVO> newKraList = new ArrayList<>();
+
+		Map<String, String> kpiMap = new HashMap<>();
+
+		// ================= KPI =================
 		for (KpiDTO kpiDTO : kpiKraDTO.getKpiDTO()) {
+
+			if (kpiDTO.getKpiDescription() == null) {
+				throw new RuntimeException("KPI Description cannot be null");
+			}
+
+			String kpiId;
+
+			if (isUpdate && kpiDTO.getKpiId() != null) {
+				kpiId = kpiDTO.getKpiId(); // ✅ USE EXISTING
+			} else {
+				kpiLastNo++;
+				kpiId = KPI + String.format("%05d", kpiLastNo);
+			}
+
 			KpiVO kpiVO = new KpiVO();
-
-			kpiVO.setKpiId(kpiDTO.getKpiId());
-			kpiVO.setKpiDescription(kpiDTO.getKpiDescription());
-
+			kpiVO.setKpiId(kpiId);
+			kpiVO.setKpiDescription(kpiDTO.getKpiDescription().trim());
 			kpiVO.setKpiKraVO(kpiKraVO);
-			kpiVOs.add(kpiVO);
 
+			newKpiList.add(kpiVO);
+			kpiMap.put(kpiDTO.getKpiDescription().trim(), kpiId);
 		}
 
-		kpiKraVO.setKpiVO(kpiVOs);
+		// ================= KRA =================
+		for (KpiKraDetailsDTO dto : kpiKraDTO.getKpiKraDetailsDTO()) {
 
-		List<KpiKraDetailsVO> kpiKraDetailsVOs = new ArrayList<>();
-		for (KpiKraDetailsDTO kpiKraDetailsDTO : kpiKraDTO.getKpiKraDetailsDTO()) {
-			KpiKraDetailsVO kpiKraDetailsVO = new KpiKraDetailsVO();
+			if (dto.getKpiDescription() == null) {
+				throw new RuntimeException("KPI Description missing in details");
+			}
 
-			kpiKraDetailsVO.setKpiId(kpiKraDetailsDTO.getKpiId());
-			kpiKraDetailsVO.setKpiDescription(kpiKraDetailsDTO.getKpiDescription());
-			kpiKraDetailsVO.setKraId(kpiKraDetailsDTO.getKraId());
-			kpiKraDetailsVO.setRo(kpiKraDetailsDTO.getRo());
-			kpiKraDetailsVO.setKraDescription(kpiKraDetailsDTO.getKraDescription());
+			String kpiId = kpiMap.get(dto.getKpiDescription().trim());
 
-			kpiKraDetailsVO.setKpiKraVO(kpiKraVO);
-			kpiKraDetailsVOs.add(kpiKraDetailsVO);
+			if (kpiId == null) {
+				throw new RuntimeException("No matching KPI found for: " + dto.getKpiDescription());
+			}
 
+			String kraId;
+
+			if (isUpdate && dto.getKraId() != null) {
+				kraId = dto.getKraId(); // ✅ USE EXISTING
+			} else {
+				kraLastNo++;
+				kraId = KRA + String.format("%05d", kraLastNo);
+			}
+
+			KpiKraDetailsVO kraVO = new KpiKraDetailsVO();
+			kraVO.setKraId(kraId);
+			kraVO.setKpiId(kpiId);
+			kraVO.setKpiDescription(dto.getKpiDescription().trim());
+			kraVO.setKraDescription(dto.getKraDescription());
+			kraVO.setRo(dto.getRo());
+			kraVO.setKpiKraVO(kpiKraVO);
+
+			newKraList.add(kraVO);
 		}
 
-		kpiKraVO.setKpiKraDetailsVO(kpiKraDetailsVOs);
+		// ================= SEQUENCE UPDATE ONLY FOR CREATE =================
+		if (!isUpdate) {
+			kpiDoc.setLastNo(kpiLastNo);
+			kraDoc.setLastNo(kraLastNo);
+
+			docTypeMappingDetailsRepo.save(kpiDoc);
+			docTypeMappingDetailsRepo.save(kraDoc);
+		}
+
+		// ================= 🔥 IMPORTANT FIX =================
+
+		// KPI LIST
+		if (kpiKraVO.getKpiVO() == null) {
+			kpiKraVO.setKpiVO(new ArrayList<>());
+		} else {
+			kpiKraVO.getKpiVO().clear();
+		}
+		kpiKraVO.getKpiVO().addAll(newKpiList);
+
+		// KRA LIST
+		if (kpiKraVO.getKpiKraDetailsVO() == null) {
+			kpiKraVO.setKpiKraDetailsVO(new ArrayList<>());
+		} else {
+			kpiKraVO.getKpiKraDetailsVO().clear();
+		}
+		kpiKraVO.getKpiKraDetailsVO().addAll(newKraList);
 
 		return kpiKraVO;
 	}
@@ -535,11 +767,20 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 		String message;
 
-		GoalsVO goalsVO;
+		GoalsVO goalsVO = new GoalsVO();
+
+		String screenCode = "GO";
 
 		if (ObjectUtils.isEmpty(goalsDTO.getId())) {
 
-			goalsVO = new GoalsVO();
+			String docId = goalsRepo.getGoalsDocId(goalsDTO.getOrgId(), screenCode);
+			goalsVO.setAppraisalId(docId);
+
+			// GETDOCID LASTNO +1
+			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+					.findByOrgIdAndScreenCode(goalsDTO.getOrgId(), screenCode);
+			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
 
 			goalsVO.setCreatedBy(goalsDTO.getCreatedBy());
 			goalsVO.setUpdatedBy(goalsDTO.getCreatedBy());
@@ -570,7 +811,6 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	private GoalsVO getGoalsVoFromGoalsDTO(GoalsVO goalsVO, @Valid GoalsDTO goalsDTO) {
 
 		goalsVO.setActive(goalsDTO.isActive());
-		goalsVO.setAppraisalId(goalsDTO.getAppraisalId());
 		goalsVO.setDepartment(goalsDTO.getDepartment());
 		goalsVO.setOrgId(goalsDTO.getOrgId());
 		goalsVO.setFinYear(goalsDTO.getFinYear());
@@ -1245,9 +1485,10 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		additionalGoalsVO.setKeyPerformanceIndicator(additionalGoalsDTO.getKeyPerformanceIndicator());
 		additionalGoalsVO.setPerformanceIndicator(additionalGoalsDTO.getPerformanceIndicator());
 		additionalGoalsVO.setGoal(additionalGoalsDTO.getGoal());
-		//additionalGoalsVO.setRemarks(additionalGoalsDTO.getRemarks());
+		// additionalGoalsVO.setRemarks(additionalGoalsDTO.getRemarks());
 		additionalGoalsVO.setFinYear(additionalGoalsDTO.getFinYear());
-	//	additionalGoalsVO.setCancel(additionalGoalsDTO.isCancel()); // boolean field uses `isCancel()`
+		// additionalGoalsVO.setCancel(additionalGoalsDTO.isCancel()); // boolean field
+		// uses `isCancel()`
 		additionalGoalsVO.setOrgId(additionalGoalsDTO.getOrgId());
 
 		return additionalGoalsVO;
@@ -1266,7 +1507,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	@Override
 	public List<Map<String, Object>> getAdditionalGoalsDropDownApis(Long orgId, String finYear, String branchCode,
 			String designation) {
-		Set<Object[]> chType = additionalGoalsRepo.getAdditionalGoals(orgId, finYear, branchCode,designation);
+		Set<Object[]> chType = additionalGoalsRepo.getAdditionalGoals(orgId, finYear, branchCode, designation);
 		return getAdditional(chType);
 	}
 
@@ -1277,15 +1518,53 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 			map.put("areaOfImportance", (ch != null && ch.length > 0 && ch[0] != null) ? ch[0].toString() : "");
 			map.put("keyPerformanceIndicators", (ch != null && ch.length > 1 && ch[1] != null) ? ch[1].toString() : "");
-			
+
 			List1.add(map);
 		}
 		return List1;
 	}
-
 //	@Override
 //	public List<AdditionalGoalsVO> getAllAdditionalGoals() {
 //		// TODO Auto-generated method stub
 //		return additionalGoalsRepo.findAll();
 //	}
+
+	@Override
+	public String getGoalsDocId(Long orgId) {
+		String ScreenCode = "GO";
+		String result = goalsRepo.getGoalsDocId(orgId, ScreenCode);
+		return result;
+	}
+
+	@Override
+	public List<Map<String, Object>> getAppraisalDocId(Long orgId) {
+		Set<Object[]> rawList = goalsRepo.getAppraisalDocId(orgId);
+		return mapLeaveDetails(rawList);
+	}
+
+	private List<Map<String, Object>> mapLeaveDetails(Set<Object[]> result) {
+		List<Map<String, Object>> detailsList = new ArrayList<>();
+
+		for (Object[] record : result) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("appraisalId", record[0] != null ? record[0].toString() : "");
+			map.put("department", record[1] != null ? record[1].toString() : "");
+			detailsList.add(map);
+		}
+		return detailsList;
+	}
+
+	@Override
+	public String getKpiDocId(Long orgId) {
+		String ScreenCode = "KPI";
+		String result = kpiKraRepo.getKpiDocId(orgId, ScreenCode);
+		return result;
+	}
+
+	@Override
+	public String getKraDocId(Long orgId) {
+		String ScreenCode = "KRA";
+		String result = kpiKraRepo.getKraDocId(orgId, ScreenCode);
+		return result;
+	}
 }

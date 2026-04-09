@@ -13,7 +13,7 @@ public class KpiKraDTO {
 
 	private Long id;
 
-	private Long appraisalId;
+	private String appraisalId;
 	private Long orgId;
 	private String createdBy;
 	private boolean active;
