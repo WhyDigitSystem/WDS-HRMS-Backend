@@ -40,8 +40,8 @@ public class KpiKraDetailsVO {
 	private String kpiDescription;
 	
 	@ManyToOne
-	@JsonBackReference
 	@JoinColumn(name="kpikraid")
+	@JsonBackReference
 	private KpiKraVO kpiKraVO;
 
 }

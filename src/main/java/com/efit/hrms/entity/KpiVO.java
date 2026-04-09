@@ -39,7 +39,7 @@ public class KpiVO {
 	private String screenCode="KPI";
 	
 	@ManyToOne
-	@JsonBackReference
 	@JoinColumn(name="kpikraid")
+	@JsonBackReference
 	private KpiKraVO kpiKraVO;
 }
