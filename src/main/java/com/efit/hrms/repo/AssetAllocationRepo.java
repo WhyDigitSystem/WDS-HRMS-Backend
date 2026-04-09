@@ -184,4 +184,8 @@ public interface AssetAllocationRepo extends JpaRepository<AssetAllocationVO, Lo
 			+ " locationcode=?3 group by assetcode,assetname,serialnumber,category,brand,model,location,locationcode having sum(qty)>0")
 	List<Object[]> getAssetAllocationListAll(Long orgId, String branchCode, String employeeCode);
 
+	@Query(nativeQuery = true, value = "select a.employeename,a.employeecode, a.assetname ,a.assetcode,am.serialnumber from assetallocation a join clearancedetails c on c.clearancename=a.assetname join assetmaster am on am.assetcode=a.assetcode join departmenthead d on c.departmentheadid=d.departmentheadid and d.orgid=a.orgid where a.employeecode=?1 and a.orgid=?2 and d.department=?3 and a.branchcode=?4")
+	List<Object[]> getAccessoriesByEmployeeCode(String employeeCode, Long orgId, String department,
+			String branchCode);
+
 }

@@ -1,7 +1,6 @@
 package com.efit.hrms.service;
 
 import java.io.InputStream;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.CityDTO;
+import com.efit.hrms.dto.CompanyCreateDTO;
 import com.efit.hrms.dto.CompanyDTO;
 import com.efit.hrms.dto.CompanyWeekOffDTO;
 import com.efit.hrms.dto.CountryDTO;
@@ -149,7 +149,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 
 	@Override
 	@Transactional
-	public CompanyVO createCompany(CompanyDTO companyDTO) throws Exception {
+	public CompanyVO createCompany(CompanyCreateDTO companyDTO) throws Exception {
 
 			if (companyDTO.getId() == null) {
 				
@@ -178,7 +178,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 			}
 			
 		CompanyVO companyVO = new CompanyVO();
-		getCompanyVOFromCompanyDTO(companyVO, companyDTO);
+		getCompanyVOFromCompanyCreateDTO (companyVO, companyDTO);
 		companyRepo.save(companyVO);
 
 		EmployeeVO employeeVO = new EmployeeVO();
@@ -214,21 +214,16 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		return companyVO;
 	}
 
-	private void getCompanyVOFromCompanyDTO(CompanyVO companyVO, CompanyDTO companyDTO) {
+	private void getCompanyVOFromCompanyCreateDTO(CompanyVO companyVO, CompanyCreateDTO  companyDTO) {
 		companyVO.setCompanyCode(companyDTO.getCompanyCode());
 		companyVO.setCompanyName(companyDTO.getCompanyName());
 		companyVO.setCountry(companyDTO.getCountry());
-		companyVO.setCurrency(companyDTO.getCurrency());
 //		companyVO.setMainCurrency(companyDTO.getMainCurrency());
 		companyVO.setAddress(companyDTO.getAddress());
 		companyVO.setZip(companyDTO.getZip());
 		companyVO.setCity(companyDTO.getCity());
 		companyVO.setState(companyDTO.getState());
 		companyVO.setPhone(companyDTO.getPhone());
-		companyVO.setLeaveCreditControl(companyDTO.getLeaveCreditControl());
-		companyVO.setLeavePolicy(companyDTO.getLeavePolicy());
-		companyVO.setAutoCreditDate(companyDTO.getAutoCreditDate());
-		companyVO.setPanNo(companyDTO.getPanNo());
 		companyVO.setEmail(companyDTO.getEmail());
 //		companyVO.setWebSite(companyDTO.getWebSite());
 //		companyVO.setNote(companyDTO.getNote());
@@ -237,47 +232,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		companyVO.setCreatedBy(companyDTO.getCreatedBy());
 //		companyVO.setUpdatedBy(companyDTO.getCreatedBy());
 		companyVO.setActive(companyDTO.isActive());
-		companyVO.setCancel(companyDTO.isCancel());
-		companyVO.setGstIn(companyDTO.getGstIn());
-		companyVO.setGstRegistered(companyDTO.isGstRegistered());
-		companyVO.setCeo(companyDTO.getCeo());
-		companyVO.setShiftIn(companyDTO.getShiftIn());
-		companyVO.setShiftOut(companyDTO.getShiftOut());
-		companyVO.setLatitude(companyDTO.getLatitude());
-		companyVO.setLongitude(companyDTO.getLongitude());
-		companyVO.setHybrid(companyDTO.isHybrid());
-		companyVO.setOtFlag(companyDTO.getOtFlag());
-		companyVO.setOtType(companyDTO.getOtType());
-		companyVO.setOtPolicy(companyDTO.getOtPolicy());
-		companyVO.setOtEligibleHours(companyDTO.getOtEligibleHours());
-		companyVO.setShiftHours(companyDTO.getShiftHours());
-		companyVO.setSeparation(
-		        String.join(",", companyDTO.getSeparation())
-		);
 
-		companyVO.setLocationAddress(companyDTO.getLocationAddress());
-		if (companyDTO.getAttendanceMode() != null && !companyDTO.getAttendanceMode().isEmpty()) {
-		    String modeString = String.join(",", companyDTO.getAttendanceMode());
-		    companyVO.setAttendanceMode(modeString);
-		} else {
-		    companyVO.setAttendanceMode(null); // or "" as default
-		}
-
-
-		if (companyDTO.getCompanyWeekOffDTO() != null) {
-			List<CompanyWeekOffVO> companyWeekOffVOList = new ArrayList<>();
-			for (CompanyWeekOffDTO companyWeekOffDTO : companyDTO.getCompanyWeekOffDTO()) {
-				CompanyWeekOffVO companyWeekOffVO = new CompanyWeekOffVO();
-				companyWeekOffVO.setWeekOffDays(companyWeekOffDTO.getWeekOffDays());
-				companyWeekOffVO.setWeekNumbers(companyWeekOffDTO.getWeekNumbers());
-
-//				companyWeekOffVO.setOrgId(companyWeekOffDTO.getOrgId());
-				companyWeekOffVO.setCompanyVO(companyVO);
-
-				companyWeekOffVOList.add(companyWeekOffVO);
-			}
-			companyVO.setCompanyWeekOffVO(companyWeekOffVOList);
-		}
 		
 	}
 

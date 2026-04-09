@@ -941,7 +941,7 @@ public class LeaveProcessController extends BaseController {
 	          Object workFromHome = workFromHomeVO.get("workFromHomeVO");
 	          String message = (String) workFromHomeVO.getOrDefault("message", "WorkFromHome approved successfully.");
 
-	          responseObjectsMap.put("workFromHomeVO", workFromHomeVO);
+	          responseObjectsMap.put("workFromHomeVO", workFromHome);
 	          responseObjectsMap.put("message", message);
 
 	          responseDTO = createServiceResponse(responseObjectsMap);

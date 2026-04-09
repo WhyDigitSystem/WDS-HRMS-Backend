@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.CityDTO;
+import com.efit.hrms.dto.CompanyCreateDTO;
 import com.efit.hrms.dto.CompanyDTO;
 import com.efit.hrms.dto.CountryDTO;
 import com.efit.hrms.dto.CurrencyDTO;
@@ -121,7 +122,7 @@ public interface CommonMasterService {
 
 	List<CompanyVO> getCompanyById(Long companyid);
 
-	CompanyVO createCompany(CompanyDTO companyDTO) throws Exception;
+	CompanyVO createCompany(CompanyCreateDTO companyDTO) throws Exception;
 
 	CompanyVO updateCompany(CompanyDTO companyDTO) throws ApplicationException;
 	
@@ -188,6 +189,7 @@ public interface CommonMasterService {
 	List<Map<String, Object>> getAllActiveRolesByOrgId(Long orgId);
 	
 	List<RolesVO> getRolesByOrgId(Long orgId);
+
 
 
 

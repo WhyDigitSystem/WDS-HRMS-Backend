@@ -49,6 +49,7 @@ import com.efit.hrms.dto.LeaveTypeDTO;
 import com.efit.hrms.dto.TravelRequestDTO;
 import com.efit.hrms.dto.WorkFromHomeDTO;
 import com.efit.hrms.entity.ApprovalLeavesVO;
+import com.efit.hrms.entity.AttendanceDailyVO;
 import com.efit.hrms.entity.CheckInOutAdjustmentVO;
 import com.efit.hrms.entity.CheckInVO;
 import com.efit.hrms.entity.CompanyVO;
@@ -68,6 +69,7 @@ import com.efit.hrms.entity.UserVO;
 import com.efit.hrms.entity.WorkFromHomeVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.ApprovalLeavesRepo;
+import com.efit.hrms.repo.AttendanceDailyRepo;
 import com.efit.hrms.repo.CheckInOutAdjustmentRepo;
 import com.efit.hrms.repo.CheckInRepo;
 import com.efit.hrms.repo.CompanyRepo;
@@ -152,6 +154,9 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 	@Autowired
 	NotificationRepo notificationRepo;
+	
+	@Autowired
+	AttendanceDailyRepo attendanceDailyRepo;
 
 	// LeaveType
 	@Override
@@ -2019,7 +2024,10 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		workFromHomeVO.setEmployeeCode(workFromHomeDTO.getEmployeeCode());
 		workFromHomeVO.setEmployeeName(workFromHomeDTO.getEmployeeName());
 		workFromHomeVO.setOrgId(workFromHomeDTO.getOrgId());
-		workFromHomeVO.setEmployeeEmail(workFromHomeDTO.getEmployeeEmail());
+		EmployeeVO employeeOpt = employeeRepo.findByEmployeeCode(workFromHomeDTO.getEmployeeCode());
+
+	
+		workFromHomeVO.setEmployeeEmail(employeeOpt.getEmail());
 		workFromHomeVO.setApproveStatus("PENDING");
 
 	}
@@ -2101,7 +2109,11 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 					// Set entry time
 					workFromHomeVO.setApproveStatus(action);
-				}
+					AttendanceDailyVO attendanceDailyVO = attendanceDailyRepo.findByCheckInDateAndEmpCodeAndOrgId(workFromHomeVO.getWfhDate(),workFromHomeVO.getEmployeeCode(),workFromHomeVO.getOrgId());
+					attendanceDailyVO.setInTime(LocalTime.MIDNIGHT);
+					attendanceDailyVO.setOutTime(LocalTime.MIDNIGHT);
+					attendanceDailyVO.setEffectiveHours(0);
+					attendanceDailyVO.setGrossHours(0);				}
 
 				workFromHomeVO.setApproveStatus(action);
 				workFromHomeVO.setApproveBy(actionBy);
