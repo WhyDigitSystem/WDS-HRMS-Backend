@@ -46,6 +46,9 @@ public class KpiKraVO {
 	@Column(name = "branchcode")
 	private String branchCode;
 
+	@Column(name = "designation")
+	private String designation;
+	
 	private String branch;
 
 	@Column(name = "finyear")
