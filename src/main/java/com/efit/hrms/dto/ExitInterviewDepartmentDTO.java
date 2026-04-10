@@ -6,19 +6,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class GoalsDTO {
+@AllArgsConstructor
+public class ExitInterviewDepartmentDTO {
 
 	private Long id;
-//	private String appraisalId;
 	private String designation;
+	private String designationCode;
+	private String branch;
+	private String branchCode;
 	private Long orgId;
 	private String createdBy;
-	private Long finYear;
-	private boolean active;
+	private boolean active;	
+	
+    private List<QuestionDTO> questionDTO; 
 
-	private List<GoalsDetailsDTO> goalsDetailsDTO;
 
 }

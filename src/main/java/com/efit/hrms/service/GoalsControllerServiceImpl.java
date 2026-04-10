@@ -643,6 +643,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		kpiKraVO.setFinYear(kpiKraDTO.getFinYear());
 		kpiKraVO.setBranchCode(kpiKraDTO.getBranchCode());
 		kpiKraVO.setBranch(kpiKraDTO.getBranch());
+		kpiKraVO.setDesignation(kpiKraDTO.getDesignation());
 
 		Long orgId = kpiKraDTO.getOrgId();
 		boolean isUpdate = ObjectUtils.isNotEmpty(kpiKraDTO.getId());
@@ -811,7 +812,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	private GoalsVO getGoalsVoFromGoalsDTO(GoalsVO goalsVO, @Valid GoalsDTO goalsDTO) {
 
 		goalsVO.setActive(goalsDTO.isActive());
-		goalsVO.setDepartment(goalsDTO.getDepartment());
+		goalsVO.setDesignation(goalsDTO.getDesignation());
 		goalsVO.setOrgId(goalsDTO.getOrgId());
 		goalsVO.setFinYear(goalsDTO.getFinYear());
 

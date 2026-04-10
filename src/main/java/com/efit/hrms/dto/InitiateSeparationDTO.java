@@ -46,4 +46,6 @@ public class InitiateSeparationDTO {
 	
  private List<ClearanceManagementDTO> clearanceManagementDTO;
 	
+ private List<ExitInterviewDTO> exitInterviewDTO;
+
 }

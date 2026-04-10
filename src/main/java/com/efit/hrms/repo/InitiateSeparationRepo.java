@@ -1,6 +1,7 @@
 package com.efit.hrms.repo;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -36,10 +37,28 @@ public interface InitiateSeparationRepo  extends JpaRepository<InitiateSeparatio
 			+ ") a")
 	List<Object[]> getInitiateSeparationCountByOrgId(Long orgId, String branchCode);
 
-	@Query("SELECT i.createdBy FROM InitiateSeparationVO i")
+	@Query("SELECT i.createdBy FROM InitiateSeparationVO i where employeecode=?1 order by initiateseparationid desc")
 	String getCreatedBy(String employeeCode);
 
 	@Query(nativeQuery = true,value="select * from initiateseparation where orgid=?1 and branchcode=?2  AND ( ?3 = 'ALL' OR employeecode = ?3) and active=1 ")
 	List<InitiateSeparationVO> getInitiateSeparationByOrgIdforclearance(Long orgId, String branchCode, String empCode);
+
+	@Query(nativeQuery = true,value="SELECT \r\n"
+			+ "    c.clearanceitem, \r\n"
+			+ "    h.department,\r\n"
+			+ "    h.departmentcode \r\n"
+			+ "FROM clearancemanagement c\r\n"
+			+ "JOIN initiateseparation i \r\n"
+			+ "    ON i.initiateseparationid = c.initiateseparationid\r\n"
+			+ "JOIN clearancedetails d \r\n"
+			+ "    ON c.clearanceitem = d.clearancename\r\n"
+			+ "JOIN departmenthead h \r\n"
+			+ "    ON h.departmentheadid = d.departmentheadid\r\n"
+			+ "WHERE i.employeecode =?1 and h.orgid=?2 and h.branchcode=?3 and i.active=1 ")
+	List<Object[]> getCleranceDetailsByEmployeeCode(String employeeCode, Long orgId, String branchCode);
+
+	@Query(nativeQuery = true,value="select * from initiateseparation where orgid=?1 and branchCode=?2 and active=1 AND CURDATE() >= lastworkingdate and status='APPROVED' ")
+	List<Map<String, Object>> getSeparationEmployeeForSettlement(Long orgId, String branchCode);
+
 
 }

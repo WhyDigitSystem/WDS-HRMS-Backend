@@ -44,6 +44,8 @@ public class InitiateSeparationVO {
 	private String employeeName;
 	@Column(name = "employeecode")
 	private String employeeCode;
+	@Column(name = "employeeemail")
+	private String employeeEmail;
 	@Column(name = "department")
 	private String department;
 	@Column(name = "position")
@@ -122,6 +124,10 @@ public class InitiateSeparationVO {
 	@OneToMany(mappedBy = "initiateSeparationVO", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	private List<ClearanceManagementVO> clearanceManagementVO = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "initiateSeparationVO", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
+	private List<ExitInterviewVO> exitInterviewVO = new ArrayList<>();
 	
 	
 	@Embedded

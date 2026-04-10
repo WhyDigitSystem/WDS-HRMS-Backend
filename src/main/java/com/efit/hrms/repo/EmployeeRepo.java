@@ -2,6 +2,7 @@ package com.efit.hrms.repo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -141,7 +142,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "    BETWEEN DAYOFYEAR(CURDATE())\r\n"
 			+ "    AND DAYOFYEAR(DATE_ADD(CURDATE(), INTERVAL 3 DAY))\r\n"
 			+ "    AND YEAR(joiningdate) < YEAR(CURDATE())\r\n"
-			+ "    AND active = 1 \r\n"
+			+ "    AND active = 1  and orgid=?1\r\n"
 			+ "\r\n"
 			+ "\r\n"
 			+ "")
@@ -200,6 +201,79 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	
 	@Query(value = "SELECT email FROM employee WHERE employeecode = :empCode", nativeQuery = true)
 	String getEmployeeEmail(@Param("empCode") String empCode);
+
+	@Query(value = "SELECT employee,employeecode,designation FROM employee WHERE orgid =?1 and designation='General Manager' ", nativeQuery = true)
+	List<Object[]> getGeneralManagerByOrgId(Long orgId);
+
+	@Query(value = "SELECT employee,employeecode,email FROM employee WHERE orgid =?1 and department=?2 and branchcode=?3 and active=1 ", nativeQuery = true)
+	List<Object[]> getEmployeeforDepartmentHeadByOrgId(Long orgId, String department, String branchCode);
+
+	@Query(value = "SELECT \r\n"
+			+ "    e.employeeid AS employeeId,\r\n"
+			+ "    e.alternativemobileno AS alternativeMobileNo,\r\n"
+			+ "    e.aadharno AS aadharNo,\r\n"
+			+ "    e.accountno AS accountNo,\r\n"
+			+ "    e.active AS active,\r\n"
+			+ "    e.bloodgroup AS bloodGroup,\r\n"
+			+ "    e.branch AS branch,\r\n"
+			+ "    e.branchcode AS branchCode,\r\n"
+			+ "    e.cancel AS cancel,\r\n"
+			+ "    e.cancelremarks AS cancelRemarks,\r\n"
+			+ "    e.createdon AS createdOn,\r\n"
+			+ "    e.modifiedon AS modifiedOn,\r\n"
+			+ "    e.createdby AS createdBy,\r\n"
+			+ "    e.dateofbirth AS dateOfBirth,\r\n"
+			+ "    e.department AS department,\r\n"
+			+ "    e.designation AS designation,\r\n"
+			+ "    e.email AS email,\r\n"
+			+ "    e.employeeaddress AS employeeAddress,\r\n"
+			+ "    e.employeecode AS employeeCode,\r\n"
+			+ "    e.employee AS employee,\r\n"
+			+ "    e.gender AS gender,\r\n"
+			+ "    e.grade AS grade,\r\n"
+			+ "    e.ifsccode AS ifscCode,\r\n"
+			+ "    e.joiningdate AS joiningDate,\r\n"
+			+ "    e.mobileno AS mobileNo,\r\n"
+			+ "    e.orgid AS orgId,\r\n"
+			+ "    e.panno AS panNo,\r\n"
+			+ "    e.reportingrole AS reportingRole,\r\n"
+			+ "    e.reportingperson AS reportingPerson,\r\n"
+			+ "    e.reportingpersonemail AS reportingPersonEmail,\r\n"
+			+ "    e.resigndate AS resignDate,\r\n"
+			+ "    e.team AS team,\r\n"
+			+ "    e.modifiedby AS modifiedBy,\r\n"
+			+ "    e.reportingpersoncode AS reportingPersonCode,\r\n"
+			+ "    e.uanno AS uanNo,\r\n"
+			+ "    e.bankname AS bankName,\r\n"
+			+ "    e.type AS type,\r\n"
+			+ "    e.esiflag AS esiFlag,\r\n"
+			+ "    e.esipercentage AS esiPercentage,\r\n"
+			+ "    e.pfflag AS pfFlag,\r\n"
+			+ "    e.pfpercentage AS pfPercentage,\r\n"
+			+ "    c.companyname AS companyName,\r\n"
+			+ "    c.companycode AS companyCode,\r\n"
+			+ "    e.contractor AS contractor,\r\n"
+			+ "    e.contactperson AS contactPerson,\r\n"
+			+ "    e.contactnumber AS contactNumber,\r\n"
+			+ "    e.email AS contactEmail,\r\n"
+			+ "    e.otflag AS otFlag,\r\n"
+			+ "    e.bioid AS bioId,\r\n"
+			+ "    e.payslipeffectivedate\r\n"
+			+ "FROM employee e\r\n"
+			+ "JOIN company c ON e.orgid = c.companyid\r\n"
+			+ "WHERE e.orgid = ?1   -- 🔁 change orgId\r\n"
+			+ "  AND e.active = 1\r\n"
+			+ "  AND NOT EXISTS (\r\n"
+			+ "        SELECT 1 \r\n"
+			+ "        FROM initiateseparation i \r\n"
+			+ "        WHERE i.employeecode = e.employeecode\r\n"
+			+ "  )\r\n"
+			+ "ORDER BY e.employee ASC"
+			+ "", nativeQuery = true)
+	List<Map<String, Object>> getSeparationEmployeeByOrgId(Long orgId);
+
+
+
 
 
 

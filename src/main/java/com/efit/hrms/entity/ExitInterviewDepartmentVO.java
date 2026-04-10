@@ -22,59 +22,38 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "kpikra")
+@Table(name = "exitinterviewdepartment")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class KpiKraVO {
+public class ExitInterviewDepartmentVO {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "kpikragen")
-	@SequenceGenerator(name = "kpikragen", sequenceName = "kpikraseq", initialValue = 1000000001, allocationSize = 1)
-	@Column(name = "kpikraid")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "exitinterviewdepartmentgen")
+	@SequenceGenerator(name = "exitinterviewdepartmentgen", sequenceName = "exitinterviewdepartmentseq", initialValue = 1000000001, allocationSize = 1)
+	@Column(name = "exitinterviewdepartmentid")
 	private Long id;
-
-	@Column(name = "appraisalid")
-	private String appraisalId;
-
-	@Column(name = "orgid")
-	private Long orgId;
-	@Column(name = "createdby")
-	private String createdBy;
-	@Column(name = "modifiedby")
-	private String updatedBy;
-	@Column(name = "branchcode")
-	private String branchCode;
 
 	@Column(name = "designation")
 	private String designation;
-	
+	@Column(name = "designationcode")
+	private String designationCode;
+	@Column(name = "branch")
 	private String branch;
-
-	@Column(name = "finyear")
-	private String finYear;
-
+	@Column(name = "branchcode")
+	private String branchCode;
+	@Column(name = "createdby")
+	private String createdBy;
+	@Column(name = "updatedby")
+	private String updatedBy;
+	@Column(name = "orgid")
+	private Long orgId;
 	@Column(name = "active")
-	private boolean active = true;
+	private boolean active;	
 	@Column(name = "cancel")
-	private boolean cancel = false;
-//	
-//	@OneToMany(mappedBy = "kpiKraVO",cascade = CascadeType.ALL)
-//	@JsonManagedReference
-//	private List<KpiKraDetailsVO> kpiKraDetailsVO;
-//	
-//	@OneToMany(mappedBy = "kpiKraVO",cascade = CascadeType.ALL)
-//	@JsonManagedReference
-//	private List<KpiVO> kpiVO;
+	private boolean cancel=false;
 
-	@OneToMany(mappedBy = "kpiKraVO", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<KpiVO> kpiVO;
-
-	@OneToMany(mappedBy = "kpiKraVO", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<KpiKraDetailsVO> kpiKraDetailsVO;
-
+	
 	@JsonGetter("active")
 	public String getActive() {
 		return active ? "Active" : "In-Active";
@@ -85,7 +64,11 @@ public class KpiKraVO {
 	public String getCancel() {
 		return cancel ? "T" : "F";
 	}
-
+	
+	@OneToMany(mappedBy = "exitInterviewDepartmentVO", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	List<QuestionVO> questionVO;
+	
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
 

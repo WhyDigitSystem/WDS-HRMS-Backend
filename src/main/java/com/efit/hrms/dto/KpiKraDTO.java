@@ -22,6 +22,7 @@ public class KpiKraDTO {
 	private String branchCode;
 
 	private String branch;
+	private String designation;
 
 	private List<KpiKraDetailsDTO> kpiKraDetailsDTO;
 

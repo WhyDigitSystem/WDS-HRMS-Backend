@@ -37,7 +37,7 @@ public class GoalsVO {
 	@Column(name = "appraisalid")
 	private String appraisalId;
 	
-	private String department;
+	private String designation;
 	
 	@Column(name = "orgid")
 	private Long orgId;
@@ -49,7 +49,7 @@ public class GoalsVO {
 	@Column(name="finyear")
 	private Long finYear;
 
-	private boolean active;
+	private boolean active=true;
 	@Column(name = "cancel")
 	private boolean cancel;
 	
