@@ -53,6 +53,18 @@ public class TicketVO {
 	@Column(name = "notificationflag")
 	private Boolean notificationFlag = false;
 
+	@Column(name = "companyname")
+	private String companyName;
+
+	@Column(name = "branch")
+	private String branch;
+
+	@Column(name = "branchcode")
+	private String branchCode;
+	
+	@Column(name = "sourceId")
+	private Long sourceId;
+	
 	private boolean cancel;
 
 	@Lob
