@@ -41,4 +41,16 @@ public interface SelfGoalsRepo extends JpaRepository<SelfGoalsVO, Long> {
 		       nativeQuery = true)	
 	List<SelfGoalsVO> getSelfGoalsForPerformanceGoals(Long orgId, String empCode, Long finYear);
 
+//	@Query(value = "\r\n"
+//			+ "SELECT *\r\n"
+//			+ "FROM performancegoals s\r\n"
+//			+ "JOIN performancegoalsdetails d \r\n"
+//			+ "    ON s.performancegoalsid = d.performancegoalsid\r\n"
+//			+ "    join selfgoals a on a.code=s.empcode and a.orgid=s.orgid\r\n"
+//			+ "WHERE s.orgid = ?1\r\n"
+//			+ "  AND s.empcode = ?2\r\n"
+//			+ "  and a.appraisalid=?3 ", 
+//		       nativeQuery = true)	
+//	List<SelfGoalsVO> getPerformanceGoalsForFirstLevelSInput(Long orgId, String empCode, String appraisalId);
+
 }

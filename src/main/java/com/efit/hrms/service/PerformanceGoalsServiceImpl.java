@@ -430,6 +430,37 @@ public class PerformanceGoalsServiceImpl implements PerformanceGoalsService {
 	}
 	
 	@Override
+	public List<Map<String, Object>> getSupervisorRatings(
+	        Long orgId, String empCode, String appraisalYear) {
+
+	    List<Object[]> rows = performanceGoalsRepo.getSupervisorRatings(orgId, empCode, appraisalYear);
+
+	    if (rows.isEmpty()) {
+	        throw new RuntimeException("No Supervisor Ratings found for given inputs");
+	    }
+
+	    List<Map<String, Object>> list = new ArrayList<>();
+
+	    for (Object[] row : rows) {
+
+	        Map<String, Object> map = new HashMap<>();
+
+	        map.put("detailsId", ((Number) row[0]).longValue());
+	        map.put("goals", (String) row[1]);
+
+	        // 🔥 safe conversion
+	        map.put("supervisorRating",
+	                row[2] != null ? row[2].toString() : null);
+
+	        map.put("score",
+	                row[3] != null ? Integer.parseInt(row[3].toString()) : null);
+	        list.add(map);
+	    }
+
+	    return list;
+	}
+	
+	@Override
 	public List<PerformanceGoalsVO> getPerformanceGoalsByOrgIdAndEmployeeCode(Long orgId,String employeeCode) {
 	
 	return  performanceGoalsRepo.getPerformanceGoalsByOrgIdAndEmployeeCode( orgId, employeeCode);

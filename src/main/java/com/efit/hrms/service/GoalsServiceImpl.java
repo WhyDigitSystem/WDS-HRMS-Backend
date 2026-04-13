@@ -22,6 +22,8 @@ import com.efit.hrms.dto.AppraiseeDTO;
 import com.efit.hrms.dto.AppraiseeDetailsDTO;
 import com.efit.hrms.dto.AppraiserDTO;
 import com.efit.hrms.dto.AppraiserDetailsDTO;
+import com.efit.hrms.dto.FirstLevelSupervisorInputDTO;
+import com.efit.hrms.dto.FirstLevelSupervisorInputDetailsDTO;
 import com.efit.hrms.dto.GoalsDTO;
 import com.efit.hrms.dto.GoalsDetailsDTO;
 import com.efit.hrms.dto.GradeDTO;
@@ -43,6 +45,8 @@ import com.efit.hrms.entity.AppraiseeVO;
 import com.efit.hrms.entity.AppraiserDetailsVO;
 import com.efit.hrms.entity.AppraiserVO;
 import com.efit.hrms.entity.DocTypeMappingDetailsVO;
+import com.efit.hrms.entity.FirstLevelSupervisorInputDetailsVO;
+import com.efit.hrms.entity.FirstLevelSupervisorInputVO;
 import com.efit.hrms.entity.GoalsDetailsVO;
 import com.efit.hrms.entity.GoalsVO;
 import com.efit.hrms.entity.GradeVO;
@@ -50,6 +54,7 @@ import com.efit.hrms.entity.HrReviewVO;
 import com.efit.hrms.entity.KpiKraDetailsVO;
 import com.efit.hrms.entity.KpiKraVO;
 import com.efit.hrms.entity.KpiVO;
+import com.efit.hrms.entity.PerformanceGoalsVO;
 import com.efit.hrms.entity.PreGoalsDetailsVO;
 import com.efit.hrms.entity.PreGoalsVO;
 import com.efit.hrms.entity.ScoreVO;
@@ -65,6 +70,8 @@ import com.efit.hrms.repo.AppraiseeRepo;
 import com.efit.hrms.repo.AppraiserDetailsRepo;
 import com.efit.hrms.repo.AppraiserRepo;
 import com.efit.hrms.repo.DocTypeMappingDetailsRepo;
+import com.efit.hrms.repo.FirstLevelSupervisorInputDetailsRepo;
+import com.efit.hrms.repo.FirstLevelSupervisorInputRepo;
 import com.efit.hrms.repo.GoalsDetailsRepo;
 import com.efit.hrms.repo.GoalsRepo;
 import com.efit.hrms.repo.GradeRepo;
@@ -72,6 +79,7 @@ import com.efit.hrms.repo.HrReviewRepo;
 import com.efit.hrms.repo.KpiKraDetailsRepo;
 import com.efit.hrms.repo.KpiKraRepo;
 import com.efit.hrms.repo.KpiRepo;
+import com.efit.hrms.repo.PerformanceGoalsRepo;
 import com.efit.hrms.repo.PreGoalsDetailsRepo;
 import com.efit.hrms.repo.PreGoalsRepo;
 import com.efit.hrms.repo.ScoreRepo;
@@ -81,9 +89,9 @@ import com.efit.hrms.repo.Supervisor1FeedBackRepo;
 import com.efit.hrms.repo.WeightageRepo;
 
 @Service
-public class GoalsControllerServiceImpl implements GoalsControllerService {
+public class GoalsServiceImpl implements GoalsService {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(GoalsControllerServiceImpl.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(GoalsServiceImpl.class);
 
 	@Autowired
 	PreGoalsRepo preGoalsRepo;
@@ -147,6 +155,15 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 	@Autowired
 	DocTypeMappingDetailsRepo docTypeMappingDetailsRepo;
+	
+	@Autowired
+	PerformanceGoalsRepo performanceGoalsRepo;
+	
+	@Autowired
+	FirstLevelSupervisorInputDetailsRepo firstLevelSupervisorInputDetailsRepo;
+	
+	@Autowired
+	FirstLevelSupervisorInputRepo firstLevelSupervisorInputRepo;
 
 	@Override
 	public Map<String, Object> createUpdatePreGoals(@Valid PreGoalsDTO preGoalsDTO) throws ApplicationException {
@@ -1097,6 +1114,12 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	}
 	
 	@Override
+	public List<PerformanceGoalsVO> getPerformanceGoalsForFirstLevelSInput(Long orgId, String empCode, String appraisalId) {
+
+	    return performanceGoalsRepo.getPerformanceGoalsForFirstLevelSInput(orgId, empCode, appraisalId);
+	}
+	
+	@Override
 	public Optional<SelfGoalsVO> getSelfGoalsById(Long id) {
 		return selfGoalsRepo.findById(id);
 	}
@@ -1647,4 +1670,99 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 	    return map;
 	}
+	
+	@Override
+	public Map<String, Object> createUpdateFirstLevelSupervisorInput(
+	        @Valid FirstLevelSupervisorInputDTO dto) throws ApplicationException {
+
+	    String message;
+	    FirstLevelSupervisorInputVO vo;
+
+	    if (ObjectUtils.isEmpty(dto.getId())) {
+
+	        vo = new FirstLevelSupervisorInputVO();
+	        vo.setCreatedBy(dto.getCreatedBy());
+	        vo.setUpdatedBy(dto.getCreatedBy());
+
+	        message = "First Level Supervisor Input Created Successfully";
+
+	    } else {
+
+	        vo = firstLevelSupervisorInputRepo.findById(dto.getId()).orElseThrow(
+	                () -> new ApplicationException("Record not found with id: " + dto.getId()));
+
+	        vo.setUpdatedBy(dto.getUpdatedBy());
+
+	        message = "First Level Supervisor Input Updated Successfully";
+	    }
+
+	    vo = mapVOFromDTO(vo, dto);
+
+	    firstLevelSupervisorInputRepo.save(vo);
+
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("message", message);
+	    response.put("firstLevelSupervisorInputVO", vo);
+
+	    return response;
+	}
+	
+	private FirstLevelSupervisorInputVO mapVOFromDTO(
+	        FirstLevelSupervisorInputVO vo,
+	        FirstLevelSupervisorInputDTO dto) {
+
+	    // Header Mapping
+	    vo.setAppraisalId(dto.getAppraisalId());
+	    vo.setEmployeeName(dto.getEmployeeName());
+	    vo.setEmployeeCode(dto.getEmployeeCode());
+	    vo.setDepartment(dto.getDepartment());
+	    vo.setDesignation(dto.getDesignation());
+	    vo.setSupervisorCode(dto.getSupervisorCode());
+	    vo.setSupervisorName(dto.getSupervisorName());
+	    vo.setReportingHeadDesignation(dto.getReportingHeadDesignation());
+	    vo.setOrgId(dto.getOrgId());
+	    vo.setBranchCode(dto.getBranchCode());
+	    vo.setBranch(dto.getBranch());
+	    vo.setFinyear(dto.getFinyear());
+
+	    // 🔥 IMPORTANT: DELETE OLD CHILD (like your logic)
+	    if (ObjectUtils.isNotEmpty(dto.getId())) {
+
+	        List<FirstLevelSupervisorInputDetailsVO> oldList =
+	        		firstLevelSupervisorInputDetailsRepo.findByFirstLevelSupervisorInputVO(vo);
+
+	        firstLevelSupervisorInputDetailsRepo.deleteAll(oldList);
+	    }
+
+	    // Child Mapping
+	    List<FirstLevelSupervisorInputDetailsVO> childList = new ArrayList<>();
+
+	    for (FirstLevelSupervisorInputDetailsDTO d : dto.getDetails()) {
+
+	        FirstLevelSupervisorInputDetailsVO child = new FirstLevelSupervisorInputDetailsVO();
+
+	        child.setGoals(d.getGoals());
+	        child.setSelfInput(d.getSelfInput());
+	        child.setScore(d.getScore());
+	        child.setSupervisorRating(d.getSupervisorRating());
+	        child.setFirstLevelSupervisorInputVO(vo);
+
+	        childList.add(child);
+	    }
+
+	    vo.setFirstLevelSupervisorInputDetailsVO(childList);
+
+	    return vo;
+	}
+	
+	@Override
+	public Optional<FirstLevelSupervisorInputVO> getFirstLevelSupervisorInputById(Long id) {
+		return firstLevelSupervisorInputRepo.findById(id);
+	};
+	
+	@Override
+	public List<FirstLevelSupervisorInputVO> getFirstLevelSupervisorInputByOrgId(Long orgId) {
+		return firstLevelSupervisorInputRepo.getFirstLevelSupervisorInputByOrgId(orgId);
+	}
+
 }

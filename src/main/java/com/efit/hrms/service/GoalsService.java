@@ -12,6 +12,7 @@ import com.efit.hrms.dto.AdditionalGoalsDTO;
 import com.efit.hrms.dto.AppraisalPeriodDTO;
 import com.efit.hrms.dto.AppraiseeDTO;
 import com.efit.hrms.dto.AppraiserDTO;
+import com.efit.hrms.dto.FirstLevelSupervisorInputDTO;
 import com.efit.hrms.dto.GoalsDTO;
 import com.efit.hrms.dto.GradeDTO;
 import com.efit.hrms.dto.HrReviewDTO;
@@ -25,10 +26,12 @@ import com.efit.hrms.entity.AdditionalGoalsVO;
 import com.efit.hrms.entity.AppraisalPeriodVO;
 import com.efit.hrms.entity.AppraiseeVO;
 import com.efit.hrms.entity.AppraiserVO;
+import com.efit.hrms.entity.FirstLevelSupervisorInputVO;
 import com.efit.hrms.entity.GoalsVO;
 import com.efit.hrms.entity.GradeVO;
 import com.efit.hrms.entity.HrReviewVO;
 import com.efit.hrms.entity.KpiKraVO;
+import com.efit.hrms.entity.PerformanceGoalsVO;
 import com.efit.hrms.entity.PreGoalsVO;
 import com.efit.hrms.entity.ScoreVO;
 import com.efit.hrms.entity.SelfGoalsVO;
@@ -37,7 +40,7 @@ import com.efit.hrms.entity.WeightageVO;
 import com.efit.hrms.exception.ApplicationException;
 
 @Service
-public interface GoalsControllerService {
+public interface GoalsService {
 
 	// PREGOALS
 
@@ -186,6 +189,16 @@ public interface GoalsControllerService {
 	Map<String, Object> approveSelfGoalsDetails(List<Long> detailIds, String updatedBy, String status);
 
 	List<SelfGoalsVO> getSelfGoalsForPerformanceGoals(Long orgId, String empCode, Long finYear);
+
+	List<PerformanceGoalsVO> getPerformanceGoalsForFirstLevelSInput(Long orgId, String empCode, String appraisalId);
+
+	Map<String, Object> createUpdateFirstLevelSupervisorInput(@Valid FirstLevelSupervisorInputDTO dto) throws ApplicationException;
+
+	Optional<FirstLevelSupervisorInputVO> getFirstLevelSupervisorInputById(Long id);
+
+	List<FirstLevelSupervisorInputVO> getFirstLevelSupervisorInputByOrgId(Long orgId);
+
+//	List<SelfGoalsVO> getSelfGoalsForFirstLevelSInput(Long orgId, String empCode, Long finYear, String appraisalId);
 
 //	List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCode(Long orgId, String empCode);
 
