@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -291,6 +292,12 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 			@Valid AppraisalPeriodDTO appraisalPeriodDTO) {
 
 		appraisalPeriodVO.setAppraisalId(appraisalPeriodDTO.getAppraisalId());
+		
+		KpiKraVO kpiKraVO = kpiKraRepo.findByAppraisalId(appraisalPeriodDTO.getAppraisalId());
+		kpiKraVO.setFinYear(appraisalPeriodDTO.getFinYear());
+		
+		kpiKraRepo.save(kpiKraVO);
+		
 		appraisalPeriodVO.setFinYear(appraisalPeriodDTO.getFinYear());
 		appraisalPeriodVO.setActive(appraisalPeriodDTO.isActive());
 		appraisalPeriodVO.setType(appraisalPeriodDTO.getType());
@@ -607,10 +614,23 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 		String message;
 		KpiKraVO kpiKraVO;
+		String screenCode = "GO";
 
 		if (ObjectUtils.isEmpty(kpiKraDTO.getId())) {
+			
+			
 
 			kpiKraVO = new KpiKraVO();
+			
+			String docId = goalsRepo.getGoalsDocId(kpiKraDTO.getOrgId(), screenCode);
+			kpiKraVO.setAppraisalId(docId);
+
+			// GETDOCID LASTNO +1
+			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+					.findByOrgIdAndScreenCode(kpiKraDTO.getOrgId(), screenCode);
+			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
+			
 			kpiKraVO.setCreatedBy(kpiKraDTO.getCreatedBy());
 			kpiKraVO.setUpdatedBy(kpiKraDTO.getCreatedBy());
 
@@ -640,7 +660,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		kpiKraVO.setAppraisalId(kpiKraDTO.getAppraisalId());
 		kpiKraVO.setActive(kpiKraDTO.isActive());
 		kpiKraVO.setOrgId(kpiKraDTO.getOrgId());
-		kpiKraVO.setFinYear(kpiKraDTO.getFinYear());
+//		kpiKraVO.setFinYear(kpiKraDTO.getFinYear());
 		kpiKraVO.setBranchCode(kpiKraDTO.getBranchCode());
 		kpiKraVO.setBranch(kpiKraDTO.getBranch());
 		kpiKraVO.setDesignation(kpiKraDTO.getDesignation());
@@ -680,12 +700,12 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 			}
 
 			KpiVO kpiVO = new KpiVO();
-			kpiVO.setKpiId(kpiId);
+			kpiVO.setKpiId(kpiDTO.getKpiId());
 			kpiVO.setKpiDescription(kpiDTO.getKpiDescription().trim());
 			kpiVO.setKpiKraVO(kpiKraVO);
 
 			newKpiList.add(kpiVO);
-			kpiMap.put(kpiDTO.getKpiDescription().trim(), kpiId);
+			kpiMap.put(kpiDTO.getKpiDescription().trim(), kpiDTO.getKpiId());
 		}
 
 		// ================= KRA =================
@@ -711,8 +731,8 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 			}
 
 			KpiKraDetailsVO kraVO = new KpiKraDetailsVO();
-			kraVO.setKraId(kraId);
-			kraVO.setKpiId(kpiId);
+			kraVO.setKraId(dto.getKraId());
+			kraVO.setKpiId(dto.getKpiId());
 			kraVO.setKpiDescription(dto.getKpiDescription().trim());
 			kraVO.setKraDescription(dto.getKraDescription());
 			kraVO.setRo(dto.getRo());
@@ -774,14 +794,14 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 		if (ObjectUtils.isEmpty(goalsDTO.getId())) {
 
-			String docId = goalsRepo.getGoalsDocId(goalsDTO.getOrgId(), screenCode);
-			goalsVO.setAppraisalId(docId);
-
-			// GETDOCID LASTNO +1
-			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
-					.findByOrgIdAndScreenCode(goalsDTO.getOrgId(), screenCode);
-			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
-			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
+//			String docId = goalsRepo.getGoalsDocId(goalsDTO.getOrgId(), screenCode);
+//			goalsVO.setAppraisalId(docId);
+//
+//			// GETDOCID LASTNO +1
+//			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+//					.findByOrgIdAndScreenCode(goalsDTO.getOrgId(), screenCode);
+//			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+//			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
 
 			goalsVO.setCreatedBy(goalsDTO.getCreatedBy());
 			goalsVO.setUpdatedBy(goalsDTO.getCreatedBy());
@@ -815,6 +835,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		goalsVO.setDesignation(goalsDTO.getDesignation());
 		goalsVO.setOrgId(goalsDTO.getOrgId());
 		goalsVO.setFinYear(goalsDTO.getFinYear());
+		goalsVO.setAppraisalId(goalsDTO.getAppraisalId());
 
 		if (ObjectUtils.isNotEmpty(goalsDTO.getId())) {
 
@@ -845,6 +866,12 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	public List<GoalsVO> getGoalsByOrgId(Long orgId) {
 		return goalsRepo.getGoals(orgId);
 	}
+	
+	@Override
+	public List<GoalsVO> getGoalsByOrgIdByDesignation(Long orgId,String designation,String appraisalid) {
+		return goalsRepo.getGoalsByOrgIdByDesignation(orgId,designation,appraisalid);
+	}
+
 
 	@Override
 	public Optional<GoalsVO> getGoalsById(Long id) {
@@ -1007,6 +1034,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		selfGoalsVO.setSupervisorName(selfGoalsDTO.getSupervisorName());
 		selfGoalsVO.setActive(selfGoalsDTO.isActive());
 		selfGoalsVO.setFinYear(selfGoalsDTO.getFinYear());
+		selfGoalsVO.setDesignation(selfGoalsDTO.getDesignation());
 
 		if (ObjectUtils.isNotEmpty(selfGoalsDTO.getId())) {
 			List<SelfGoalsDetailsVO> goalsDetailsVOs = selfGoalsDetailsRepo.findBySelfGoalsVO(selfGoalsVO);
@@ -1021,6 +1049,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 			selfGoalsDetailsVO.setArea(selfGoalsDetailsDTO.getArea());
 			selfGoalsDetailsVO.setKeyPerformanceIndicator(selfGoalsDetailsDTO.getKeyPerformanceIndicator());
 			selfGoalsDetailsVO.setGoals(selfGoalsDetailsDTO.getGoals());
+			selfGoalsDetailsVO.setStatus("PENDING");
 
 			selfGoalsDetailsVO.setSelfGoalsVO(selfGoalsVO);
 			selfGoalsDetailsVOs.add(selfGoalsDetailsVO);
@@ -1036,7 +1065,37 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	public List<SelfGoalsVO> getSelfGoalsByOrgId(Long orgId) {
 		return selfGoalsRepo.getSelfGoals(orgId);
 	}
+	
+	@Override
+	public List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCode(Long orgId,String empCode) {
+		return selfGoalsRepo.getSelfGoalsByOrgIdAndEmpCode(orgId,empCode);
+	}
 
+	@Override
+	public List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCodeAndFinyear(Long orgId,String empCode,Long finYear) {
+		return selfGoalsRepo.getSelfGoalsByOrgIdAndEmpCodeAndFinyear(orgId,empCode,finYear);
+	}
+//	@Override
+//	public List<SelfGoalsVO> getSelfGoalsForPerformanceGoals(Long orgId,String empCode,Long finYear) {
+//		return selfGoalsRepo.getSelfGoalsForPerformanceGoals(orgId,empCode,finYear);
+//	}
+//	
+	
+	@Override
+	public List<SelfGoalsVO> getSelfGoalsForPerformanceGoals(Long orgId, String empCode, Long finYear) {
+
+	    List<SelfGoalsVO> list = selfGoalsRepo.getSelfGoalsForPerformanceGoals(orgId, empCode, finYear);
+
+	    for (SelfGoalsVO vo : list) {
+	        if (vo.getSelfGoalsDetailsVO() != null) {
+	            vo.getSelfGoalsDetailsVO()
+	              .removeIf(d -> !"APPROVED".equals(d.getStatus()));
+	        }
+	    }
+
+	    return list;
+	}
+	
 	@Override
 	public Optional<SelfGoalsVO> getSelfGoalsById(Long id) {
 		return selfGoalsRepo.findById(id);
@@ -1549,7 +1608,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		for (Object[] record : result) {
 			Map<String, Object> map = new HashMap<>();
 			map.put("appraisalId", record[0] != null ? record[0].toString() : "");
-			map.put("department", record[1] != null ? record[1].toString() : "");
+			map.put("designation", record[1] != null ? record[1].toString() : "");
 			detailsList.add(map);
 		}
 		return detailsList;
@@ -1567,5 +1626,25 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		String ScreenCode = "KRA";
 		String result = kpiKraRepo.getKraDocId(orgId, ScreenCode);
 		return result;
+	}
+	
+	@Transactional
+	@Override
+	public Map<String, Object> approveSelfGoalsDetails(
+	        List<Long> detailIds, String updatedBy, String status) {
+
+	    Map<String, Object> map = new HashMap<>();
+
+	    if (detailIds == null || detailIds.isEmpty()) {
+	        throw new RuntimeException("Detail IDs cannot be empty");
+	    }
+
+	    int updatedCount = selfGoalsDetailsRepo
+	            .updateStatusBulk(detailIds, status);
+
+	    map.put("message", updatedCount + " records updated successfully");
+	    map.put("data", detailIds);
+
+	    return map;
 	}
 }

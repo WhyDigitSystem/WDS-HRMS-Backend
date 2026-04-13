@@ -33,6 +33,7 @@ public class SelfGoalsDetailsVO {
 	@Column(name="keyperformanceindicator")
 	private String keyPerformanceIndicator;
 	private String goals;
+	private String status;
 	
 	@ManyToOne
 	@JsonBackReference

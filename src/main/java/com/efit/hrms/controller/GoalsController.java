@@ -491,6 +491,32 @@ public class GoalsController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 	}
 
+	
+	@GetMapping("/getGoalsByOrgIdByDesignation")
+	public ResponseEntity<ResponseDTO> getGoalsByOrgIdByDesignation(@RequestParam Long orgId,@RequestParam String designation,@RequestParam String appraisalid) {
+		String methodName = "getGoalsByOrgIdByDesignation()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<GoalsVO> goalsVO = new ArrayList<>();
+		try {
+			goalsVO = goalsControllerService.getGoalsByOrgIdByDesignation(orgId,designation,appraisalid);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Goals information get successfully");
+			responseObjectsMap.put("goalsVO", goalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "Goals information receive failed", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
 	@GetMapping("/getGoalsById")
 	public ResponseEntity<ResponseDTO> getGoalsById(@RequestParam Long id) {
 		String methodName = "getGoalsById()";
@@ -671,6 +697,85 @@ public class GoalsController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 	}
 
+	@GetMapping("/getSelfGoalsByOrgIdAndEmpCode")
+	public ResponseEntity<ResponseDTO> getSelfGoalsByOrgIdAndEmpCode(@RequestParam Long orgId,@RequestParam String empCode) {
+		String methodName = "getSelfGoalsByOrgIdAndEmpCode()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<SelfGoalsVO> selfGoalsVO = new ArrayList<>();
+		try {
+			selfGoalsVO = goalsControllerService.getSelfGoalsByOrgIdAndEmpCode(orgId,empCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "SelfGoals information get successfully");
+			responseObjectsMap.put("selfGoalsVO", selfGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@GetMapping("/getSelfGoalsByOrgIdAndEmpCodeAndFinyear")
+	public ResponseEntity<ResponseDTO> getSelfGoalsByOrgIdAndEmpCodeAndFinyear(@RequestParam Long orgId,@RequestParam String empCode,@RequestParam (required=false) Long finYear) {
+		String methodName = "getSelfGoalsByOrgIdAndEmpCode()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<SelfGoalsVO> selfGoalsVO = new ArrayList<>();
+		try {
+			selfGoalsVO = goalsControllerService.getSelfGoalsByOrgIdAndEmpCodeAndFinyear(orgId,empCode,finYear);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "SelfGoals information get successfully");
+			responseObjectsMap.put("selfGoalsVO", selfGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("/getSelfGoalsForPerformanceGoals")
+	public ResponseEntity<ResponseDTO> getSelfGoalsForPerformanceGoals(@RequestParam Long orgId,@RequestParam String empCode,@RequestParam (required=false) Long finYear) {
+		String methodName = "getSelfGoalsForPerformanceGoals()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<SelfGoalsVO> selfGoalsVO = new ArrayList<>();
+		try {
+			selfGoalsVO = goalsControllerService.getSelfGoalsForPerformanceGoals(orgId,empCode,finYear);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "SelfGoals information get successfully");
+			responseObjectsMap.put("selfGoalsVO", selfGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
 	@GetMapping("/getSelfGoalsById")
 	public ResponseEntity<ResponseDTO> getSelfGoalsById(@RequestParam Long id) {
 		String methodName = "getSelfGoalsById()";
@@ -1422,4 +1527,39 @@ public class GoalsController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+
+	
+	@PutMapping("/approveSelfGoalsDetails")
+	public ResponseEntity<ResponseDTO> approveSelfGoalsDetails(
+	        @RequestParam List<Long> detailIds,
+	        @RequestParam String updatedBy,
+	        @RequestParam String status) {
+
+	    String methodName = "approveSelfGoalsDetails()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    String errorMsg = null;
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO = null;
+
+	    try {
+	        Map<String, Object> result = goalsControllerService
+	                .approveSelfGoalsDetails(detailIds, updatedBy, status);
+
+	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, result.get("message"));
+	        responseObjectsMap.put("data", result.get("data"));
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+	        errorMsg = e.getMessage();
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+	    return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
 }

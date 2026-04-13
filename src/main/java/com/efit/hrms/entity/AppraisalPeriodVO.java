@@ -35,7 +35,7 @@ public class AppraisalPeriodVO {
 	@Column(name = "type")
 	private String type;
 	@Column(name = "appraisalid")
-	private Long appraisalId;
+	private String appraisalId;
 	@Column(name = "effectiveform")
 	private LocalDate effectiveForm;
 	@Column(name = "effectiveto")

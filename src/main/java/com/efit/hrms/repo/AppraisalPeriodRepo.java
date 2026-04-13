@@ -11,7 +11,7 @@ import com.efit.hrms.entity.AppraisalPeriodVO;
 @Repository
 public interface AppraisalPeriodRepo extends JpaRepository<AppraisalPeriodVO, Long>{
 
-	boolean existsByAppraisalId(Long appraisalId);
+	boolean existsByAppraisalId(String string);
 
 	@Query(nativeQuery = true,value="select * from appraisalperiod where orgid=?1")
 	List<AppraisalPeriodVO> getAppraisal(Long orgId);

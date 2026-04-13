@@ -13,4 +13,6 @@ public class SelfGoalsDetailsDTO {
 	private String keyPerformanceIndicator;
 	private String goals;
 
+	private String status;
+
 }

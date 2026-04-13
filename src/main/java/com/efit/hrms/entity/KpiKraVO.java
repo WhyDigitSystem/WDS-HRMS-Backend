@@ -52,7 +52,7 @@ public class KpiKraVO {
 	private String branch;
 
 	@Column(name = "finyear")
-	private String finYear;
+	private Long finYear;
 
 	@Column(name = "active")
 	private boolean active = true;

@@ -17,7 +17,7 @@ public class KpiKraDTO {
 	private Long orgId;
 	private String createdBy;
 	private boolean active;
-	private String finYear;
+//	private String finYear;
 
 	private String branchCode;
 

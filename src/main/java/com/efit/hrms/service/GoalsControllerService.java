@@ -177,6 +177,18 @@ public interface GoalsControllerService {
 
 	String getKraDocId(Long orgId);
 
+	List<GoalsVO> getGoalsByOrgIdByDesignation(Long orgId, String designation,String appraisalid);
+
+	List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCode(Long orgId, String empCode);
+
+	List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCodeAndFinyear(Long orgId, String empCode, Long finYear);
+
+	Map<String, Object> approveSelfGoalsDetails(List<Long> detailIds, String updatedBy, String status);
+
+	List<SelfGoalsVO> getSelfGoalsForPerformanceGoals(Long orgId, String empCode, Long finYear);
+
+//	List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCode(Long orgId, String empCode);
+
 	// List<AdditionalGoalsVO> getAllAdditionalGoals();
 
 }
