@@ -35,6 +35,8 @@ public class FirstLevelSupervisorInputDetailsVO {
     @Column(name = "selfinput")
     private String selfInput;
 
+    @Column(name = "selfrating")
+    private String selfRating;
     @Column(name = "score")
     private int score;
 

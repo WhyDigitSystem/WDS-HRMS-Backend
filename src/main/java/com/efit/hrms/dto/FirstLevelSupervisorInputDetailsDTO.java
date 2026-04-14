@@ -11,6 +11,7 @@ public class FirstLevelSupervisorInputDetailsDTO {
 
     private String goals;
     private String selfInput;
+    private String selfRating;
     private int score;
     private String supervisorRating;
 }

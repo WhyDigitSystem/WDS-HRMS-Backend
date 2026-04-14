@@ -1743,6 +1743,7 @@ public class GoalsServiceImpl implements GoalsService {
 
 	        child.setGoals(d.getGoals());
 	        child.setSelfInput(d.getSelfInput());
+	        child.setSelfRating(d.getSelfRating());
 	        child.setScore(d.getScore());
 	        child.setSupervisorRating(d.getSupervisorRating());
 	        child.setFirstLevelSupervisorInputVO(vo);
