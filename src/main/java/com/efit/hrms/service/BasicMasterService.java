@@ -68,7 +68,7 @@ public interface BasicMasterService {
 	Map<String, Object> createCheckInOutAdjustment(CheckInOutAdjustmentDTO checkInOutAdjustmentDTO) throws ApplicationException;
 
 	Map<String, Object> createApprovalCheckInOutAdjustment(Long orgId, String employeeCode, String action,
-			String actionBy, LocalDate localCheckOutDate, String notifyCode, String notify, String screenName) throws ApplicationException;
+			String actionBy, LocalDate localCheckOutDate, String notifyCode, String notify, String screenName, String reason) throws ApplicationException;
 
 	List<Map<String, Object>> getRequestCheckInOutByOrgId(Long orgId, String branch, String reportingPersoncode);
 

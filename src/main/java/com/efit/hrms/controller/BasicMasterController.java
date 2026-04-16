@@ -223,7 +223,7 @@ public class BasicMasterController extends BaseController {
 	public ResponseEntity<ResponseDTO> createApprovalCheckInOutAdjustment(@RequestParam Long orgId,
 			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) String checkOutDate,
-			@RequestParam String notifyCode, @RequestParam String notify, @RequestParam String screenName) {
+			@RequestParam String notifyCode, @RequestParam String notify, @RequestParam String screenName,@RequestParam(required=false) String reason) {
 
 		String methodName = "createApprovalCheckInOutAdjustment()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
@@ -237,7 +237,7 @@ public class BasicMasterController extends BaseController {
 
 			// Call the service
 			Map<String, Object> result = basicMasterService.createApprovalCheckInOutAdjustment(orgId, employeeCode,
-					action, actionBy, localCheckOutDate, notifyCode, notify, screenName);
+					action, actionBy, localCheckOutDate, notifyCode, notify, screenName,reason);
 
 			// ✅ Extract and flatten
 			List<CheckInOutAdjustmentVO> adjustmentList = (List<CheckInOutAdjustmentVO>) result

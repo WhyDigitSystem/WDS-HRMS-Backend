@@ -639,7 +639,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 	@Override
 	public Map<String, Object> createApprovalLeave(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName, String email)
+			String actionBy, String notifyCode, String notify, String screenName, String email,String reason)
 			throws ApplicationException {
 
 		LeaveRequestVO leaveRequestVO = leaveRequestRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
@@ -788,6 +788,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 			notificationRepo.save(notification);
 
 			leaveRequestVO.setApproveStatus(action);
+			leaveRequestVO.setReason(reason);
 			System.out.println(action);
 			leaveRequestVO.setApproveBy(actionBy);
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
@@ -1398,9 +1399,12 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 						.findByBranchAndEmployeeCodeAndOrgIdAndLeaveCodeAndCompOffDate(dto.getBranch(),
 								dto.getEmployeeCode(), dto.getOrgId(), dto.getLeaveCode(), dto.getCompOffDate());
 
-				if (!existingList.isEmpty()) {
-					throw new ApplicationException(
-							"This Date: " + dto.getCompOffDate() + " CompensatoryOff Already Applied ");
+				boolean alreadyApplied = existingList.stream()
+				        .anyMatch(e -> !"REJECTED".equalsIgnoreCase(e.getApprovalStatus()));
+
+				if (alreadyApplied) {
+				    throw new ApplicationException(
+				        "This Date: " + dto.getCompOffDate() + " CompensatoryOff Already Applied ");
 				}
 
 				vo.setCreatedBy(dto.getCreatedBy());
@@ -1518,7 +1522,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 	@Override
 	public Map<String, Object> createApprovalCompOff(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName) throws ApplicationException {
+			String actionBy, String notifyCode, String notify, String screenName,String reason) throws ApplicationException {
 
 		CompensatoryOffVO compensatoryOffVO = compensatoryOffRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id,
 				employeeCode);
@@ -1550,6 +1554,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 				compensatoryOffVO.setApprovalStatus(action);
 				compensatoryOffVO.setApproveBy(actionBy);
+				compensatoryOffVO.setReason(reason);
 
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
 				compensatoryOffVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());

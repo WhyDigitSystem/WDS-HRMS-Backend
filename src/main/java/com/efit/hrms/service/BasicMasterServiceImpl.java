@@ -1056,8 +1056,10 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 
 	@Override
 	public Map<String, Object> createApprovalCheckInOutAdjustment(Long orgId, String employeeCode, String action,
-			String actionBy, LocalDate localCheckInDate, String notifyCode, String notify, String screenName)
+			String actionBy, LocalDate localCheckInDate, String notifyCode, String notify, String screenName,String reason)
 			throws ApplicationException {
+	
+
 
 		List<CheckInOutAdjustmentVO> allAdjustments = checkInOutAdjustmentRepo
 				.findByOrgIdAndEmpCodeAndCheckInDateBetween(orgId, employeeCode, localCheckInDate,
@@ -1117,18 +1119,19 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 								&& out.getEntryTime().isAfter(in.getEntryTime()));
 
 				if (isValidPair) {
-					in.setApprovalStatus("APPROVED");
+					in.setApprovalStatus(action.toUpperCase());
 					in.setApproveBy(actionBy);
 					in.setApproveOn(approvedOn);
-
-					out.setApprovalStatus("APPROVED");
+                    in.setReason(reason);
+                    out.setApprovalStatus(action.toUpperCase());
 					out.setApproveBy(actionBy);
 					out.setApproveOn(approvedOn);
-
+					out.setReason(reason);
+					
 					approvedAdjustments.add(in);
 					approvedAdjustments.add(out);
 					usedOutIds.add(out.getId());
-
+					
 					LocalDateTime fullIn = LocalDateTime.of(in.getCheckInDate(), in.getEntryTime());
 					LocalDateTime fullOut = LocalDateTime.of(out.getCheckInDate(), out.getEntryTime());
 					long seconds = Duration.between(fullIn, fullOut).getSeconds();
@@ -1164,10 +1167,20 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 			}
 		}
 
+		String msg = "";
+
+		if ("APPROVED".equalsIgnoreCase(action)) {
+		    msg = "Approved Successfully";
+		} else if ("REJECTED".equalsIgnoreCase(action)) {
+		    msg = "Rejected Successfully";
+		} else {
+		    throw new ApplicationException("Invalid action");
+		}
+		
 		if (!approvedAdjustments.isEmpty()) {
 			checkInOutAdjustmentRepo.saveAll(approvedAdjustments);
 			response.put("checkInOutAdjustmentList", approvedAdjustments);
-			response.put("message", "Approved Successfully");
+			response.put("message", msg);
 		} else {
 			throw new ApplicationException("No valid pending IN/OUT pairs found to approve.");
 		}
