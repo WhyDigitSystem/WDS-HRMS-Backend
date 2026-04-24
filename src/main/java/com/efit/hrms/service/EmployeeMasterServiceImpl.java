@@ -980,7 +980,7 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 
 	@Override
 	public Map<String, Object> createApprovalPermissionRequest(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName) throws ApplicationException {
+			String actionBy, String notifyCode, String notify, String screenName,String reason) throws ApplicationException {
 
 		PermissionRequestVO permissionRequestVO = permissionRequestRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id,
 				employeeCode);
@@ -993,6 +993,7 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 			if ("APPROVED".equalsIgnoreCase(action) || "REJECTED".equalsIgnoreCase(action)) {
 				permissionRequestVO.setApproveStatus(action);
 				permissionRequestVO.setApproveBy(actionBy);
+				permissionRequestVO.setReason(reason);
 
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
 				permissionRequestVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());

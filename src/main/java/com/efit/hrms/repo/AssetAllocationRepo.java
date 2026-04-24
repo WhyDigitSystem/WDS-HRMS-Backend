@@ -184,7 +184,22 @@ public interface AssetAllocationRepo extends JpaRepository<AssetAllocationVO, Lo
 			+ " locationcode=?3 group by assetcode,assetname,serialnumber,category,brand,model,location,locationcode having sum(qty)>0")
 	List<Object[]> getAssetAllocationListAll(Long orgId, String branchCode, String employeeCode);
 
-	@Query(nativeQuery = true, value = "select a.employeename,a.employeecode, a.assetname ,a.assetcode,am.serialnumber from assetallocation a join clearancedetails c on c.clearancename=a.assetname join assetmaster am on am.assetcode=a.assetcode join departmenthead d on c.departmentheadid=d.departmentheadid and d.orgid=a.orgid where a.employeecode=?1 and a.orgid=?2 and d.department=?3 and a.branchcode=?4")
+	@Query(nativeQuery = true, value = "SELECT DISTINCT \r\n"
+			+ "    a.employeename,\r\n"
+			+ "    a.employeecode,\r\n"
+			+ "    a.assetname,\r\n"
+			+ "    a.assetcode,\r\n"
+			+ "    am.serialnumber\r\n"
+			+ "FROM assetallocation a\r\n"
+			+ "JOIN clearancedetails c ON c.clearancename = a.assetname\r\n"
+			+ "JOIN assetmaster am ON am.assetcode = a.assetcode\r\n"
+			+ "JOIN departmenthead d \r\n"
+			+ "    ON c.departmentheadid = d.departmentheadid \r\n"
+			+ "    AND d.orgid = a.orgid\r\n"
+			+ "WHERE a.employeecode = ?1\r\n"
+			+ "  AND a.orgid = ?2\r\n"
+			+ "  AND d.department = ?3\r\n"
+			+ "  AND a.branchcode = ?4")
 	List<Object[]> getAccessoriesByEmployeeCode(String employeeCode, Long orgId, String department,
 			String branchCode);
 

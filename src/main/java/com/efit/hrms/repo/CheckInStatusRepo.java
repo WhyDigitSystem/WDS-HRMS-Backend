@@ -411,7 +411,7 @@ public interface CheckInStatusRepo extends JpaRepository<CheckInStatusVO, Long>{
 			+ "),\r\n"
 			+ "\r\n"
 			+ "weekoffs AS (\r\n"
-			+ "    SELECT ds.entrydate AS weekoffdate\r\n"
+			+ "    SELECT DISTINCT  ds.entrydate AS weekoffdate\r\n"
 			+ "    FROM DateRange ds\r\n"
 			+ "    JOIN companyweekoff cw\r\n"
 			+ "      ON cw.companyid = ?3\r\n"

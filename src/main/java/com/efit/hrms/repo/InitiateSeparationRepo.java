@@ -15,7 +15,7 @@ public interface InitiateSeparationRepo  extends JpaRepository<InitiateSeparatio
 	@Query(nativeQuery = true,value="select * from initiateseparation where initiateseparationid=?1")
 	InitiateSeparationVO getInitiateSeparationById(Long id);
 
-	@Query(nativeQuery = true,value="select * from initiateseparation where orgid=?1 and branchcode=?2 and active=1 ")
+	@Query(nativeQuery = true,value="select * from initiateseparation i join employee e on e.employeecode=i.employeecode and e.orgid=i.orgid and e.active=1 where i.orgid=?1 and i.branchcode=?2 and i.active=1 ")
 	List<InitiateSeparationVO> getInitiateSeparationByOrgId(Long orgId, String branchCode);
 
 	@Query(nativeQuery = true,value="  SELECT * \r\n"
@@ -43,7 +43,7 @@ public interface InitiateSeparationRepo  extends JpaRepository<InitiateSeparatio
 	@Query(nativeQuery = true,value="select * from initiateseparation where orgid=?1 and branchcode=?2  AND ( ?3 = 'ALL' OR employeecode = ?3) and active=1 ")
 	List<InitiateSeparationVO> getInitiateSeparationByOrgIdforclearance(Long orgId, String branchCode, String empCode);
 
-	@Query(nativeQuery = true,value="SELECT \r\n"
+	@Query(nativeQuery = true,value="SELECT DISTINCT \r\n"
 			+ "    c.clearanceitem, \r\n"
 			+ "    h.department,\r\n"
 			+ "    h.departmentcode \r\n"
@@ -54,8 +54,11 @@ public interface InitiateSeparationRepo  extends JpaRepository<InitiateSeparatio
 			+ "    ON c.clearanceitem = d.clearancename\r\n"
 			+ "JOIN departmenthead h \r\n"
 			+ "    ON h.departmentheadid = d.departmentheadid\r\n"
-			+ "WHERE i.employeecode =?1 and h.orgid=?2 and h.branchcode=?3 and i.active=1 ")
-	List<Object[]> getCleranceDetailsByEmployeeCode(String employeeCode, Long orgId, String branchCode);
+			+ "WHERE i.employeecode =?1 \r\n"
+			+ "  AND h.orgid=?2 \r\n"
+			+ "  AND h.branchcode=?3 \r\n"
+			+ "  AND i.active=1 ")
+List<Object[]> getCleranceDetailsByEmployeeCode(String employeeCode, Long orgId, String branchCode);
 
 	@Query(nativeQuery = true,value="select * from initiateseparation where orgid=?1 and branchCode=?2 and active=1 AND CURDATE() >= lastworkingdate and status='APPROVED' ")
 	List<Map<String, Object>> getSeparationEmployeeForSettlement(Long orgId, String branchCode);

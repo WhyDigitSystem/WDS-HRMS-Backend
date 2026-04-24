@@ -53,7 +53,8 @@ public class PermissionRequestVO {
 	private String employeeCode;
 	@Column(name = "employeeemail")
 	private String employeeEmail;
-
+	@Column(name = "reason")
+	private String reason;
 	@Column(name = "createdby")
 	private String createdBy;
 	@Column(name = "modifiedby")

@@ -271,6 +271,39 @@ public class PerformanceController extends BaseController {
 
 	}
 	
+	@GetMapping("/getSupervisorRatings")
+	public ResponseEntity<ResponseDTO> getSupervisorRatings(
+	        @RequestParam Long orgId,
+	        @RequestParam String empCode,
+	        @RequestParam String appraisalYear) {
+
+	    String methodName = "getSupervisorRatings()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    Map<String, Object> responseMap = new HashMap<>();
+	    ResponseDTO responseDTO;
+
+	    try {
+
+	        List<Map<String, Object>> data =
+	        		performanceGoalsService.getSupervisorRatings(orgId, empCode, appraisalYear);
+
+	        responseMap.put("message", "Supervisor ratings fetched successfully");
+	        responseMap.put("data", data);
+
+	        responseDTO = createServiceResponse(responseMap);
+
+	    } catch (Exception e) {
+
+	        responseDTO = createServiceResponseError(responseMap,
+	                "Failed to fetch supervisor ratings", e.getMessage());
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+	    return ResponseEntity.ok(responseDTO);
+	}
+	
 	
 	@GetMapping("/getPerformanceGoalsByOrgIdAndEmployeeCode")
 	public ResponseEntity<ResponseDTO> getPerformanceGoalsByOrgIdAndEmployeeCode(@RequestParam Long orgId,

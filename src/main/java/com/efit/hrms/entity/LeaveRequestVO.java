@@ -76,6 +76,8 @@ public class LeaveRequestVO {
 	private String approveBy;
 	@Column(name = "approveon")
 	private String approveOn;
+	@Column(name = "reason")
+	private String reason;
 	
 	@Column(name = "branchcode")
 	private String branchCode;

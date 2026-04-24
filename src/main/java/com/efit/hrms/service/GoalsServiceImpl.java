@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -21,6 +22,8 @@ import com.efit.hrms.dto.AppraiseeDTO;
 import com.efit.hrms.dto.AppraiseeDetailsDTO;
 import com.efit.hrms.dto.AppraiserDTO;
 import com.efit.hrms.dto.AppraiserDetailsDTO;
+import com.efit.hrms.dto.FirstLevelSupervisorInputDTO;
+import com.efit.hrms.dto.FirstLevelSupervisorInputDetailsDTO;
 import com.efit.hrms.dto.GoalsDTO;
 import com.efit.hrms.dto.GoalsDetailsDTO;
 import com.efit.hrms.dto.GradeDTO;
@@ -42,6 +45,8 @@ import com.efit.hrms.entity.AppraiseeVO;
 import com.efit.hrms.entity.AppraiserDetailsVO;
 import com.efit.hrms.entity.AppraiserVO;
 import com.efit.hrms.entity.DocTypeMappingDetailsVO;
+import com.efit.hrms.entity.FirstLevelSupervisorInputDetailsVO;
+import com.efit.hrms.entity.FirstLevelSupervisorInputVO;
 import com.efit.hrms.entity.GoalsDetailsVO;
 import com.efit.hrms.entity.GoalsVO;
 import com.efit.hrms.entity.GradeVO;
@@ -49,6 +54,7 @@ import com.efit.hrms.entity.HrReviewVO;
 import com.efit.hrms.entity.KpiKraDetailsVO;
 import com.efit.hrms.entity.KpiKraVO;
 import com.efit.hrms.entity.KpiVO;
+import com.efit.hrms.entity.PerformanceGoalsVO;
 import com.efit.hrms.entity.PreGoalsDetailsVO;
 import com.efit.hrms.entity.PreGoalsVO;
 import com.efit.hrms.entity.ScoreVO;
@@ -64,6 +70,8 @@ import com.efit.hrms.repo.AppraiseeRepo;
 import com.efit.hrms.repo.AppraiserDetailsRepo;
 import com.efit.hrms.repo.AppraiserRepo;
 import com.efit.hrms.repo.DocTypeMappingDetailsRepo;
+import com.efit.hrms.repo.FirstLevelSupervisorInputDetailsRepo;
+import com.efit.hrms.repo.FirstLevelSupervisorInputRepo;
 import com.efit.hrms.repo.GoalsDetailsRepo;
 import com.efit.hrms.repo.GoalsRepo;
 import com.efit.hrms.repo.GradeRepo;
@@ -71,6 +79,7 @@ import com.efit.hrms.repo.HrReviewRepo;
 import com.efit.hrms.repo.KpiKraDetailsRepo;
 import com.efit.hrms.repo.KpiKraRepo;
 import com.efit.hrms.repo.KpiRepo;
+import com.efit.hrms.repo.PerformanceGoalsRepo;
 import com.efit.hrms.repo.PreGoalsDetailsRepo;
 import com.efit.hrms.repo.PreGoalsRepo;
 import com.efit.hrms.repo.ScoreRepo;
@@ -80,9 +89,9 @@ import com.efit.hrms.repo.Supervisor1FeedBackRepo;
 import com.efit.hrms.repo.WeightageRepo;
 
 @Service
-public class GoalsControllerServiceImpl implements GoalsControllerService {
+public class GoalsServiceImpl implements GoalsService {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(GoalsControllerServiceImpl.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(GoalsServiceImpl.class);
 
 	@Autowired
 	PreGoalsRepo preGoalsRepo;
@@ -146,6 +155,15 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 	@Autowired
 	DocTypeMappingDetailsRepo docTypeMappingDetailsRepo;
+	
+	@Autowired
+	PerformanceGoalsRepo performanceGoalsRepo;
+	
+	@Autowired
+	FirstLevelSupervisorInputDetailsRepo firstLevelSupervisorInputDetailsRepo;
+	
+	@Autowired
+	FirstLevelSupervisorInputRepo firstLevelSupervisorInputRepo;
 
 	@Override
 	public Map<String, Object> createUpdatePreGoals(@Valid PreGoalsDTO preGoalsDTO) throws ApplicationException {
@@ -291,6 +309,12 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 			@Valid AppraisalPeriodDTO appraisalPeriodDTO) {
 
 		appraisalPeriodVO.setAppraisalId(appraisalPeriodDTO.getAppraisalId());
+		
+		KpiKraVO kpiKraVO = kpiKraRepo.findByAppraisalId(appraisalPeriodDTO.getAppraisalId());
+		kpiKraVO.setFinYear(appraisalPeriodDTO.getFinYear());
+		
+		kpiKraRepo.save(kpiKraVO);
+		
 		appraisalPeriodVO.setFinYear(appraisalPeriodDTO.getFinYear());
 		appraisalPeriodVO.setActive(appraisalPeriodDTO.isActive());
 		appraisalPeriodVO.setType(appraisalPeriodDTO.getType());
@@ -607,10 +631,23 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 		String message;
 		KpiKraVO kpiKraVO;
+		String screenCode = "GO";
 
 		if (ObjectUtils.isEmpty(kpiKraDTO.getId())) {
+			
+			
 
 			kpiKraVO = new KpiKraVO();
+			
+			String docId = goalsRepo.getGoalsDocId(kpiKraDTO.getOrgId(), screenCode);
+			kpiKraVO.setAppraisalId(docId);
+
+			// GETDOCID LASTNO +1
+			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+					.findByOrgIdAndScreenCode(kpiKraDTO.getOrgId(), screenCode);
+			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
+			
 			kpiKraVO.setCreatedBy(kpiKraDTO.getCreatedBy());
 			kpiKraVO.setUpdatedBy(kpiKraDTO.getCreatedBy());
 
@@ -640,7 +677,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		kpiKraVO.setAppraisalId(kpiKraDTO.getAppraisalId());
 		kpiKraVO.setActive(kpiKraDTO.isActive());
 		kpiKraVO.setOrgId(kpiKraDTO.getOrgId());
-		kpiKraVO.setFinYear(kpiKraDTO.getFinYear());
+//		kpiKraVO.setFinYear(kpiKraDTO.getFinYear());
 		kpiKraVO.setBranchCode(kpiKraDTO.getBranchCode());
 		kpiKraVO.setBranch(kpiKraDTO.getBranch());
 		kpiKraVO.setDesignation(kpiKraDTO.getDesignation());
@@ -680,12 +717,12 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 			}
 
 			KpiVO kpiVO = new KpiVO();
-			kpiVO.setKpiId(kpiId);
+			kpiVO.setKpiId(kpiDTO.getKpiId());
 			kpiVO.setKpiDescription(kpiDTO.getKpiDescription().trim());
 			kpiVO.setKpiKraVO(kpiKraVO);
 
 			newKpiList.add(kpiVO);
-			kpiMap.put(kpiDTO.getKpiDescription().trim(), kpiId);
+			kpiMap.put(kpiDTO.getKpiDescription().trim(), kpiDTO.getKpiId());
 		}
 
 		// ================= KRA =================
@@ -711,8 +748,8 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 			}
 
 			KpiKraDetailsVO kraVO = new KpiKraDetailsVO();
-			kraVO.setKraId(kraId);
-			kraVO.setKpiId(kpiId);
+			kraVO.setKraId(dto.getKraId());
+			kraVO.setKpiId(dto.getKpiId());
 			kraVO.setKpiDescription(dto.getKpiDescription().trim());
 			kraVO.setKraDescription(dto.getKraDescription());
 			kraVO.setRo(dto.getRo());
@@ -774,14 +811,14 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 
 		if (ObjectUtils.isEmpty(goalsDTO.getId())) {
 
-			String docId = goalsRepo.getGoalsDocId(goalsDTO.getOrgId(), screenCode);
-			goalsVO.setAppraisalId(docId);
-
-			// GETDOCID LASTNO +1
-			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
-					.findByOrgIdAndScreenCode(goalsDTO.getOrgId(), screenCode);
-			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
-			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
+//			String docId = goalsRepo.getGoalsDocId(goalsDTO.getOrgId(), screenCode);
+//			goalsVO.setAppraisalId(docId);
+//
+//			// GETDOCID LASTNO +1
+//			DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+//					.findByOrgIdAndScreenCode(goalsDTO.getOrgId(), screenCode);
+//			docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+//			docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
 
 			goalsVO.setCreatedBy(goalsDTO.getCreatedBy());
 			goalsVO.setUpdatedBy(goalsDTO.getCreatedBy());
@@ -815,6 +852,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		goalsVO.setDesignation(goalsDTO.getDesignation());
 		goalsVO.setOrgId(goalsDTO.getOrgId());
 		goalsVO.setFinYear(goalsDTO.getFinYear());
+		goalsVO.setAppraisalId(goalsDTO.getAppraisalId());
 
 		if (ObjectUtils.isNotEmpty(goalsDTO.getId())) {
 
@@ -845,6 +883,12 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	public List<GoalsVO> getGoalsByOrgId(Long orgId) {
 		return goalsRepo.getGoals(orgId);
 	}
+	
+	@Override
+	public List<GoalsVO> getGoalsByOrgIdByDesignation(Long orgId,String designation,String appraisalid) {
+		return goalsRepo.getGoalsByOrgIdByDesignation(orgId,designation,appraisalid);
+	}
+
 
 	@Override
 	public Optional<GoalsVO> getGoalsById(Long id) {
@@ -1007,6 +1051,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		selfGoalsVO.setSupervisorName(selfGoalsDTO.getSupervisorName());
 		selfGoalsVO.setActive(selfGoalsDTO.isActive());
 		selfGoalsVO.setFinYear(selfGoalsDTO.getFinYear());
+		selfGoalsVO.setDesignation(selfGoalsDTO.getDesignation());
 
 		if (ObjectUtils.isNotEmpty(selfGoalsDTO.getId())) {
 			List<SelfGoalsDetailsVO> goalsDetailsVOs = selfGoalsDetailsRepo.findBySelfGoalsVO(selfGoalsVO);
@@ -1021,6 +1066,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 			selfGoalsDetailsVO.setArea(selfGoalsDetailsDTO.getArea());
 			selfGoalsDetailsVO.setKeyPerformanceIndicator(selfGoalsDetailsDTO.getKeyPerformanceIndicator());
 			selfGoalsDetailsVO.setGoals(selfGoalsDetailsDTO.getGoals());
+			selfGoalsDetailsVO.setStatus("PENDING");
 
 			selfGoalsDetailsVO.setSelfGoalsVO(selfGoalsVO);
 			selfGoalsDetailsVOs.add(selfGoalsDetailsVO);
@@ -1036,7 +1082,43 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 	public List<SelfGoalsVO> getSelfGoalsByOrgId(Long orgId) {
 		return selfGoalsRepo.getSelfGoals(orgId);
 	}
+	
+	@Override
+	public List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCode(Long orgId,String empCode) {
+		return selfGoalsRepo.getSelfGoalsByOrgIdAndEmpCode(orgId,empCode);
+	}
 
+	@Override
+	public List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCodeAndFinyear(Long orgId,String empCode,Long finYear) {
+		return selfGoalsRepo.getSelfGoalsByOrgIdAndEmpCodeAndFinyear(orgId,empCode,finYear);
+	}
+//	@Override
+//	public List<SelfGoalsVO> getSelfGoalsForPerformanceGoals(Long orgId,String empCode,Long finYear) {
+//		return selfGoalsRepo.getSelfGoalsForPerformanceGoals(orgId,empCode,finYear);
+//	}
+//	
+	
+	@Override
+	public List<SelfGoalsVO> getSelfGoalsForPerformanceGoals(Long orgId, String empCode, Long finYear) {
+
+	    List<SelfGoalsVO> list = selfGoalsRepo.getSelfGoalsForPerformanceGoals(orgId, empCode, finYear);
+
+	    for (SelfGoalsVO vo : list) {
+	        if (vo.getSelfGoalsDetailsVO() != null) {
+	            vo.getSelfGoalsDetailsVO()
+	              .removeIf(d -> !"APPROVED".equals(d.getStatus()));
+	        }
+	    }
+
+	    return list;
+	}
+	
+	@Override
+	public List<PerformanceGoalsVO> getPerformanceGoalsForFirstLevelSInput(Long orgId, String empCode, String appraisalId) {
+
+	    return performanceGoalsRepo.getPerformanceGoalsForFirstLevelSInput(orgId, empCode, appraisalId);
+	}
+	
 	@Override
 	public Optional<SelfGoalsVO> getSelfGoalsById(Long id) {
 		return selfGoalsRepo.findById(id);
@@ -1549,7 +1631,7 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		for (Object[] record : result) {
 			Map<String, Object> map = new HashMap<>();
 			map.put("appraisalId", record[0] != null ? record[0].toString() : "");
-			map.put("department", record[1] != null ? record[1].toString() : "");
+			map.put("designation", record[1] != null ? record[1].toString() : "");
 			detailsList.add(map);
 		}
 		return detailsList;
@@ -1568,4 +1650,120 @@ public class GoalsControllerServiceImpl implements GoalsControllerService {
 		String result = kpiKraRepo.getKraDocId(orgId, ScreenCode);
 		return result;
 	}
+	
+	@Transactional
+	@Override
+	public Map<String, Object> approveSelfGoalsDetails(
+	        List<Long> detailIds, String updatedBy, String status) {
+
+	    Map<String, Object> map = new HashMap<>();
+
+	    if (detailIds == null || detailIds.isEmpty()) {
+	        throw new RuntimeException("Detail IDs cannot be empty");
+	    }
+
+	    int updatedCount = selfGoalsDetailsRepo
+	            .updateStatusBulk(detailIds, status);
+
+	    map.put("message", updatedCount + " records updated successfully");
+	    map.put("data", detailIds);
+
+	    return map;
+	}
+	
+	@Override
+	public Map<String, Object> createUpdateFirstLevelSupervisorInput(
+	        @Valid FirstLevelSupervisorInputDTO dto) throws ApplicationException {
+
+	    String message;
+	    FirstLevelSupervisorInputVO vo;
+
+	    if (ObjectUtils.isEmpty(dto.getId())) {
+
+	        vo = new FirstLevelSupervisorInputVO();
+	        vo.setCreatedBy(dto.getCreatedBy());
+	        vo.setUpdatedBy(dto.getCreatedBy());
+
+	        message = "First Level Supervisor Input Created Successfully";
+
+	    } else {
+
+	        vo = firstLevelSupervisorInputRepo.findById(dto.getId()).orElseThrow(
+	                () -> new ApplicationException("Record not found with id: " + dto.getId()));
+
+	        vo.setUpdatedBy(dto.getUpdatedBy());
+
+	        message = "First Level Supervisor Input Updated Successfully";
+	    }
+
+	    vo = mapVOFromDTO(vo, dto);
+
+	    firstLevelSupervisorInputRepo.save(vo);
+
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("message", message);
+	    response.put("firstLevelSupervisorInputVO", vo);
+
+	    return response;
+	}
+	
+	private FirstLevelSupervisorInputVO mapVOFromDTO(
+	        FirstLevelSupervisorInputVO vo,
+	        FirstLevelSupervisorInputDTO dto) {
+
+	    // Header Mapping
+	    vo.setAppraisalId(dto.getAppraisalId());
+	    vo.setEmployeeName(dto.getEmployeeName());
+	    vo.setEmployeeCode(dto.getEmployeeCode());
+	    vo.setDepartment(dto.getDepartment());
+	    vo.setDesignation(dto.getDesignation());
+	    vo.setSupervisorCode(dto.getSupervisorCode());
+	    vo.setSupervisorName(dto.getSupervisorName());
+	    vo.setReportingHeadDesignation(dto.getReportingHeadDesignation());
+	    vo.setOrgId(dto.getOrgId());
+	    vo.setBranchCode(dto.getBranchCode());
+	    vo.setBranch(dto.getBranch());
+	    vo.setFinyear(dto.getFinyear());
+
+	    // 🔥 IMPORTANT: DELETE OLD CHILD (like your logic)
+	    if (ObjectUtils.isNotEmpty(dto.getId())) {
+
+	        List<FirstLevelSupervisorInputDetailsVO> oldList =
+	        		firstLevelSupervisorInputDetailsRepo.findByFirstLevelSupervisorInputVO(vo);
+
+	        firstLevelSupervisorInputDetailsRepo.deleteAll(oldList);
+	    }
+
+	    // Child Mapping
+	    List<FirstLevelSupervisorInputDetailsVO> childList = new ArrayList<>();
+
+	    for (FirstLevelSupervisorInputDetailsDTO d : dto.getDetails()) {
+
+	        FirstLevelSupervisorInputDetailsVO child = new FirstLevelSupervisorInputDetailsVO();
+
+	        child.setGoals(d.getGoals());
+	        child.setSelfInput(d.getSelfInput());
+	        child.setSelfRating(d.getSelfRating());
+	        child.setScore(d.getScore());
+	        child.setSupervisorRating(d.getSupervisorRating());
+	        child.setFirstLevelSupervisorInputVO(vo);
+
+	        childList.add(child);
+	    }
+
+	    vo.setFirstLevelSupervisorInputDetailsVO(childList);
+
+	    return vo;
+	}
+	
+	@Override
+	public Optional<FirstLevelSupervisorInputVO> getFirstLevelSupervisorInputById(Long id) {
+		return firstLevelSupervisorInputRepo.findById(id);
+	};
+	
+	@Override
+	public List<FirstLevelSupervisorInputVO> getFirstLevelSupervisorInputByOrgId(Long orgId) {
+		return firstLevelSupervisorInputRepo.getFirstLevelSupervisorInputByOrgId(orgId);
+	}
+
 }
