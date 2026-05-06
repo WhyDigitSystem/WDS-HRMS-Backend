@@ -18,6 +18,7 @@ import com.efit.hrms.entity.CheckInVO;
 public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 
 	Optional<CheckInVO> findTopByEmpCodeAndOrgIdAndBranchOrderByIdDesc(String empcode, long orgId, String branch);
+	Optional<CheckInVO> findTopByEmpCodeAndStatusAndOrgIdAndBranchOrderByIdDesc(String empcode, String status, long orgId, String branch);
 
 	boolean existsByEmpCodeAndBranchAndOrgIdAndCheckInDateAndStatus(String empcode, String branch, long orgId,
 			LocalDate checkInDate, String string);
@@ -372,6 +373,9 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 
 	boolean existsByEmpCodeAndCheckInDateAndEntryTimeAndStatus(String empCode, LocalDate checkInDate,
 			LocalTime entryTime, String status);
+
+	Optional<CheckInVO> findTopByEmpCodeAndCheckInDateAndStatusAndOrgIdAndBranchOrderByIdDesc(String empcode,
+			LocalDate checkInDate, String string, long orgId, String branch);
 
 
 

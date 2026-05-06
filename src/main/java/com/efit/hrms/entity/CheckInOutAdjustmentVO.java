@@ -51,7 +51,8 @@ public class CheckInOutAdjustmentVO {
     private long orgId;
 	@Column(name = "reason")
     private String reason;
-	
+	@Column(name = "requestreason")
+    private String requestReason;
 	@Column(name = "screencode", length = 5)
 	private String screenCode = "CIOA";
 
