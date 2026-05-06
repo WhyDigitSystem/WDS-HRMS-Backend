@@ -127,7 +127,8 @@ public class CompanyVO {
 
 	@Column(name = "locationaddress")
 	private String locationAddress;
-
+	@Column(name = "separation")
+	private String separation;
 	
 	@Column(name = "companylogo", columnDefinition = "LONGBLOB")
 	private byte[] companyLogo;

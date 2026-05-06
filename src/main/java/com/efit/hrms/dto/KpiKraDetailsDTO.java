@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class KpiKraDetailsDTO {
-	
-	private Long kraId;
+
+	private String kraId;
 	private String kraDescription;
 	private String ro;
-	private Long kpiId;
+	private String kpiId;
 	private String kpiDescription;
 
 }

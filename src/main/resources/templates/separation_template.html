@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+body{
+    background:#f4f6f9;
+    font-family:Segoe UI, Arial;
+}
+
+.container{
+    max-width:650px;
+    margin:auto;
+    background:#ffffff;
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+
+.header{
+    text-align:end;
+    padding:20px;
+    border-bottom:1px solid #eee;
+}
+
+.logo{
+    width:240px;
+}
+
+.content{
+    padding:30px;
+}
+
+.title{
+    color:#2c3e50;
+}
+
+.info-box{
+    background:#f8f9fa;
+    padding:15px;
+    border-left:4px solid #f39c12;
+    margin:20px 0;
+}
+
+.footer{
+    background:#f4f6f9;
+    padding:15px;
+    text-align:center;
+    font-size:12px;
+    color:#888;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <img src="cid:companyLogo" class="logo">
+    </div>
+
+    <div class="content">
+
+        <p>
+            Dear <b th:text="${employeeName}">Employee</b>,
+        </p>
+
+        <p>
+            Your <b>separation process</b> has been successfully initiated.
+        </p>
+
+        <p>
+            Please coordinate with the HR department to complete the required clearance process.
+        </p>
+
+        <div class="info-box">
+            If you have any queries, please contact the HR team.
+        </div>
+
+        <p>
+            Regards <br>
+            <b>HR Department</b><br>
+            WhyDigit System Private Limited
+        </p>
+
+    </div>
+
+    <div class="footer">
+        This is an automated email from HRMS. Please do not reply.
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 public class GoalsDTO {
 
 	private Long id;
-	private Long appraisalId;
-	private String department;
+	private String appraisalId;
+	private String designation;
 	private Long orgId;
 	private String createdBy;
 	private Long finYear;

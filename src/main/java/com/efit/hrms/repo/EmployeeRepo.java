@@ -1,16 +1,16 @@
 package com.efit.hrms.repo;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.efit.hrms.entity.CurrencyVO;
 import com.efit.hrms.entity.EmployeeVO;
-import com.efit.hrms.entity.ShiftAssignDetailsVO;
 
 public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 
@@ -71,7 +71,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "e.payslipeffectivedate\r\n"
 			+ "FROM employee e\r\n"
 			+ "JOIN company c ON e.orgid = c.companyid\r\n"
-			+ "WHERE e.orgid = ?1 ORDER BY e.employee ASC \r\n"
+			+ "WHERE e.orgid = ?1 and e.active=1 ORDER BY e.employee ASC \r\n"
 			+ "", nativeQuery = true)
 	List<Map<String, Object>> getEmployeesWithCompanyInfoByOrgId(Long orgId);
 
@@ -97,7 +97,7 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "FROM employee  \r\n"
 			+ "WHERE orgid = ?1  and branchcode=?2 AND employeecode NOT IN (?3)  \r\n"
 			+ "\r\n"
-			+ "AND (trim(designation) LIKE '%MANAGER%' OR trim(designation) LIKE '%TEAM LEAD%' OR trim(designation) LIKE '%CEO%' OR trim(designation) LIKE '%HR%' OR trim(designation) LIKE '%MANAGING DIRECTOR%')" )
+			+ "AND (trim(designation) LIKE '%MANAGER%' OR trim(designation) LIKE '%TEAM LEAD%' OR trim(designation) LIKE '%CEO%' OR trim(designation) LIKE '%HR%' OR trim(designation) LIKE '%MANAGING DIRECTOR%') and active=1" )
 	Set<Object[]> findReportingNameForEmployee(Long orgId, String branchCode, String employeeCode);
 	
 //	@Query(nativeQuery = true,value="select concat(format,lpad(last_number,5,0)) AS docid from sequence_tracker where company_id=?1 and year=?2 and branch_code=?3 and Department_code=?4 and company_code=?5;\r\n")
@@ -126,20 +126,25 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	
 	
 	
-	@Query(nativeQuery = true,value ="SELECT \r\n"
-			+ "    employeeid, \r\n"
-			+ "    department, \r\n"
-			+ "    designation,  \r\n"
-			+ "    employeecode, \r\n"
-			+ "    employee, \r\n"
-			+ "    gender, \r\n"
-			+ "    orgid, \r\n"
-			+ "    TIMESTAMPDIFF(YEAR, joiningdate, CURDATE()) AS noofyears,"
+	@Query(nativeQuery = true,value ="SELECT\r\n"
+			+ "    employeeid,\r\n"
+			+ "    department,\r\n"
+			+ "    designation,\r\n"
+			+ "    employeecode,\r\n"
+			+ "    employee,\r\n"
+			+ "    gender,\r\n"
+			+ "    orgid,\r\n"
+			+ "    TIMESTAMPDIFF(YEAR, joiningdate, CURDATE()) AS noofyears,\r\n"
 			+ "    profileimage\r\n"
 			+ "FROM employee\r\n"
-			+ "WHERE \r\n"
-			+ "    MONTH(joiningdate) = MONTH(CURDATE()) \r\n"
-			+ "    AND DAY(joiningdate) = DAY(CURDATE())\r\n"
+			+ "WHERE\r\n"
+			+ "    DAYOFYEAR(joiningdate)\r\n"
+			+ "    BETWEEN DAYOFYEAR(CURDATE())\r\n"
+			+ "    AND DAYOFYEAR(DATE_ADD(CURDATE(), INTERVAL 3 DAY))\r\n"
+			+ "    AND YEAR(joiningdate) < YEAR(CURDATE())\r\n"
+			+ "    AND active = 1  and orgid=?1\r\n"
+			+ "\r\n"
+			+ "\r\n"
 			+ "")
 	Set<Object[]> findWorkaniversaryByOrgId(Long orgid);
 
@@ -147,10 +152,10 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	@Query(nativeQuery = true,value ="SELECT employeeid, department, designation,  employeecode, employee, gender,orgid,profileimage \r\n"
 			+ "FROM employee\r\n"
 			+ "WHERE MONTH(joiningdate) = MONTH(CURDATE()) \r\n"
-			+ "AND YEAR(joiningdate) = YEAR(CURDATE())")
+			+ "AND YEAR(joiningdate) = YEAR(CURDATE()) and active=1")
 	Set<Object[]> findNewJoinieDtailsByOrgId(Long orgid);
 
-	@Query(value = "SELECT * FROM employee e WHERE e.orgId = ?1 and employeecode=?2 and active=1", nativeQuery = true)
+	@Query(value = "SELECT * FROM employee e WHERE e.orgid = ?1 and employeecode=?2 and active=1", nativeQuery = true)
 	List<EmployeeVO> getAllEmployeeByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
 
 	EmployeeVO findByEmployeeCode(String employeecode);
@@ -180,6 +185,92 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 
 
 //	EmployeeVO findByEmployeeVO(String empCode);
+
+
+	@Query(value = "SELECT e.employee, e.employeecode " +
+	        "FROM employee e " +
+	        "WHERE e.orgId = ?1 " +
+	        "  AND (?2 = 'ALL' OR e.branchCode = ?2) " +
+	        "  AND (?3 = 'ALL' OR e.department = ?3) " +
+	        "  AND e.active = 1", nativeQuery = true)
+	Set<Object[]> getEmployeeDetailsForAllTaskReport(Long orgId, String branchCode, String department);
+
+	EmployeeVO findByOrgIdAndEmployeeCode(Long orgId, String employeeCode);
+
+	EmployeeVO findByEmployeeNameAndEmployeeCode(String employeeName, String employeeCode);
+	
+	@Query(value = "SELECT email FROM employee WHERE employeecode = :empCode", nativeQuery = true)
+	String getEmployeeEmail(@Param("empCode") String empCode);
+
+	@Query(value = "SELECT employee,employeecode,designation FROM employee WHERE orgid =?1 and designation='General Manager' ", nativeQuery = true)
+	List<Object[]> getGeneralManagerByOrgId(Long orgId);
+
+	@Query(value = "SELECT employee,employeecode,email FROM employee WHERE orgid =?1 and department=?2 and branchcode=?3 and active=1 ", nativeQuery = true)
+	List<Object[]> getEmployeeforDepartmentHeadByOrgId(Long orgId, String department, String branchCode);
+
+	@Query(value = "SELECT \r\n"
+			+ "    e.employeeid AS employeeId,\r\n"
+			+ "    e.alternativemobileno AS alternativeMobileNo,\r\n"
+			+ "    e.aadharno AS aadharNo,\r\n"
+			+ "    e.accountno AS accountNo,\r\n"
+			+ "    e.active AS active,\r\n"
+			+ "    e.bloodgroup AS bloodGroup,\r\n"
+			+ "    e.branch AS branch,\r\n"
+			+ "    e.branchcode AS branchCode,\r\n"
+			+ "    e.cancel AS cancel,\r\n"
+			+ "    e.cancelremarks AS cancelRemarks,\r\n"
+			+ "    e.createdon AS createdOn,\r\n"
+			+ "    e.modifiedon AS modifiedOn,\r\n"
+			+ "    e.createdby AS createdBy,\r\n"
+			+ "    e.dateofbirth AS dateOfBirth,\r\n"
+			+ "    e.department AS department,\r\n"
+			+ "    e.designation AS designation,\r\n"
+			+ "    e.email AS email,\r\n"
+			+ "    e.employeeaddress AS employeeAddress,\r\n"
+			+ "    e.employeecode AS employeeCode,\r\n"
+			+ "    e.employee AS employee,\r\n"
+			+ "    e.gender AS gender,\r\n"
+			+ "    e.grade AS grade,\r\n"
+			+ "    e.ifsccode AS ifscCode,\r\n"
+			+ "    e.joiningdate AS joiningDate,\r\n"
+			+ "    e.mobileno AS mobileNo,\r\n"
+			+ "    e.orgid AS orgId,\r\n"
+			+ "    e.panno AS panNo,\r\n"
+			+ "    e.reportingrole AS reportingRole,\r\n"
+			+ "    e.reportingperson AS reportingPerson,\r\n"
+			+ "    e.reportingpersonemail AS reportingPersonEmail,\r\n"
+			+ "    e.resigndate AS resignDate,\r\n"
+			+ "    e.team AS team,\r\n"
+			+ "    e.modifiedby AS modifiedBy,\r\n"
+			+ "    e.reportingpersoncode AS reportingPersonCode,\r\n"
+			+ "    e.uanno AS uanNo,\r\n"
+			+ "    e.bankname AS bankName,\r\n"
+			+ "    e.type AS type,\r\n"
+			+ "    e.esiflag AS esiFlag,\r\n"
+			+ "    e.esipercentage AS esiPercentage,\r\n"
+			+ "    e.pfflag AS pfFlag,\r\n"
+			+ "    e.pfpercentage AS pfPercentage,\r\n"
+			+ "    c.companyname AS companyName,\r\n"
+			+ "    c.companycode AS companyCode,\r\n"
+			+ "    e.contractor AS contractor,\r\n"
+			+ "    e.contactperson AS contactPerson,\r\n"
+			+ "    e.contactnumber AS contactNumber,\r\n"
+			+ "    e.email AS contactEmail,\r\n"
+			+ "    e.otflag AS otFlag,\r\n"
+			+ "    e.bioid AS bioId,\r\n"
+			+ "    e.payslipeffectivedate\r\n"
+			+ "FROM employee e\r\n"
+			+ "JOIN company c ON e.orgid = c.companyid\r\n"
+			+ "WHERE e.orgid = ?1   -- 🔁 change orgId\r\n"
+			+ "  AND e.active = 1\r\n"
+			+ "  AND NOT EXISTS (\r\n"
+			+ "        SELECT 1 \r\n"
+			+ "        FROM initiateseparation i \r\n"
+			+ "        WHERE i.employeecode = e.employeecode\r\n"
+			+ "  )\r\n"
+			+ "ORDER BY e.employee ASC"
+			+ "", nativeQuery = true)
+	List<Map<String, Object>> getSeparationEmployeeByOrgId(Long orgId);
 
 
 

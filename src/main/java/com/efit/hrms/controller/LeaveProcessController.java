@@ -264,7 +264,7 @@ public class LeaveProcessController extends BaseController {
 	@PutMapping("/createApprovalLeave")
 	public ResponseEntity<ResponseDTO> createApprovalLeave(@RequestParam Long orgId, @RequestParam Long id,
 			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
-			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName) {
+			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam String email,@RequestParam (required=false) String reason) {
 		String methodName = "createApprovalLeave()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -272,7 +272,7 @@ public class LeaveProcessController extends BaseController {
 		ResponseDTO responseDTO = null;
 		try {
 			Map<String, Object> result = leaveProcessService.createApprovalLeave(orgId, id, employeeCode, action,
-					actionBy, notifyCode, notify,screenName);
+					actionBy, notifyCode, notify,screenName,email,reason);
 
 			// ✅ Correct keys from the returned map
 			responseObjectsMap.put("leaveRequestVO", result.get("leaveRequestVO"));
@@ -593,7 +593,7 @@ public class LeaveProcessController extends BaseController {
 
 	@PutMapping("/createApprovalCompOff")
 	public ResponseEntity<ResponseDTO> createApprovalCompOff(@RequestParam Long orgId, @RequestParam Long id,
-			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName) {
+			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam (required=false) String reason) {
 		String methodName = "createApprovalCompOff()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -601,7 +601,7 @@ public class LeaveProcessController extends BaseController {
 		ResponseDTO responseDTO = null;
 		try {
 			Map<String, Object> compensatoryOffVO = leaveProcessService.createApprovalCompOff(
-	                orgId, id, employeeCode, action, actionBy, notifyCode, notify,screenName);
+	                orgId, id, employeeCode, action, actionBy, notifyCode, notify,screenName,reason);
 
 	        // ✅ Unwrap values
 	        Object compOffData = compensatoryOffVO.get("compensatoryOffVO");
@@ -941,7 +941,7 @@ public class LeaveProcessController extends BaseController {
 	          Object workFromHome = workFromHomeVO.get("workFromHomeVO");
 	          String message = (String) workFromHomeVO.getOrDefault("message", "WorkFromHome approved successfully.");
 
-	          responseObjectsMap.put("workFromHomeVO", workFromHomeVO);
+	          responseObjectsMap.put("workFromHomeVO", workFromHome);
 	          responseObjectsMap.put("message", message);
 
 	          responseDTO = createServiceResponse(responseObjectsMap);

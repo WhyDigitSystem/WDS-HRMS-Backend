@@ -37,7 +37,7 @@ public class LeaveRequestDTO {
 	
 	private String employeeName;
 	private String employeeCode;
-
+	private String email;
 	
 	private String department;
 	

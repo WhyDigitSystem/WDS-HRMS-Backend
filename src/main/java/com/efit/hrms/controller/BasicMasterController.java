@@ -34,6 +34,7 @@ import com.efit.hrms.dto.CircularDTO;
 import com.efit.hrms.dto.EmployeeCodeConfigDTO;
 import com.efit.hrms.dto.EmployeeDTOnew;
 import com.efit.hrms.dto.HolidayDTO;
+import com.efit.hrms.dto.PendingRequestProjection;
 import com.efit.hrms.dto.PollVoteDTO;
 import com.efit.hrms.dto.PollsDTO;
 import com.efit.hrms.dto.PraiseDTO;
@@ -43,9 +44,7 @@ import com.efit.hrms.dto.UserNameDTO;
 import com.efit.hrms.entity.AnnouncementVO;
 import com.efit.hrms.entity.CalendarVO;
 import com.efit.hrms.entity.CheckInOutAdjustmentVO;
-import com.efit.hrms.entity.CheckInVO;
 import com.efit.hrms.entity.CircularVO;
-import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.EmployeeCodeConfigVO;
 import com.efit.hrms.entity.HolidayVO;
 import com.efit.hrms.entity.PollsVO;
@@ -224,7 +223,7 @@ public class BasicMasterController extends BaseController {
 	public ResponseEntity<ResponseDTO> createApprovalCheckInOutAdjustment(@RequestParam Long orgId,
 			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) String checkOutDate,
-			@RequestParam String notifyCode, @RequestParam String notify, @RequestParam String screenName) {
+			@RequestParam String notifyCode, @RequestParam String notify, @RequestParam String screenName,@RequestParam(required=false) String reason) {
 
 		String methodName = "createApprovalCheckInOutAdjustment()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
@@ -238,7 +237,7 @@ public class BasicMasterController extends BaseController {
 
 			// Call the service
 			Map<String, Object> result = basicMasterService.createApprovalCheckInOutAdjustment(orgId, employeeCode,
-					action, actionBy, localCheckOutDate, notifyCode, notify, screenName);
+					action, actionBy, localCheckOutDate, notifyCode, notify, screenName,reason);
 
 			// ✅ Extract and flatten
 			List<CheckInOutAdjustmentVO> adjustmentList = (List<CheckInOutAdjustmentVO>) result
@@ -426,7 +425,7 @@ public class BasicMasterController extends BaseController {
 
 	@GetMapping("/attendance")
 	public ResponseEntity<ResponseDTO> getAttendanceByEmpcode(@RequestParam String empcode, @RequestParam String month,
-			@RequestParam String orgId,  @RequestParam String branchCode) {
+			@RequestParam String orgId,  @RequestParam String branchCode,@RequestParam String finYear) {
 
 		String methodName = "getAttendanceByEmpcode()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
@@ -439,7 +438,7 @@ public class BasicMasterController extends BaseController {
 			Integer monthInt = Integer.parseInt(month);
 
 			List<Map<String, Object>> attendanceList = basicMasterService.getAttendanceByEmpcode(empcode, monthInt,
-					orgId, branchCode);
+					orgId, branchCode,finYear);
 
 			if (attendanceList.isEmpty()) {
 				errorMsg = "No attendance data found for empcode: " + empcode;
@@ -1215,7 +1214,7 @@ public class BasicMasterController extends BaseController {
 	}
 
 	@GetMapping("/getpayslipemployeedetails")
-	public ResponseEntity<ResponseDTO> getpayslipemployeedetails(@RequestParam Long orgId, String Employeecode) {
+	public ResponseEntity<ResponseDTO> getpayslipemployeedetails(@RequestParam Long orgId, String Employeecode,Long month,Long year) {
 		String methodName = "getpayslipemployeedetails()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -1224,7 +1223,7 @@ public class BasicMasterController extends BaseController {
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = basicMasterService.getpayslipemployeedetails(orgId, Employeecode);
+			mapp = basicMasterService.getpayslipemployeedetails(orgId, Employeecode,month,year);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1603,5 +1602,41 @@ public class BasicMasterController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	@GetMapping("/getDashBoardApprovalStatusDetails/{empCode}")
+	public ResponseEntity<ResponseDTO> getDashBoardApprovalStatusDetails(
+	        @PathVariable String empCode) {
+
+	    String methodName = "getDashBoardApprovalStatusDetails()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO;
+
+	    try {
+
+	        List<PendingRequestProjection> dashBoard =
+	                basicMasterService.getDashBoardApprovalStatusDetails(empCode);
+
+	        responseObjectsMap.put("dashBoard", dashBoard);
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
+
+	        responseDTO = createServiceResponseError(
+	                responseObjectsMap,
+	                e.getMessage(),
+	                e.getMessage()
+	        );
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+	    return ResponseEntity.ok(responseDTO);
+	}
+
 
 }

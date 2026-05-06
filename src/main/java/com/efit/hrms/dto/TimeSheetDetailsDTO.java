@@ -1,5 +1,7 @@
 package com.efit.hrms.dto;
 
+import javax.persistence.Column;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,5 +15,9 @@ public class TimeSheetDetailsDTO {
 	private String fromTime;
 	private String toTime;
 	private String description;
+	private String project;
+	private String wip;
+	private String status;
+	private String remarks;
 	
 }

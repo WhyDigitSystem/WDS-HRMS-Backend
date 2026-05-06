@@ -13,11 +13,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.efit.hrms.dto.BranchDTO;
 import com.efit.hrms.dto.DesignationLeaveDTO;
 import com.efit.hrms.dto.EmployeeDTO;
+import com.efit.hrms.dto.ListOfValuesDTO;
 import com.efit.hrms.dto.ProjectMasterDTO;
 import com.efit.hrms.entity.BranchVO;
 import com.efit.hrms.entity.DesignationLeaveVO;
 import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.LeaveProcessVO;
+import com.efit.hrms.entity.ListOfValuesVO;
 import com.efit.hrms.entity.ProjectMasterVO;
 import com.efit.hrms.exception.ApplicationException;
 
@@ -79,6 +81,14 @@ public interface MasterService {
 
 
 		Map<String, Object> uploadEmployeeExcel(MultipartFile file, Long orgId, String createdBy) throws ApplicationException;
+
+		List<ListOfValuesVO> getAllListOfValuesByOrgId(Long orgId);
+
+		List<Map<String, Object>> getAllListValues(Long orgId, String listDescription);
+
+		Map<String, Object> updateCreateListOfValues(ListOfValuesDTO listOfValuesDTO) throws ApplicationException;
+
+		ListOfValuesVO getAllListOfValuesById(Long id);
 
 
 
