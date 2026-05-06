@@ -17,6 +17,7 @@ import com.efit.hrms.dto.CircularDTO;
 import com.efit.hrms.dto.EmployeeCodeConfigDTO;
 import com.efit.hrms.dto.EmployeeDTOnew;
 import com.efit.hrms.dto.HolidayDTO;
+import com.efit.hrms.dto.PendingRequestProjection;
 import com.efit.hrms.dto.PollVoteDTO;
 import com.efit.hrms.dto.PollsDTO;
 import com.efit.hrms.dto.PraiseDTO;
@@ -53,7 +54,7 @@ public interface BasicMasterService {
 
 	List<Map<String, Object>> getStatusByEmpcode(String empcode);
 
-	List<Map<String, Object>> getAttendanceByEmpcode(String empcode, int  month, String orgId, String branchcode);
+	List<Map<String, Object>> getAttendanceByEmpcode(String empcode, int  month, String orgId, String branchcode,String finYear);
 
 	void excelUploadForHolidays(MultipartFile[] files, String createdBy, Long orgId)
 			throws EncryptedDocumentException, ApplicationException, java.io.IOException;
@@ -67,7 +68,7 @@ public interface BasicMasterService {
 	Map<String, Object> createCheckInOutAdjustment(CheckInOutAdjustmentDTO checkInOutAdjustmentDTO) throws ApplicationException;
 
 	Map<String, Object> createApprovalCheckInOutAdjustment(Long orgId, String employeeCode, String action,
-			String actionBy, LocalDate localCheckOutDate, String notifyCode, String notify, String screenName) throws ApplicationException;
+			String actionBy, LocalDate localCheckOutDate, String notifyCode, String notify, String screenName, String reason) throws ApplicationException;
 
 	List<Map<String, Object>> getRequestCheckInOutByOrgId(Long orgId, String branch, String reportingPersoncode);
 
@@ -148,8 +149,7 @@ List<Map<String, Object>> GetCountofNewAssignedTask(Long Orgid,String Assignedby
 
 // payslip
 	
-	List<Map<String, Object>> getpayslipemployeedetails(Long orgId, String Employeecode);
-	
+	List<Map<String, Object>> getpayslipemployeedetails(Long orgId, String Employeecode, Long month, Long year);
 	
 	List<Map<String, Object>> getpayslipearningdetails(Long orgId, String Employeecode,Long Month,Long year);
 	
@@ -185,6 +185,9 @@ List<Map<String, Object>> GetCountofNewAssignedTask(Long Orgid,String Assignedby
 	String generateEmployeeCodeByOrgId(EmployeeDTOnew employeeDTOnew);
 
 	List<Map<String, Object>> getpayslipPayOnHandAmount(Long orgId, String employeecode, Long month, String year);
+
+	List<PendingRequestProjection> getDashBoardApprovalStatusDetails(String empCode);
+
 
 	
 	

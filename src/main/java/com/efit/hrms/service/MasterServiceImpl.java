@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -25,6 +26,8 @@ import com.efit.hrms.dto.BranchDTO;
 import com.efit.hrms.dto.DesignationLeaveDTO;
 import com.efit.hrms.dto.EmployeeDTO;
 import com.efit.hrms.dto.EmployeeLeaveDTO;
+import com.efit.hrms.dto.ListOfValuesDTO;
+import com.efit.hrms.dto.ListOfValuesDetailsDTO;
 import com.efit.hrms.dto.ProjectMasterDTO;
 import com.efit.hrms.entity.AemployeeLeaveVO;
 import com.efit.hrms.entity.AemployeeVO;
@@ -35,6 +38,8 @@ import com.efit.hrms.entity.DesignationVO;
 import com.efit.hrms.entity.EmployeeLeaveVO;
 import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.LeaveBalanceVO;
+import com.efit.hrms.entity.ListOfValuesDetailsVO;
+import com.efit.hrms.entity.ListOfValuesVO;
 import com.efit.hrms.entity.ProjectMasterVO;
 import com.efit.hrms.entity.UserLoginRolesVO;
 import com.efit.hrms.entity.UserVO;
@@ -48,6 +53,8 @@ import com.efit.hrms.repo.DesignationRepo;
 import com.efit.hrms.repo.EmployeeLeaveRepo;
 import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.LeaveBalanceRepo;
+import com.efit.hrms.repo.ListOfValuesDetailsRepo;
+import com.efit.hrms.repo.ListOfValuesRepo;
 import com.efit.hrms.repo.ProjectMasterRepo;
 import com.efit.hrms.repo.UserLoginRolesRepo;
 import com.efit.hrms.repo.UserRepo;
@@ -96,6 +103,13 @@ public class MasterServiceImpl implements MasterService {
 	@Autowired
 	DesignationRepo designationRepo;
 
+	
+	@Autowired
+	ListOfValuesRepo listOfValuesRepo;
+	
+	@Autowired
+	ListOfValuesDetailsRepo listOfValuesDetailsRepo;
+	
 	// Branch
 
 	@Override
@@ -309,7 +323,6 @@ public class MasterServiceImpl implements MasterService {
 	    employeeVO.setOtFlag(employeeDTO.getOtFlag());
 	    employeeVO.setBioId(employeeDTO.getBioId());
 	    employeeVO.setPayslipEffectiveDate(employeeDTO.getPayslipEffectiveDate());
-
 
 	    UserVO userVO = userRepo.findByEmployeeCodeAndOrgId(employeeDTO.getEmployeeCode(), employeeDTO.getOrgId());
 	    if (userVO != null) {
@@ -1505,5 +1518,111 @@ public class MasterServiceImpl implements MasterService {
 //	    successResponse.put("totalSaved", savedEmployees.size());
 //	    return successResponse;
 //	}
+	
+	
+	
+	
+	// ListOfValues
+
+		@Override
+		public List<ListOfValuesVO> getAllListOfValuesByOrgId(Long orgId) {
+
+			return listOfValuesRepo.getAllListOfValuesByOrgId(orgId);
+		}
+
+		@Override
+		public ListOfValuesVO getAllListOfValuesById(Long id) {
+
+			return listOfValuesRepo.getAllListOfValuesById(id);
+		}
+
+		@Override
+		public Map<String, Object> updateCreateListOfValues(@Valid ListOfValuesDTO listOfValuesDTO)
+				throws ApplicationException {
+
+			ListOfValuesVO listOfValuesVO = new ListOfValuesVO();
+			String message;
+			if (ObjectUtils.isNotEmpty(listOfValuesDTO.getId())) {
+				listOfValuesVO = listOfValuesRepo.findById(listOfValuesDTO.getId())
+						.orElseThrow(() -> new ApplicationException("ListOfValues Not Found!"));
+
+				listOfValuesVO.setUpdatedBy(listOfValuesDTO.getCreatedBy());
+				createUpdateListOfValuesVOByListOfValuesDTO(listOfValuesDTO, listOfValuesVO);
+
+				if (!listOfValuesVO.getListDescription().equalsIgnoreCase(listOfValuesDTO.getListDescription())) {
+					if (listOfValuesRepo.existsByListDescriptionAndOrgId(listOfValuesDTO.getListDescription(),
+							listOfValuesDTO.getOrgId())) {
+						String errorMessage = String.format("This ListDescription: %s Already Exists in This Organization",
+								listOfValuesDTO.getOrgId());
+						throw new ApplicationException(errorMessage);
+					}
+					listOfValuesVO.setListDescription(listOfValuesDTO.getListDescription().toUpperCase());
+				}
+
+				message = "ListOfValues Updated Successfully";
+			} else {
+
+				if (listOfValuesRepo.existsByListDescriptionAndOrgId(listOfValuesDTO.getListDescription(),
+						listOfValuesDTO.getOrgId())) {
+					String errorMessage = String.format("This ListOfValues: %s Already Exists in This Organization",
+							listOfValuesDTO.getListDescription());
+					throw new ApplicationException(errorMessage);
+				}
+				listOfValuesVO.setUpdatedBy(listOfValuesDTO.getCreatedBy());
+				listOfValuesVO.setCreatedBy(listOfValuesDTO.getCreatedBy());
+
+				createUpdateListOfValuesVOByListOfValuesDTO(listOfValuesDTO, listOfValuesVO);
+				message = "ListOfValues Created Successfully";
+			}
+
+			listOfValuesRepo.save(listOfValuesVO);
+			Map<String, Object> response = new HashMap<>();
+			response.put("listOfValuesVO", listOfValuesVO);
+			response.put("message", message);
+			return response;
+		}
+
+		private void createUpdateListOfValuesVOByListOfValuesDTO(@Valid ListOfValuesDTO listOfValuesDTO,
+				ListOfValuesVO listOfValuesVO) throws ApplicationException {
+
+			listOfValuesVO.setCreatedBy(listOfValuesDTO.getCreatedBy());
+			listOfValuesVO.setOrgId(listOfValuesDTO.getOrgId());
+			listOfValuesVO.setListDescription(listOfValuesDTO.getListDescription());
+			if (listOfValuesDTO.getId() != null) {
+				List<ListOfValuesDetailsVO> listOfValuesDetailsVOs = listOfValuesDetailsRepo
+						.findByListOfValuesVO(listOfValuesVO);
+				listOfValuesDetailsRepo.deleteAll(listOfValuesDetailsVOs);
+
+			}
+			List<ListOfValuesDetailsVO> liistOfValuesDetailsVOs = new ArrayList<>();
+			for (ListOfValuesDetailsDTO listOfValuesDetailsDTO : listOfValuesDTO.getListOfValuesDetailsDTO()) {
+				ListOfValuesDetailsVO listOfValuesDetailsVO = new ListOfValuesDetailsVO();
+
+				listOfValuesDetailsVO.setListValues(listOfValuesDetailsDTO.getListValues());
+				listOfValuesDetailsVO.setActive(listOfValuesDetailsDTO.isActive());
+
+				listOfValuesDetailsVO.setListOfValuesVO(listOfValuesVO);
+				liistOfValuesDetailsVOs.add(listOfValuesDetailsVO);
+			}
+
+			listOfValuesVO.setListOfValuesDetailsVO(liistOfValuesDetailsVOs);
+
+		}
+
+		@Override
+		public List<Map<String, Object>> getAllListValues(Long orgId, String listDescription) {
+			Set<Object[]> chType = listOfValuesRepo.getAllListValues(orgId, listDescription);
+			return getAllListValues(chType);
+		}
+
+		private List<Map<String, Object>> getAllListValues(Set<Object[]> chType) {
+			List<Map<String, Object>> List1 = new ArrayList<>();
+			for (Object[] ch : chType) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("listOfValues", ch[0] != null ? ch[0].toString() : "");
+				List1.add(map);
+			}
+			return List1;
+		}
 
 }

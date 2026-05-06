@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+body{
+    background:#f4f6f9;
+    font-family:Segoe UI, Arial, sans-serif;
+}
+
+.container{
+    max-width:650px;
+    margin:auto;
+    background:#ffffff;
+    border-radius:8px;
+    overflow:hidden;
+    border:1px solid #e5e5e5;
+}
+
+.header{
+    text-align:right;
+    padding:20px;
+    border-bottom:1px solid #eee;
+}
+
+.logo{
+    width:200px;
+}
+
+.content{
+    padding:30px;
+    font-size:14px;
+    color:#333;
+}
+
+.title{
+    color:#2c3e50;
+    font-size:20px;
+    margin-bottom:15px;
+}
+
+.info-box{
+    background:#f8f9fa;
+    padding:15px;
+    border-left:4px solid #27ae60;
+    margin:20px 0;
+}
+
+.details{
+    line-height:1.8;
+}
+
+.button{
+    display:inline-block;
+    padding:12px 25px;
+    background:#27ae60;
+    color:#ffffff;
+    text-decoration:none;
+    border-radius:5px;
+    font-weight:bold;
+    margin-top:20px;
+}
+
+.footer{
+    background:#f4f6f9;
+    padding:15px;
+    text-align:center;
+    font-size:12px;
+    color:#888;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <img src="cid:companyLogo" class="logo">
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+        <p>
+            Dear Management,
+        </p>
+
+        <!-- Employee Details -->
+        <div class="info-box">
+
+            <div class="details">
+
+                <b>Employee Name :</b>
+                <span th:text="${employeeName}">Employee Name</span>
+                <br>
+
+                <b>Interview Date :</b>
+                <span th:text="${interviewDate}">2026-03-10</span>
+                <br>
+
+                <b>Status :</b> Exit Interview Completed
+
+            </div>
+
+        </div>
+
+        <p>
+            Please review the separation request and approve it if everything is in order.
+        </p>
+
+       <div style="text-align:center;margin-top:20px;">
+
+			<a th:href="${approveUrl}"
+			   style="display:inline-block;
+			          padding:12px 25px;
+			          background:#27ae60;
+			          color:#ffffff;
+			          text-decoration:none;
+			          border-radius:5px;
+			          font-weight:bold;
+			          margin-right:10px;">
+			Approve
+			</a>
+			
+			<a th:href="${rejectUrl}"
+			   style="display:inline-block;
+			          padding:12px 25px;
+			          background:#e74c3c;
+			          color:#ffffff;
+			          text-decoration:none;
+			          border-radius:5px;
+			          font-weight:bold;">
+			Reject
+			</a>
+			
+		</div>
+
+        <p style="margin-top:25px;">
+            Regards <br>
+            <b>HRMS System</b><br>
+            WhyDigit System Private Limited
+        </p>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        This is an automated email from HRMS. Please do not reply to this email.
+    </div>
+
+</div>
+
+</body>
+</html>

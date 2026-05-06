@@ -837,7 +837,7 @@ public class EmployeeMasterController extends BaseController{
 	
 	@PutMapping("/createApprovalPermissionRequest")
 	public ResponseEntity<ResponseDTO> createApprovalPermissionRequest(@RequestParam Long orgId, @RequestParam Long id,
-			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName) {
+			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam (required=false) String reason) {
 		String methodName = "createApprovalPermissionRequest()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -845,7 +845,7 @@ public class EmployeeMasterController extends BaseController{
 		ResponseDTO responseDTO = null;
 		try {
 			 Map<String, Object> result = employeeMasterService.createApprovalPermissionRequest(
-		                orgId, id, employeeCode, action, actionBy, notifyCode, notify,screenName);
+		                orgId, id, employeeCode, action, actionBy, notifyCode, notify,screenName,reason);
 		        
 		        // ✅ Use putAll to avoid nested structure
 		        responseObjectsMap.putAll(result);

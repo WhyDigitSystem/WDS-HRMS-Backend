@@ -125,6 +125,31 @@ public class Views {
     			+ "    ExpiryStartDate     DATE,\r\n"
     			+ "    ExpiryEndDate       DATE\r\n"
     			+ ")");
+    	
+    	jdbcTemplate.execute("create or replace view essldevicelogdata as\r\n"
+    			+ "select a.devicelogid,a.employeecode,a.log_date,a.log_time,a.sno,a.status from(\r\n"
+    			+ "SELECT\r\n"
+    			+ "    e.devicelogid AS DeviceLogId,\r\n"
+    			+ "    e.employeecode AS EmployeeCode,\r\n"
+    			+ "    CAST(e.logdate AS DATE) AS log_date,\r\n"
+    			+ "    CAST(e.logdate AS TIME) AS log_time,\r\n"
+    			+ "\r\n"
+    			+ "    ROW_NUMBER() OVER (\r\n"
+    			+ "        PARTITION BY e.employeecode, CAST(e.logdate AS DATE)\r\n"
+    			+ "        ORDER BY e.logdate\r\n"
+    			+ "    ) AS sno,\r\n"
+    			+ "\r\n"
+    			+ "    CASE\r\n"
+    			+ "        WHEN MOD(\r\n"
+    			+ "            ROW_NUMBER() OVER (\r\n"
+    			+ "                PARTITION BY e.employeecode, CAST(e.logdate AS DATE)\r\n"
+    			+ "                ORDER BY e.logdate\r\n"
+    			+ "            ), 2\r\n"
+    			+ "        ) = 1\r\n"
+    			+ "        THEN 'IN'\r\n"
+    			+ "        ELSE 'OUT'\r\n"
+    			+ "    END AS status,checkinoutstatus\r\n"
+    			+ "FROM essldevicelog e ORDER BY e.DeviceLogId,e.EmployeeCode, e.logdate, e.LogDate asc) a where a.checkinoutstatus is null");
     }
     
     

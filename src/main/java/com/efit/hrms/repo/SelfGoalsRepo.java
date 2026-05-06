@@ -20,4 +20,37 @@ public interface SelfGoalsRepo extends JpaRepository<SelfGoalsVO, Long> {
 			+ "")
 	Set<Object[]> getAppraisee(Long orgId, String employeeCode);
 
+	@Query(value = "select * from selfgoals where orgid=?1 and code=?2", nativeQuery = true)
+	List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCode(Long orgId, String empCode);
+
+	@Query(value = "SELECT * FROM selfgoals " +
+		       "WHERE orgid = ?1 " +
+		       "AND code = ?2 " +
+		       "AND (?3 IS NULL OR finyear = ?3)", 
+		       nativeQuery = true)	
+	List<SelfGoalsVO> getSelfGoalsByOrgIdAndEmpCodeAndFinyear(Long orgId, String empCode, Long finYear);
+
+	@Query(value = "SELECT *\r\n"
+			+ "FROM selfgoals s\r\n"
+			+ "JOIN selfgoalsdetails d \r\n"
+			+ "    ON s.selfgoalsid = d.selfgoalsid\r\n"
+			+ "    AND d.status = 'APPROVED'\r\n"
+			+ "WHERE s.orgid = ?1 \r\n"
+			+ "  AND s.code = ?2 \r\n"
+			+ "  AND (?3 IS NULL OR s.finyear = ?3);", 
+		       nativeQuery = true)	
+	List<SelfGoalsVO> getSelfGoalsForPerformanceGoals(Long orgId, String empCode, Long finYear);
+
+//	@Query(value = "\r\n"
+//			+ "SELECT *\r\n"
+//			+ "FROM performancegoals s\r\n"
+//			+ "JOIN performancegoalsdetails d \r\n"
+//			+ "    ON s.performancegoalsid = d.performancegoalsid\r\n"
+//			+ "    join selfgoals a on a.code=s.empcode and a.orgid=s.orgid\r\n"
+//			+ "WHERE s.orgid = ?1\r\n"
+//			+ "  AND s.empcode = ?2\r\n"
+//			+ "  and a.appraisalid=?3 ", 
+//		       nativeQuery = true)	
+//	List<SelfGoalsVO> getPerformanceGoalsForFirstLevelSInput(Long orgId, String empCode, String appraisalId);
+
 }

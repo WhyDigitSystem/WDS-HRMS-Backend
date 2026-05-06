@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.CityDTO;
+import com.efit.hrms.dto.CompanyCreateDTO;
 import com.efit.hrms.dto.CompanyDTO;
 import com.efit.hrms.dto.CountryDTO;
 import com.efit.hrms.dto.CurrencyDTO;
@@ -730,7 +731,7 @@ public class CommonMasterController extends BaseController {
 	}
 
 	@PostMapping("/company")
-	public ResponseEntity<ResponseDTO> createCompany(@RequestBody CompanyDTO companyDTO) {
+	public ResponseEntity<ResponseDTO> createCompany(@RequestBody CompanyCreateDTO companyDTO) {
 		String methodName = "createCompany()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;

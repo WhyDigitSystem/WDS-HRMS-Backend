@@ -35,7 +35,7 @@ public class KpiKraVO {
 	private Long id;
 
 	@Column(name = "appraisalid")
-	private Long appraisalId;
+	private String appraisalId;
 
 	@Column(name = "orgid")
 	private Long orgId;
@@ -45,23 +45,35 @@ public class KpiKraVO {
 	private String updatedBy;
 	@Column(name = "branchcode")
 	private String branchCode;
+
+	@Column(name = "designation")
+	private String designation;
 	
 	private String branch;
-	
-	@Column(name="finyear")
-	private String finYear;
 
-	private boolean active;
+	@Column(name = "finyear")
+	private Long finYear;
+
+	@Column(name = "active")
+	private boolean active = true;
 	@Column(name = "cancel")
-	private boolean cancel;
-	
-	@OneToMany(mappedBy = "kpiKraVO",cascade = CascadeType.ALL)
-	@JsonManagedReference
-	private List<KpiKraDetailsVO> kpiKraDetailsVO;
-	
-	@OneToMany(mappedBy = "kpiKraVO",cascade = CascadeType.ALL)
+	private boolean cancel = false;
+//	
+//	@OneToMany(mappedBy = "kpiKraVO",cascade = CascadeType.ALL)
+//	@JsonManagedReference
+//	private List<KpiKraDetailsVO> kpiKraDetailsVO;
+//	
+//	@OneToMany(mappedBy = "kpiKraVO",cascade = CascadeType.ALL)
+//	@JsonManagedReference
+//	private List<KpiVO> kpiVO;
+
+	@OneToMany(mappedBy = "kpiKraVO", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	private List<KpiVO> kpiVO;
+
+	@OneToMany(mappedBy = "kpiKraVO", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
+	private List<KpiKraDetailsVO> kpiKraDetailsVO;
 
 	@JsonGetter("active")
 	public String getActive() {

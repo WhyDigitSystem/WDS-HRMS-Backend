@@ -15,6 +15,7 @@ public class SelfGoalsDTO {
 	private String appraisalId;
 	private String code;
 	private String supervisorCode;
+	private String designation;
 	private String name;
 	private String supervisorName;
 	private Long orgId;

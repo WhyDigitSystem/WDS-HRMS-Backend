@@ -11,6 +11,7 @@ public class CheckInOutAdjustmentDTO {
 
 	private String entryIn;
 	private String entryOut;
+	private String requestReason;
 	private String reportingPersonMail;
 	private String date;
 	private String empCode;

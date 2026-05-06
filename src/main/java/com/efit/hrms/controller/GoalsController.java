@@ -27,6 +27,7 @@ import com.efit.hrms.dto.AdditionalGoalsDTO;
 import com.efit.hrms.dto.AppraisalPeriodDTO;
 import com.efit.hrms.dto.AppraiseeDTO;
 import com.efit.hrms.dto.AppraiserDTO;
+import com.efit.hrms.dto.FirstLevelSupervisorInputDTO;
 import com.efit.hrms.dto.GoalsDTO;
 import com.efit.hrms.dto.GradeDTO;
 import com.efit.hrms.dto.HrReviewDTO;
@@ -41,29 +42,31 @@ import com.efit.hrms.entity.AdditionalGoalsVO;
 import com.efit.hrms.entity.AppraisalPeriodVO;
 import com.efit.hrms.entity.AppraiseeVO;
 import com.efit.hrms.entity.AppraiserVO;
+import com.efit.hrms.entity.FirstLevelSupervisorInputVO;
 import com.efit.hrms.entity.GoalsVO;
 import com.efit.hrms.entity.GradeVO;
 import com.efit.hrms.entity.HrReviewVO;
 import com.efit.hrms.entity.KpiKraVO;
+import com.efit.hrms.entity.PerformanceGoalsVO;
 import com.efit.hrms.entity.PreGoalsVO;
 import com.efit.hrms.entity.ScoreVO;
 import com.efit.hrms.entity.SelfGoalsVO;
 import com.efit.hrms.entity.Supervisor1FeedBackVO;
 import com.efit.hrms.entity.WeightageVO;
-import com.efit.hrms.service.GoalsControllerService;
+import com.efit.hrms.service.GoalsService;
 
 @CrossOrigin
 @RestController
 @RequestMapping("/api/goalsController")
-public class GoalsController extends BaseController{
-	
+public class GoalsController extends BaseController {
+
 	public static final Logger LOGGER = LoggerFactory.getLogger(GoalsController.class);
-	
+
 	@Autowired
-    GoalsControllerService goalsControllerService;
-	
-	//PRE GOALS
-	
+	GoalsService goalsService;
+
+	// PRE GOALS
+
 	@PutMapping("/createUpdatePreGoals")
 	public ResponseEntity<ResponseDTO> createUpdatePreGoals(@Valid @RequestBody PreGoalsDTO preGoalsDTO) {
 		String methodName = "createUpdatePreGoals()";
@@ -73,17 +76,17 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> preGoalsVO = goalsControllerService.createUpdatePreGoals(preGoalsDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, preGoalsVO.get("message"));
-	        responseObjectsMap.put("preGoalsVO", preGoalsVO.get("preGoalsVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> preGoalsVO = goalsService.createUpdatePreGoals(preGoalsDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, preGoalsVO.get("message"));
+			responseObjectsMap.put("preGoalsVO", preGoalsVO.get("preGoalsVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
 
 	@GetMapping("/getPreGoalsByOrgId")
@@ -95,7 +98,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<PreGoalsVO> preGoalsVO = new ArrayList<>();
 		try {
-			preGoalsVO = goalsControllerService.getPreGoalsByOrgId(orgId);
+			preGoalsVO = goalsService.getPreGoalsByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -105,12 +108,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("preGoalsVO", preGoalsVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "PreGoals information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "PreGoals information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getPreGoalsById")
 	public ResponseEntity<ResponseDTO> getPreGoalsById(@RequestParam Long id) {
 		String methodName = "getPreGoalsById()";
@@ -120,7 +124,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<PreGoalsVO> preGoalsVO = null;
 		try {
-			preGoalsVO = goalsControllerService.getPreGoalsById(id);
+			preGoalsVO = goalsService.getPreGoalsById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -130,18 +134,20 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("preGoalsVO", preGoalsVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "PreGoals information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "PreGoals information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//MASTER
-	
-	//APPRAISAL
-	
+
+	// MASTER
+
+	// APPRAISAL
+
 	@PutMapping("/createUpdateAppraisalPeriod")
-	public ResponseEntity<ResponseDTO> createUpdateAppraisalPeriod(@Valid @RequestBody AppraisalPeriodDTO appraisalPeriodDTO) {
+	public ResponseEntity<ResponseDTO> createUpdateAppraisalPeriod(
+			@Valid @RequestBody AppraisalPeriodDTO appraisalPeriodDTO) {
 		String methodName = "createUpdateAppraisalPeriod()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -149,19 +155,20 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> appraisalPeriodVO = goalsControllerService.createUpdateAppraisalPeriod(appraisalPeriodDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, appraisalPeriodVO.get("message"));
-	        responseObjectsMap.put("appraisalPeriodVO", appraisalPeriodVO.get("appraisalPeriodVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> appraisalPeriodVO = goalsService
+					.createUpdateAppraisalPeriod(appraisalPeriodDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, appraisalPeriodVO.get("message"));
+			responseObjectsMap.put("appraisalPeriodVO", appraisalPeriodVO.get("appraisalPeriodVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAppraisalPeriodByOrgId")
 	public ResponseEntity<ResponseDTO> getAppraisalPeriodByOrgId(@RequestParam Long orgId) {
 		String methodName = "getAppraisalPeriodByOrgId()";
@@ -171,7 +178,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<AppraisalPeriodVO> appraisalPeriodVO = new ArrayList<>();
 		try {
-			appraisalPeriodVO = goalsControllerService.getAppraisalPeriodByOrgId(orgId);
+			appraisalPeriodVO = goalsService.getAppraisalPeriodByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -181,12 +188,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("appraisalVO", appraisalPeriodVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Appraisal information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Appraisal information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAppraisalPeriodById")
 	public ResponseEntity<ResponseDTO> getAppraisalPeriodById(@RequestParam Long id) {
 		String methodName = "getAppraisalPeriodById()";
@@ -196,7 +204,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<AppraisalPeriodVO> appraisalPeriodVO = null;
 		try {
-			appraisalPeriodVO = goalsControllerService.getAppraisalPeriodById(id);
+			appraisalPeriodVO = goalsService.getAppraisalPeriodById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -206,14 +214,15 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("appraisalVO", appraisalPeriodVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Appraisal information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Appraisal information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//Weightage
-	
+
+	// Weightage
+
 	@PutMapping("/createUpdateWeightage")
 	public ResponseEntity<ResponseDTO> createUpdateWeightage(@Valid @RequestBody WeightageDTO weightageDTO) {
 		String methodName = "createUpdateWeightage()";
@@ -223,19 +232,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> weightageVO = goalsControllerService.createUpdateWeightage(weightageDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, weightageVO.get("message"));
-	        responseObjectsMap.put("weightageVO", weightageVO.get("weightageVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> weightageVO = goalsService.createUpdateWeightage(weightageDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, weightageVO.get("message"));
+			responseObjectsMap.put("weightageVO", weightageVO.get("weightageVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getWeightageByOrgId")
 	public ResponseEntity<ResponseDTO> getWeightageByOrgId(@RequestParam Long orgId) {
 		String methodName = "getWeightageByOrgId()";
@@ -245,7 +254,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<WeightageVO> weightageVO = new ArrayList<>();
 		try {
-			weightageVO = goalsControllerService.getWeightageByOrgId(orgId);
+			weightageVO = goalsService.getWeightageByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -255,12 +264,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("weightageVO", weightageVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Weightage information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Weightage information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getWeightageById")
 	public ResponseEntity<ResponseDTO> getWeightageById(@RequestParam Long id) {
 		String methodName = "getWeightageById()";
@@ -270,7 +280,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<WeightageVO> weightageVO = null;
 		try {
-			weightageVO = goalsControllerService.getWeightageById(id);
+			weightageVO = goalsService.getWeightageById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -280,14 +290,15 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("weightageVO", weightageVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Weightage information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Weightage information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	// GRADE
-	
+
 	@PutMapping("/createUpdateGrade")
 	public ResponseEntity<ResponseDTO> createUpdateGrade(@Valid @RequestBody GradeDTO gradeDTO) {
 		String methodName = "createUpdateGrade()";
@@ -297,19 +308,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> gradeVO = goalsControllerService.createUpdateGrade(gradeDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, gradeVO.get("message"));
-	        responseObjectsMap.put("gradeVO", gradeVO.get("gradeVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> gradeVO = goalsService.createUpdateGrade(gradeDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, gradeVO.get("message"));
+			responseObjectsMap.put("gradeVO", gradeVO.get("gradeVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getGradeByOrgId")
 	public ResponseEntity<ResponseDTO> getGradeByOrgId(@RequestParam Long orgId) {
 		String methodName = "getGradeByOrgId()";
@@ -319,7 +330,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<GradeVO> gradeVO = new ArrayList<>();
 		try {
-			gradeVO = goalsControllerService.getGradeByOrgId(orgId);
+			gradeVO = goalsService.getGradeByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -334,7 +345,7 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getGradeById")
 	public ResponseEntity<ResponseDTO> getGradeById(@RequestParam Long id) {
 		String methodName = "getGradeById()";
@@ -344,7 +355,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<GradeVO> gradeVO = null;
 		try {
-			gradeVO = goalsControllerService.getGradeById(id);
+			gradeVO = goalsService.getGradeById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -359,9 +370,9 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//KPIKRA
-	
+
+	// KPIKRA
+
 	@PutMapping("/createUpdateKpiKra")
 	public ResponseEntity<ResponseDTO> createUpdateKpiKra(@Valid @RequestBody KpiKraDTO kpiKraDTO) {
 		String methodName = "createUpdateKpiKra()";
@@ -371,19 +382,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> kpiKraVO = goalsControllerService.createUpdateKpiKra(kpiKraDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, kpiKraVO.get("message"));
-	        responseObjectsMap.put("kpiKraVO", kpiKraVO.get("kpiKraVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> kpiKraVO = goalsService.createUpdateKpiKra(kpiKraDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, kpiKraVO.get("message"));
+			responseObjectsMap.put("kpiKraVO", kpiKraVO.get("kpiKraVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getKpiKraByOrgId")
 	public ResponseEntity<ResponseDTO> getKpiKraByOrgId(@RequestParam Long orgId) {
 		String methodName = "getKpiKraByOrgId()";
@@ -393,7 +404,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<KpiKraVO> kpiKraVO = new ArrayList<>();
 		try {
-			kpiKraVO = goalsControllerService.getKpiKraByOrgId(orgId);
+			kpiKraVO = goalsService.getKpiKraByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -408,7 +419,7 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getKpiKraById")
 	public ResponseEntity<ResponseDTO> getKpiKraById(@RequestParam Long id) {
 		String methodName = "getKpiKraById()";
@@ -418,7 +429,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<KpiKraVO> kpiKraVO = null;
 		try {
-			kpiKraVO = goalsControllerService.getKpiKraById(id);
+			kpiKraVO = goalsService.getKpiKraById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -433,9 +444,9 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	// GOALS
-	
+
 	@PutMapping("/createUpdateGoals")
 	public ResponseEntity<ResponseDTO> createUpdateGoals(@Valid @RequestBody GoalsDTO goalsDTO) {
 		String methodName = "createUpdateGoals()";
@@ -445,19 +456,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> goalsVO = goalsControllerService.createUpdateGoals(goalsDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, goalsVO.get("message"));
-	        responseObjectsMap.put("goalsVO", goalsVO.get("goalsVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> goalsVO = goalsService.createUpdateGoals(goalsDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, goalsVO.get("message"));
+			responseObjectsMap.put("goalsVO", goalsVO.get("goalsVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getGoalsByOrgId")
 	public ResponseEntity<ResponseDTO> getGoalsByOrgId(@RequestParam Long orgId) {
 		String methodName = "getGoalsByOrgId()";
@@ -467,7 +478,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<GoalsVO> goalsVO = new ArrayList<>();
 		try {
-			goalsVO = goalsControllerService.getGoalsByOrgId(orgId);
+			goalsVO = goalsService.getGoalsByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -482,7 +493,33 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+
 	
+	@GetMapping("/getGoalsByOrgIdByDesignation")
+	public ResponseEntity<ResponseDTO> getGoalsByOrgIdByDesignation(@RequestParam Long orgId,@RequestParam String designation,@RequestParam String appraisalid) {
+		String methodName = "getGoalsByOrgIdByDesignation()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<GoalsVO> goalsVO = new ArrayList<>();
+		try {
+			goalsVO = goalsService.getGoalsByOrgIdByDesignation(orgId,designation,appraisalid);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Goals information get successfully");
+			responseObjectsMap.put("goalsVO", goalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "Goals information receive failed", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
 	@GetMapping("/getGoalsById")
 	public ResponseEntity<ResponseDTO> getGoalsById(@RequestParam Long id) {
 		String methodName = "getGoalsById()";
@@ -492,7 +529,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<GoalsVO> goalsVO = null;
 		try {
-			goalsVO = goalsControllerService.getGoalsById(id);
+			goalsVO = goalsService.getGoalsById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -507,10 +544,9 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
-	//APPRAISEE
-	
+
+	// APPRAISEE
+
 	@PutMapping("/createUpdateAppraisee")
 	public ResponseEntity<ResponseDTO> createUpdateAppraisee(@Valid @RequestBody AppraiseeDTO appraiseeDTO) {
 		String methodName = "createUpdateAppraisee()";
@@ -520,19 +556,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> appraiseeVO = goalsControllerService.createUpdateAppraisee(appraiseeDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, appraiseeVO.get("message"));
-	        responseObjectsMap.put("appraiseeVO", appraiseeVO.get("appraiseeVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> appraiseeVO = goalsService.createUpdateAppraisee(appraiseeDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, appraiseeVO.get("message"));
+			responseObjectsMap.put("appraiseeVO", appraiseeVO.get("appraiseeVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAppraiseeByOrgId")
 	public ResponseEntity<ResponseDTO> getAppraiseeByOrgId(@RequestParam Long orgId) {
 		String methodName = "getAppraiseeByOrgId()";
@@ -542,7 +578,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<AppraiseeVO> appraiseeVO = new ArrayList<>();
 		try {
-			appraiseeVO = goalsControllerService.getAppraiseeByOrgId(orgId);
+			appraiseeVO = goalsService.getAppraiseeByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -552,12 +588,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("appraiseeVO", appraiseeVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Appraisee information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Appraisee information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAppraiseeById")
 	public ResponseEntity<ResponseDTO> getAppraiseeById(@RequestParam Long id) {
 		String methodName = "getAppraiseeById()";
@@ -567,7 +604,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<AppraiseeVO> appraiseeVO = null;
 		try {
-			appraiseeVO = goalsControllerService.getAppraiseeById(id);
+			appraiseeVO = goalsService.getAppraiseeById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -577,14 +614,15 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("appraiseeVO", appraiseeVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Appraisee information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Appraisee information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getEmployeeDetails")
-	public ResponseEntity<ResponseDTO> getEmployeeDetails(@RequestParam Long orgId,@RequestParam String employeeCode) {
+	public ResponseEntity<ResponseDTO> getEmployeeDetails(@RequestParam Long orgId, @RequestParam String employeeCode) {
 		String methodName = "getEmployeeDetails()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -593,7 +631,7 @@ public class GoalsController extends BaseController{
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = goalsControllerService.getEmployeeDetails(orgId,employeeCode);
+			mapp = goalsService.getEmployeeDetails(orgId, employeeCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -604,13 +642,14 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("employeeVO", mapp);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Employee Details", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Employee Details",
+					errorMsg);
 		}
 
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	// SELFGOALS
 
 	@PutMapping("/createUpdateSelfGoals")
@@ -622,19 +661,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> selfGoalsVO = goalsControllerService.createUpdateSelfGoals(selfGoalsDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, selfGoalsVO.get("message"));
-	        responseObjectsMap.put("selfGoalsVO", selfGoalsVO.get("selfGoalsVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> selfGoalsVO = goalsService.createUpdateSelfGoals(selfGoalsDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, selfGoalsVO.get("message"));
+			responseObjectsMap.put("selfGoalsVO", selfGoalsVO.get("selfGoalsVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getSelfGoalsByOrgId")
 	public ResponseEntity<ResponseDTO> getSelfGoalsByOrgId(@RequestParam Long orgId) {
 		String methodName = "getSelfGoalsByOrgId()";
@@ -644,7 +683,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<SelfGoalsVO> selfGoalsVO = new ArrayList<>();
 		try {
-			selfGoalsVO = goalsControllerService.getSelfGoalsByOrgId(orgId);
+			selfGoalsVO = goalsService.getSelfGoalsByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -654,11 +693,117 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("selfGoalsVO", selfGoalsVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+
+	@GetMapping("/getSelfGoalsByOrgIdAndEmpCode")
+	public ResponseEntity<ResponseDTO> getSelfGoalsByOrgIdAndEmpCode(@RequestParam Long orgId,@RequestParam String empCode) {
+		String methodName = "getSelfGoalsByOrgIdAndEmpCode()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<SelfGoalsVO> selfGoalsVO = new ArrayList<>();
+		try {
+			selfGoalsVO = goalsService.getSelfGoalsByOrgIdAndEmpCode(orgId,empCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "SelfGoals information get successfully");
+			responseObjectsMap.put("selfGoalsVO", selfGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@GetMapping("/getSelfGoalsByOrgIdAndEmpCodeAndFinyear")
+	public ResponseEntity<ResponseDTO> getSelfGoalsByOrgIdAndEmpCodeAndFinyear(@RequestParam Long orgId,@RequestParam String empCode,@RequestParam (required=false) Long finYear) {
+		String methodName = "getSelfGoalsByOrgIdAndEmpCode()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<SelfGoalsVO> selfGoalsVO = new ArrayList<>();
+		try {
+			selfGoalsVO = goalsService.getSelfGoalsByOrgIdAndEmpCodeAndFinyear(orgId,empCode,finYear);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "SelfGoals information get successfully");
+			responseObjectsMap.put("selfGoalsVO", selfGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("/getSelfGoalsForPerformanceGoals")
+	public ResponseEntity<ResponseDTO> getSelfGoalsForPerformanceGoals(@RequestParam Long orgId,@RequestParam String empCode,@RequestParam (required=false) Long finYear) {
+		String methodName = "getSelfGoalsForPerformanceGoals()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<SelfGoalsVO> selfGoalsVO = new ArrayList<>();
+		try {
+			selfGoalsVO = goalsService.getSelfGoalsForPerformanceGoals(orgId,empCode,finYear);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "SelfGoals information get successfully");
+			responseObjectsMap.put("selfGoalsVO", selfGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@GetMapping("/getPerformanceGoalsForFirstLevelSInput")
+	public ResponseEntity<ResponseDTO> getSelfGoalsForFirstLevelSInput(@RequestParam Long orgId,@RequestParam String empCode,@RequestParam String appraisalId) {
+		String methodName = "getSelfGoalsForPerformanceGoals()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<PerformanceGoalsVO> performanceGoalsVO = new ArrayList<>();
+		try {
+			performanceGoalsVO = goalsService.getPerformanceGoalsForFirstLevelSInput(orgId,empCode,appraisalId);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "performanceGoals information get successfully");
+			responseObjectsMap.put("performanceGoalsVO", performanceGoalsVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "performanceGoals information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+	
 	
 	@GetMapping("/getSelfGoalsById")
 	public ResponseEntity<ResponseDTO> getSelfGoalsById(@RequestParam Long id) {
@@ -669,7 +814,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<SelfGoalsVO> selfGoalsVO = null;
 		try {
-			selfGoalsVO = goalsControllerService.getSelfGoalsById(id);
+			selfGoalsVO = goalsService.getSelfGoalsById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -679,14 +824,16 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("selfGoalsVO", selfGoalsVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "SelfGoals information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAppraiseeFillGrid")
-	public ResponseEntity<ResponseDTO> getAppraiseeFillGrid(@RequestParam Long orgId,@RequestParam String employeeCode) {
+	public ResponseEntity<ResponseDTO> getAppraiseeFillGrid(@RequestParam Long orgId,
+			@RequestParam String employeeCode) {
 		String methodName = "getAppraiseeFillGrid()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -695,7 +842,7 @@ public class GoalsController extends BaseController{
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = goalsControllerService.getAppraiseeFillGrid(orgId,employeeCode);
+			mapp = goalsService.getAppraiseeFillGrid(orgId, employeeCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -712,9 +859,9 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//APPRAISER
-	
+
+	// APPRAISER
+
 	@PutMapping("/createUpdateAppraiser")
 	public ResponseEntity<ResponseDTO> createUpdateAppraiser(@Valid @RequestBody AppraiserDTO appraiserDTO) {
 		String methodName = "createUpdateAppraiser()";
@@ -724,19 +871,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> appraiserVO = goalsControllerService.createUpdateAppraiser(appraiserDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, appraiserVO.get("message"));
-	        responseObjectsMap.put("appraiserVO", appraiserVO.get("appraiserVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> appraiserVO = goalsService.createUpdateAppraiser(appraiserDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, appraiserVO.get("message"));
+			responseObjectsMap.put("appraiserVO", appraiserVO.get("appraiserVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAppraiserByOrgId")
 	public ResponseEntity<ResponseDTO> getAppraiserByOrgId(@RequestParam Long orgId) {
 		String methodName = "getAppraiserByOrgId()";
@@ -746,7 +893,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<AppraiserVO> appraiserVO = new ArrayList<>();
 		try {
-			appraiserVO = goalsControllerService.getAppraiserByOrgId(orgId);
+			appraiserVO = goalsService.getAppraiserByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -756,12 +903,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("appraiserVO", appraiserVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Appraiser information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Appraiser information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAppraiserById")
 	public ResponseEntity<ResponseDTO> getAppraiserById(@RequestParam Long id) {
 		String methodName = "getAppraiserById()";
@@ -771,7 +919,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<AppraiserVO> appraiserVO = null;
 		try {
-			appraiserVO = goalsControllerService.getAppraiserById(id);
+			appraiserVO = goalsService.getAppraiserById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -781,12 +929,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("appraiserVO", appraiserVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Appraiser information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Appraiser information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getReportingPerson")
 	public ResponseEntity<ResponseDTO> getReportingPerson(@RequestParam Long orgId) {
 		String methodName = "getReportingPerson()";
@@ -797,7 +946,7 @@ public class GoalsController extends BaseController{
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = goalsControllerService.getReportingPerson(orgId);
+			mapp = goalsService.getReportingPerson(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -808,15 +957,17 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("reportingPersons", mapp);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Reporting Person", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Reporting Person",
+					errorMsg);
 		}
 
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getEmpUnderReportingPerson")
-	public ResponseEntity<ResponseDTO> getEmpUnderReportingPerson(@RequestParam Long orgId,@RequestParam String ReportingPersonCode) {
+	public ResponseEntity<ResponseDTO> getEmpUnderReportingPerson(@RequestParam Long orgId,
+			@RequestParam String ReportingPersonCode) {
 		String methodName = "getEmpUnderReportingPerso()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -825,7 +976,7 @@ public class GoalsController extends BaseController{
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = goalsControllerService.getEmpUnderReportingPerson(orgId,ReportingPersonCode);
+			mapp = goalsService.getEmpUnderReportingPerson(orgId, ReportingPersonCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -842,9 +993,9 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAppraiserFillGrid")
-	public ResponseEntity<ResponseDTO> getAppraiserFillGrid(@RequestParam Long orgId,@RequestParam String empCode) {
+	public ResponseEntity<ResponseDTO> getAppraiserFillGrid(@RequestParam Long orgId, @RequestParam String empCode) {
 		String methodName = "getAppraiserFillGrid()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -853,7 +1004,7 @@ public class GoalsController extends BaseController{
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = goalsControllerService.getAppraiserFillGrid(orgId,empCode);
+			mapp = goalsService.getAppraiserFillGrid(orgId, empCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -870,9 +1021,9 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	// SCORE
-	
+
 	@PutMapping("/createUpdateScore")
 	public ResponseEntity<ResponseDTO> createUpdateScore(@Valid @RequestBody ScoreDTO scoreDTO) {
 		String methodName = "createUpdateScore()";
@@ -882,19 +1033,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> scoreVO = goalsControllerService.createUpdateScore(scoreDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, scoreVO.get("message"));
-	        responseObjectsMap.put("scoreVO", scoreVO.get("scoreVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> scoreVO = goalsService.createUpdateScore(scoreDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, scoreVO.get("message"));
+			responseObjectsMap.put("scoreVO", scoreVO.get("scoreVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getScoreByOrgId")
 	public ResponseEntity<ResponseDTO> getScoreByOrgId(@RequestParam Long orgId) {
 		String methodName = "getScoreByOrgId()";
@@ -904,7 +1055,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<ScoreVO> scoreVO = new ArrayList<>();
 		try {
-			scoreVO = goalsControllerService.getScoreByOrgId(orgId);
+			scoreVO = goalsService.getScoreByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -919,7 +1070,7 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getScoreById")
 	public ResponseEntity<ResponseDTO> getScoreById(@RequestParam Long id) {
 		String methodName = "getScoreById()";
@@ -929,7 +1080,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<ScoreVO> scoreVO = null;
 		try {
-			scoreVO = goalsControllerService.getScoreById(id);
+			scoreVO = goalsService.getScoreById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -944,9 +1095,9 @@ public class GoalsController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//HRREVIEW
-	
+
+	// HRREVIEW
+
 	@PutMapping("/createUpdateHrReview")
 	public ResponseEntity<ResponseDTO> createUpdateHrReview(@Valid @RequestBody HrReviewDTO hrReviewDTO) {
 		String methodName = "createUpdateHrReview()";
@@ -956,19 +1107,19 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> hrReviewVO = goalsControllerService.createUpdateHrReview(hrReviewDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, hrReviewVO.get("message"));
-	        responseObjectsMap.put("hrReviewVO", hrReviewVO.get("hrReviewVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> hrReviewVO = goalsService.createUpdateHrReview(hrReviewDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, hrReviewVO.get("message"));
+			responseObjectsMap.put("hrReviewVO", hrReviewVO.get("hrReviewVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getHrReviewByOrgId")
 	public ResponseEntity<ResponseDTO> getHrReviewByOrgId(@RequestParam Long orgId) {
 		String methodName = "getHrReviewByOrgId()";
@@ -978,7 +1129,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<HrReviewVO> hrReviewVO = new ArrayList<>();
 		try {
-			hrReviewVO = goalsControllerService.getHrReviewByOrgId(orgId);
+			hrReviewVO = goalsService.getHrReviewByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -988,12 +1139,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("hrReviewVO", hrReviewVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "HrReview  information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "HrReview  information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getHrReviewById")
 	public ResponseEntity<ResponseDTO> getHrReviewById(@RequestParam Long id) {
 		String methodName = "getHrReviewById()";
@@ -1003,7 +1155,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<HrReviewVO> hrReviewVO = null;
 		try {
-			hrReviewVO = goalsControllerService.getHrReviewById(id);
+			hrReviewVO = goalsService.getHrReviewById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1013,12 +1165,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("hrReviewVO", hrReviewVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "HrReview information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "HrReview information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 //	@PutMapping("/updateTestingAppraisee")
 //	public ResponseEntity<ResponseDTO> updateTestingAppraisee(
 //	        @RequestParam(required = false) Long orgId,
@@ -1046,11 +1199,12 @@ public class GoalsController extends BaseController{
 //	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 //	    return ResponseEntity.ok().body(responseDTO);
 //	}
-	
-	//SUPERVISOR1FEEDBACK
-	
+
+	// SUPERVISOR1FEEDBACK
+
 	@PutMapping("/createUpdateSupervisor1FeedBack")
-	public ResponseEntity<ResponseDTO> createUpdateSupervisor1FeedBack(@Valid @RequestBody Supervisor1FeedBackDTO supervisor1FeedBackDTO) {
+	public ResponseEntity<ResponseDTO> createUpdateSupervisor1FeedBack(
+			@Valid @RequestBody Supervisor1FeedBackDTO supervisor1FeedBackDTO) {
 		String methodName = "createUpdateSupervisor1FeedBack()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -1058,19 +1212,21 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> supervisor1FeedBackVO = goalsControllerService.createUpdateSupervisor1FeedBack(supervisor1FeedBackDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, supervisor1FeedBackVO.get("message"));
-	        responseObjectsMap.put("supervisor1FeedBackVO", supervisor1FeedBackVO.get("supervisor1FeedBackVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> supervisor1FeedBackVO = goalsService
+					.createUpdateSupervisor1FeedBack(supervisor1FeedBackDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, supervisor1FeedBackVO.get("message"));
+			responseObjectsMap.put("supervisor1FeedBackVO", supervisor1FeedBackVO.get("supervisor1FeedBackVO")); // Corrected
+																													// key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getSupervisor1FeedbackByOrgId")
 	public ResponseEntity<ResponseDTO> getSupervisor1FeedbackByOrgId(@RequestParam Long orgId) {
 		String methodName = "getSupervisor1FeedbackByOrgId()";
@@ -1080,7 +1236,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<Supervisor1FeedBackVO> supervisor1FeedBackVO = new ArrayList<>();
 		try {
-			supervisor1FeedBackVO = goalsControllerService.getSupervisor1FeedbackByOrgId(orgId);
+			supervisor1FeedBackVO = goalsService.getSupervisor1FeedbackByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1090,12 +1246,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("supervisor1FeedBackVO", supervisor1FeedBackVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Supervisor 1FeedBack information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"Supervisor 1FeedBack information receive failed", errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getSupervisor1FeedbackById")
 	public ResponseEntity<ResponseDTO> getSupervisor1FeedbackById(@RequestParam Long id) {
 		String methodName = "getSupervisor1FeedbackById()";
@@ -1105,7 +1262,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<Supervisor1FeedBackVO> supervisor1FeedBackVO = null;
 		try {
-			supervisor1FeedBackVO = goalsControllerService.getSupervisor1FeedbackById(id);
+			supervisor1FeedBackVO = goalsService.getSupervisor1FeedbackById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1115,14 +1272,16 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("supervisor1FeedBackVO", supervisor1FeedBackVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Supervisor 1FeedBack information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"Supervisor 1FeedBack information receive failed", errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getPreGoalsApprovedReport")
-	public ResponseEntity<ResponseDTO> getPreGoalsApprovedReport(@RequestParam Long orgId,@RequestParam String finYear,@RequestParam String supCode) {
+	public ResponseEntity<ResponseDTO> getPreGoalsApprovedReport(@RequestParam Long orgId, @RequestParam String finYear,
+			@RequestParam String supCode) {
 		String methodName = "getPreGoalsApprovedReport()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -1131,7 +1290,7 @@ public class GoalsController extends BaseController{
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = goalsControllerService.getPreGoalsApprovedReport(orgId,finYear,supCode);
+			mapp = goalsService.getPreGoalsApprovedReport(orgId, finYear, supCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1142,17 +1301,19 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("employeeVO", mapp);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Approved Report", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Approved Report",
+					errorMsg);
 		}
 
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//Additional Goals
-	
+
+	// Additional Goals
+
 	@PutMapping("/createUpdateAdditionalGoals")
-	public ResponseEntity<ResponseDTO> createUpdateAdditionalGoals(@Valid @RequestBody AdditionalGoalsDTO additionalGoalsDTO) {
+	public ResponseEntity<ResponseDTO> createUpdateAdditionalGoals(
+			@Valid @RequestBody AdditionalGoalsDTO additionalGoalsDTO) {
 		String methodName = "createUpdateAdditionalGoals()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -1160,19 +1321,20 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> additionalGoalsVO = goalsControllerService.createUpdateAdditionalGoals(additionalGoalsDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, additionalGoalsVO.get("message"));
-	        responseObjectsMap.put("additionalGoalsVO", additionalGoalsVO.get("additionalGoalsVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> additionalGoalsVO = goalsService
+					.createUpdateAdditionalGoals(additionalGoalsDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, additionalGoalsVO.get("message"));
+			responseObjectsMap.put("additionalGoalsVO", additionalGoalsVO.get("additionalGoalsVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAdditionalGoalsByOrgId")
 	public ResponseEntity<ResponseDTO> getAdditionalGoalsByOrgId(@RequestParam Long orgId) {
 		String methodName = "getAdditionalGoalsByOrgId()";
@@ -1182,7 +1344,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<AdditionalGoalsVO> additionalGoalsVO = new ArrayList<>();
 		try {
-			additionalGoalsVO = goalsControllerService.getAdditionalGoalsByOrgId(orgId);
+			additionalGoalsVO = goalsService.getAdditionalGoalsByOrgId(orgId);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1192,12 +1354,13 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("additionalGoalsVO", additionalGoalsVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Additional Goals information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Additional Goals information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAdditionalGoalsById")
 	public ResponseEntity<ResponseDTO> getAdditionalGoalsById(@RequestParam Long id) {
 		String methodName = "getAdditionalGoalsById()";
@@ -1207,7 +1370,7 @@ public class GoalsController extends BaseController{
 		ResponseDTO responseDTO = null;
 		Optional<AdditionalGoalsVO> additionalGoalsVO = null;
 		try {
-			additionalGoalsVO = goalsControllerService.getAdditionalGoalsById(id);
+			additionalGoalsVO = goalsService.getAdditionalGoalsById(id);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1217,15 +1380,16 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("additionalGoalsVO", additionalGoalsVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Additional Goals information receive failed", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Additional Goals information receive failed",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getAdditionalGoalsDropDownApis")
-	public ResponseEntity<ResponseDTO> getAdditionalGoalsDropDownApis(@RequestParam Long orgId,@RequestParam String finYear,@RequestParam String branchCode,
-			@RequestParam String designation) {
+	public ResponseEntity<ResponseDTO> getAdditionalGoalsDropDownApis(@RequestParam Long orgId,
+			@RequestParam String finYear, @RequestParam String branchCode, @RequestParam String designation) {
 		String methodName = "getAdditionalGoalsDropDownApis()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -1234,7 +1398,7 @@ public class GoalsController extends BaseController{
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = goalsControllerService.getAdditionalGoalsDropDownApis(orgId,finYear,branchCode,designation);
+			mapp = goalsService.getAdditionalGoalsDropDownApis(orgId, finYear, branchCode, designation);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1245,13 +1409,14 @@ public class GoalsController extends BaseController{
 			responseObjectsMap.put("employeeVO", mapp);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Approved Report", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Approved Report",
+					errorMsg);
 		}
 
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 //	@GetMapping("/getAllAdditionalGoals")
 //	public ResponseEntity<ResponseDTO> getAllAdditionalGoals() {
 //		String methodName = "getAllAdditionalGoals()";
@@ -1276,4 +1441,240 @@ public class GoalsController extends BaseController{
 //		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 //		return ResponseEntity.ok().body(responseDTO);
 //	}
+
+	@GetMapping("/getGoalsDocId")
+	public ResponseEntity<ResponseDTO> getGoalsDocId(@RequestParam Long orgId) {
+
+		String methodName = "getGoalsDocId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		String mapp = "";
+
+		try {
+			mapp = goalsService.getGoalsDocId(orgId);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "goalsDocId information retrieved successfully");
+			responseObjectsMap.put("goalsDocId", mapp);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"Failed to retrieve TaxInvoice Docid information", errorMsg);
+		}
+
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("/getAppraisalDocId")
+	public ResponseEntity<ResponseDTO> getAppraisalDocId(@RequestParam Long orgId) {
+
+		String methodName = "getAppraisalDocId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO;
+		List<Map<String, Object>> goalsVO;
+
+		try {
+			goalsVO = goalsService.getAppraisalDocId(orgId);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "AppraisalDocId retrieved successfully");
+			responseObjectsMap.put("goalsVO", goalsVO); // ✅ Correct key name
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			String errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve AppraisalDocId", errorMsg);
+		}
+
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("/getKpiDocId")
+	public ResponseEntity<ResponseDTO> getKpiDocId(@RequestParam Long orgId) {
+
+		String methodName = "getKpiDocId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		String mapp = "";
+
+		try {
+			mapp = goalsService.getKpiDocId(orgId);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "KpiDocId information retrieved successfully");
+			responseObjectsMap.put("kpiDocId", mapp);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"Failed to retrieve TaxInvoice KpiDocId information", errorMsg);
+		}
+
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("/getKraDocId")
+	public ResponseEntity<ResponseDTO> getKraDocId(@RequestParam Long orgId) {
+
+		String methodName = "getKraDocId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		String mapp = "";
+
+		try {
+			mapp = goalsService.getKraDocId(orgId);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "KpiDocId information retrieved successfully");
+			responseObjectsMap.put("kpiDocId", mapp);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"Failed to retrieve TaxInvoice KpiDocId information", errorMsg);
+		}
+
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	
+	@PutMapping("/approveSelfGoalsDetails")
+	public ResponseEntity<ResponseDTO> approveSelfGoalsDetails(
+	        @RequestParam List<Long> detailIds,
+	        @RequestParam String updatedBy,
+	        @RequestParam String status) {
+
+	    String methodName = "approveSelfGoalsDetails()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    String errorMsg = null;
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO = null;
+
+	    try {
+	        Map<String, Object> result = goalsService
+	                .approveSelfGoalsDetails(detailIds, updatedBy, status);
+
+	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, result.get("message"));
+	        responseObjectsMap.put("data", result.get("data"));
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+	        errorMsg = e.getMessage();
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+	    return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	
+	@PutMapping("/createUpdateFirstLevelSupervisorInput")
+	public ResponseEntity<ResponseDTO> createUpdateFirstLevelSupervisorInput(
+	        @Valid @RequestBody FirstLevelSupervisorInputDTO dto) {
+
+	    String methodName = "createUpdateFirstLevelSupervisorInput()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    String errorMsg = null;
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO = null;
+
+	    try {
+
+	        Map<String, Object> result = goalsService.createUpdateFirstLevelSupervisorInput(dto);
+
+	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, result.get("message"));
+	        responseObjectsMap.put("firstLevelSupervisorInputVO", result.get("firstLevelSupervisorInputVO"));
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+
+	        errorMsg = e.getMessage();
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+
+	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+	    return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@GetMapping("/getFirstLevelSupervisorInputById")
+	public ResponseEntity<ResponseDTO> getFirstLevelSupervisorInputById(@RequestParam Long id) {
+		String methodName = "getFirstLevelSupervisorInputById()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		Optional<FirstLevelSupervisorInputVO> firstLevelSupervisorInputVO = null;
+		try {
+			firstLevelSupervisorInputVO = goalsService.getFirstLevelSupervisorInputById(id);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "FirstLevelSupervisorInput information get successfully");
+			responseObjectsMap.put("firstLevelSupervisorInputVO", firstLevelSupervisorInputVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "FirstLevelSupervisorInput information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	
+	@GetMapping("/getFirstLevelSupervisorInputByOrgId")
+	public ResponseEntity<ResponseDTO> getFirstLevelSupervisorInputByOrgId(@RequestParam Long orgId) {
+		String methodName = "getFirstLevelSupervisorInputByOrgId()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<FirstLevelSupervisorInputVO> firstLevelSupervisorInputVO = new ArrayList<>();
+		try {
+			firstLevelSupervisorInputVO = goalsService.getFirstLevelSupervisorInputByOrgId(orgId);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "FirstLevelSupervisorInput  information get successfully");
+			responseObjectsMap.put("firstLevelSupervisorInputVO", firstLevelSupervisorInputVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "FirstLevelSupervisorInput information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
 }

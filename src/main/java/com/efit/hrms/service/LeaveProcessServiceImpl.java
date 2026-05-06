@@ -6,16 +6,12 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -53,6 +49,7 @@ import com.efit.hrms.dto.LeaveTypeDTO;
 import com.efit.hrms.dto.TravelRequestDTO;
 import com.efit.hrms.dto.WorkFromHomeDTO;
 import com.efit.hrms.entity.ApprovalLeavesVO;
+import com.efit.hrms.entity.AttendanceDailyVO;
 import com.efit.hrms.entity.CheckInOutAdjustmentVO;
 import com.efit.hrms.entity.CheckInVO;
 import com.efit.hrms.entity.CompanyVO;
@@ -66,10 +63,13 @@ import com.efit.hrms.entity.LeaveProcessVO;
 import com.efit.hrms.entity.LeaveRequestNotifyVO;
 import com.efit.hrms.entity.LeaveRequestVO;
 import com.efit.hrms.entity.LeaveTypeVO;
+import com.efit.hrms.entity.NotificationVO;
 import com.efit.hrms.entity.TravelRequestVO;
+import com.efit.hrms.entity.UserVO;
 import com.efit.hrms.entity.WorkFromHomeVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.ApprovalLeavesRepo;
+import com.efit.hrms.repo.AttendanceDailyRepo;
 import com.efit.hrms.repo.CheckInOutAdjustmentRepo;
 import com.efit.hrms.repo.CheckInRepo;
 import com.efit.hrms.repo.CompanyRepo;
@@ -84,7 +84,9 @@ import com.efit.hrms.repo.LeaveProcessRepo;
 import com.efit.hrms.repo.LeaveRequestNotifyRepo;
 import com.efit.hrms.repo.LeaveRequestRepo;
 import com.efit.hrms.repo.LeaveTypeRepo;
+import com.efit.hrms.repo.NotificationRepo;
 import com.efit.hrms.repo.TravelRequestRepo;
+import com.efit.hrms.repo.UserRepo;
 import com.efit.hrms.repo.WorkFromHomeRepo;
 
 @Service
@@ -95,6 +97,9 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 	@Autowired
 	LeaveTypeRepo leaveTypeRepo;
+
+	@Autowired
+	UserRepo userRepo;
 
 	@Autowired
 	LeaveRequestRepo leaveRequestRepo;
@@ -126,27 +131,33 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 	@Autowired
 	HolidayRepo holidayRepo;
 
-    @Autowired
-    CompensatoryOffRepo compensatoryOffRepo;
-    
-    @Autowired
-    CompoffNotifyRepo compoffNotifyRepo;
-    
-    @Autowired
-    LeaveRequestNotifyRepo leaveRequestNotifyRepo;
-	
-    @Autowired
-    CheckInRepo checkInRepo;
-    
-    @Autowired
-    CheckInOutAdjustmentRepo checkInOutAdjustmentRepo;
-    
-    @Autowired
-    TravelRequestRepo travelRequestRepo;
+	@Autowired
+	CompensatoryOffRepo compensatoryOffRepo;
 
-    @Autowired
-    WorkFromHomeRepo workFromHomeRepo;
-    
+	@Autowired
+	CompoffNotifyRepo compoffNotifyRepo;
+
+	@Autowired
+	LeaveRequestNotifyRepo leaveRequestNotifyRepo;
+
+	@Autowired
+	CheckInRepo checkInRepo;
+
+	@Autowired
+	CheckInOutAdjustmentRepo checkInOutAdjustmentRepo;
+
+	@Autowired
+	TravelRequestRepo travelRequestRepo;
+
+	@Autowired
+	WorkFromHomeRepo workFromHomeRepo;
+
+	@Autowired
+	NotificationRepo notificationRepo;
+	
+	@Autowired
+	AttendanceDailyRepo attendanceDailyRepo;
+
 	// LeaveType
 	@Override
 	public Map<String, Object> createUpdateLeaveType(LeaveTypeDTO leaveTypeDTO) throws ApplicationException {
@@ -271,6 +282,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		leaveRequestVO.setTotalDays(leaveRequestDTO.getTotalDays());
 		leaveRequestVO.setEmployeeName(leaveRequestDTO.getEmployeeName());
 		leaveRequestVO.setEmployeeCode(leaveRequestDTO.getEmployeeCode());
+		leaveRequestVO.setEmail(leaveRequestDTO.getEmail());
 //		leaveRequestVO.setFinYear(leaveRequestDTO.getFinYear());
 
 		leaveRequestVO.setBranch(leaveRequestDTO.getBranch());
@@ -283,24 +295,25 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		leaveRequestVO.setNotifyEmail(leaveRequestDTO.getNotifyEmail());
 		leaveRequestVO.setCompOffDate(leaveRequestDTO.getCompOffDate());
 
-	    if (leaveRequestDTO.getId() != null) {
-            List<LeaveRequestNotifyVO> leaveRequestNotifyVO = leaveRequestNotifyRepo.findByLeaveRequestVO(leaveRequestVO);
-            leaveRequestNotifyRepo.deleteAll(leaveRequestNotifyVO);
-        }
+		if (leaveRequestDTO.getId() != null) {
+			List<LeaveRequestNotifyVO> leaveRequestNotifyVO = leaveRequestNotifyRepo
+					.findByLeaveRequestVO(leaveRequestVO);
+			leaveRequestNotifyRepo.deleteAll(leaveRequestNotifyVO);
+		}
 
-        // Set Poll Details from PollDetailsDTO
-        List<LeaveRequestNotifyVO> leaveRequestNotifyVOs = new ArrayList<>();
-        for (LeaveRequestNotifyDTO leaveRequestNotifyDTO : leaveRequestDTO.getLeaveRequestNotifyDTO()) {
-        	LeaveRequestNotifyVO leaveRequestNotifyVO = new LeaveRequestNotifyVO();
-        	leaveRequestNotifyVO.setNotify2(leaveRequestNotifyDTO.getNotify2());
-        	leaveRequestNotifyVO.setNotify2Code(leaveRequestNotifyDTO.getNotify2Code());
-        	leaveRequestNotifyVO.setNotify2Email(leaveRequestNotifyDTO.getNotify2Email());
+		// Set Poll Details from PollDetailsDTO
+		List<LeaveRequestNotifyVO> leaveRequestNotifyVOs = new ArrayList<>();
+		for (LeaveRequestNotifyDTO leaveRequestNotifyDTO : leaveRequestDTO.getLeaveRequestNotifyDTO()) {
+			LeaveRequestNotifyVO leaveRequestNotifyVO = new LeaveRequestNotifyVO();
+			leaveRequestNotifyVO.setNotify2(leaveRequestNotifyDTO.getNotify2());
+			leaveRequestNotifyVO.setNotify2Code(leaveRequestNotifyDTO.getNotify2Code());
+			leaveRequestNotifyVO.setNotify2Email(leaveRequestNotifyDTO.getNotify2Email());
 
-        	leaveRequestNotifyVO.setLeaveRequestVO(leaveRequestVO);  // Set parent reference in child
-        	leaveRequestNotifyVOs.add(leaveRequestNotifyVO);
-        }
-        leaveRequestVO.setLeaveRequestNotifyVO(leaveRequestNotifyVOs);
-        
+			leaveRequestNotifyVO.setLeaveRequestVO(leaveRequestVO); // Set parent reference in child
+			leaveRequestNotifyVOs.add(leaveRequestNotifyVO);
+		}
+		leaveRequestVO.setLeaveRequestNotifyVO(leaveRequestNotifyVOs);
+
 		leaveRequestVO.setApproveStatus("PENDING");
 
 		leaveRequestVO.setBranch(leaveRequestDTO.getBranch());
@@ -308,6 +321,57 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		// leaveRequestVO.setFinYear(leaveRequestDTO.getFinYear());
 		// leaveRequestVO.setActive(leaveRequestDTO.isActive());
 
+		leaveRequestRepo.save(leaveRequestVO);
+
+		leaveRequestRepo.save(leaveRequestVO);
+
+		// 🔔 Notification message
+		String notifyMessage;
+		if (leaveRequestDTO.getId() == null) {
+			notifyMessage = "New leave request submitted by " + leaveRequestVO.getEmployeeName() + " from "
+					+ leaveRequestVO.getFromDate() + " to " + leaveRequestVO.getToDate();
+		} else {
+			notifyMessage = "Leave request updated by " + leaveRequestVO.getEmployeeName() + " from "
+					+ leaveRequestVO.getFromDate() + " to " + leaveRequestVO.getToDate();
+		}
+
+		/* 🔹 1. Notify main approver (notifyCode) */
+		createNotificationForUser(leaveRequestVO.getNotifyCode(), leaveRequestVO, notifyMessage,
+				leaveRequestVO.getCreatedBy());
+
+		/* 🔹 2. Notify additional users (leaveRequestNotify table) */
+		if (leaveRequestVO.getLeaveRequestNotifyVO() != null) {
+			for (LeaveRequestNotifyVO notifyVO : leaveRequestVO.getLeaveRequestNotifyVO()) {
+				createNotificationForUser(notifyVO.getNotify2Code(), leaveRequestVO, notifyMessage,
+						leaveRequestVO.getCreatedBy());
+			}
+		}
+
+	}
+
+	private void createNotificationForUser(String employeeCode, LeaveRequestVO leaveRequestVO, String message,
+			String actionBy) {
+
+		if (employeeCode == null || employeeCode.trim().isEmpty()) {
+			return;
+		}
+
+		UserVO user = userRepo.findByUserName(employeeCode);
+		if (user == null) {
+			return; // safety
+		}
+
+		NotificationVO notification = new NotificationVO();
+		notification.setUserid(user.getId());
+		notification.setNotificationType("LEAVE REQUEST");
+		notification.setMessage(message);
+		notification.setRead(false);
+		notification.setDeleted(false);
+		notification.setCreatedBy(actionBy);
+		notification.setUpdatedBy(actionBy);
+		notification.setOrgId(leaveRequestVO.getOrgId());
+
+		notificationRepo.save(notification);
 	}
 
 	@Override
@@ -323,82 +387,78 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 	}
 
 	// LeaveRequestTOTALDAYS
-	
+
 	public Map<String, Object> calculateLeavedays(Long orgId, LocalDate fromDate, LocalDate toDate, String selectLeave)
-	        throws ApplicationException {
+			throws ApplicationException {
 
-	    // Get company
-	    CompanyVO company = companyRepo.findById(orgId)
-	            .orElseThrow(() -> new ApplicationException("Company not found for orgId: " + orgId));
-	    String policyType = company.getLeavePolicy();
-	    Long companyId = company.getId();
+		// Get company
+		CompanyVO company = companyRepo.findById(orgId)
+				.orElseThrow(() -> new ApplicationException("Company not found for orgId: " + orgId));
+		String policyType = company.getLeavePolicy();
+		Long companyId = company.getId();
 
-	    // Fetch week-off pattern (e.g., [("SUNDAY", -1), ("SATURDAY", 1)])
-	    List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(companyId);
+		// Fetch week-off pattern (e.g., [("SUNDAY", -1), ("SATURDAY", 1)])
+		List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(companyId);
 
-	    // Fetch holiday dates
-	    List<HolidayVO> holidayVOList = holidayRepo.findByOrgId(orgId);
-	    List<LocalDate> holidaysDate = holidayVOList.stream()
-	            .map(HolidayVO::getHolidayDate)
-	            .collect(Collectors.toList());
+		// Fetch holiday dates
+		List<HolidayVO> holidayVOList = holidayRepo.findByOrgId(orgId);
+		List<LocalDate> holidaysDate = holidayVOList.stream().map(HolidayVO::getHolidayDate)
+				.collect(Collectors.toList());
 
-	    BigDecimal totalDays = BigDecimal.ZERO;
-	    List<String> workingDates = new ArrayList<>();
+		BigDecimal totalDays = BigDecimal.ZERO;
+		List<String> workingDates = new ArrayList<>();
 
-	    // Single day case
-	    if (fromDate.equals(toDate)) {
-	        if ("ALL DAY".equalsIgnoreCase(selectLeave)) {
-	            totalDays = BigDecimal.ONE;
-	        } else if ("HALF DAY".equalsIgnoreCase(selectLeave)) {
-	            totalDays = BigDecimal.valueOf(0.5);
-	        }
-	        workingDates.add(fromDate.toString());
+		// Single day case
+		if (fromDate.equals(toDate)) {
+			if ("ALL DAY".equalsIgnoreCase(selectLeave)) {
+				totalDays = BigDecimal.ONE;
+			} else if ("HALF DAY".equalsIgnoreCase(selectLeave)) {
+				totalDays = BigDecimal.valueOf(0.5);
+			}
+			workingDates.add(fromDate.toString());
 
-	    } else {
-	        LocalDate current = fromDate;
-	        while (!current.isAfter(toDate)) {
-	            boolean isWeekOff = isWeekOffDay(current, weekOffPatterns);
-	            boolean isHoliday = holidaysDate.contains(current);
+		} else {
+			LocalDate current = fromDate;
+			while (!current.isAfter(toDate)) {
+				boolean isWeekOff = isWeekOffDay(current, weekOffPatterns);
+				boolean isHoliday = holidaysDate.contains(current);
 
-	            if ("REGULAR".equalsIgnoreCase(policyType)) {
-	                if (!isWeekOff && !isHoliday) {
-	                    totalDays = totalDays.add(BigDecimal.ONE);
-	                    workingDates.add(current.toString());
-	                }
-	            } else { // SANDWICH: count all days
-	                totalDays = totalDays.add(BigDecimal.ONE);
-	                workingDates.add(current.toString());
-	            }
+				if ("REGULAR".equalsIgnoreCase(policyType)) {
+					if (!isWeekOff && !isHoliday) {
+						totalDays = totalDays.add(BigDecimal.ONE);
+						workingDates.add(current.toString());
+					}
+				} else { // SANDWICH: count all days
+					totalDays = totalDays.add(BigDecimal.ONE);
+					workingDates.add(current.toString());
+				}
 
-	            current = current.plusDays(1);
-	        }
-	    }
+				current = current.plusDays(1);
+			}
+		}
 
-	    // Final result map
-	    Map<String, Object> result = new HashMap<>();
-	    result.put("workingDays", totalDays);
-	    result.put("workingDates", workingDates);
-	    return result;
+		// Final result map
+		Map<String, Object> result = new HashMap<>();
+		result.put("workingDays", totalDays);
+		result.put("workingDates", workingDates);
+		return result;
 	}
 
-	
 	public boolean isWeekOffDay(LocalDate date, List<Object[]> weekOffPatterns) {
-	    DayOfWeek currentDay = date.getDayOfWeek(); // e.g., MONDAY
-	    int weekOfMonth = (date.getDayOfMonth() - 1) / 7 + 1;
+		DayOfWeek currentDay = date.getDayOfWeek(); // e.g., MONDAY
+		int weekOfMonth = (date.getDayOfMonth() - 1) / 7 + 1;
 
-	    for (Object[] pattern : weekOffPatterns) {
-	        String day = pattern[0].toString().toUpperCase();
-	        int week = Integer.parseInt(pattern[1].toString());
-	        DayOfWeek patternDay = DayOfWeek.valueOf(day);
+		for (Object[] pattern : weekOffPatterns) {
+			String day = pattern[0].toString().toUpperCase();
+			int week = Integer.parseInt(pattern[1].toString());
+			DayOfWeek patternDay = DayOfWeek.valueOf(day);
 
-	        if (currentDay == patternDay && (week == -1 || week == weekOfMonth)) {
-	            return true;
-	        }
-	    }
-	    return false;
+			if (currentDay == patternDay && (week == -1 || week == weekOfMonth)) {
+				return true;
+			}
+		}
+		return false;
 	}
-
-
 
 	@Override
 	public List<Map<String, Object>> getAllLeaveTypeFromLeaveMaster(Long orgId, String employeeCode) {
@@ -577,13 +637,13 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 //		return leaveRequestVO; // Single return statement at the end
 //	}
 
-	
 	@Override
-	public Map<String, Object> createApprovalLeave(Long orgId, Long id, String employeeCode, String action, String actionBy,String notifyCode,String notify, String screenName)
+	public Map<String, Object> createApprovalLeave(Long orgId, Long id, String employeeCode, String action,
+			String actionBy, String notifyCode, String notify, String screenName, String email,String reason)
 			throws ApplicationException {
 
 		LeaveRequestVO leaveRequestVO = leaveRequestRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
-	    String message = "";
+		String message = "";
 		if (leaveRequestVO.getApproveStatus() == null
 				|| (!leaveRequestVO.getApproveStatus().equalsIgnoreCase("Approved")
 						&& !leaveRequestVO.getApproveStatus().equalsIgnoreCase("Rejected"))) {
@@ -621,10 +681,9 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 					boolean isHoliday = holidaysDate.contains(fromDate);
 
 					if ("REGULAR".equalsIgnoreCase(policyType) && (isWeekOff || isHoliday)) {
-					    fromDate = fromDate.plusDays(1);
-					    continue;
-					}
-					else {
+						fromDate = fromDate.plusDays(1);
+						continue;
+					} else {
 						// If SANDWICH policy, count all days
 						totalDays = totalDays.add(BigDecimal.ONE);
 
@@ -671,7 +730,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 				LeaveBalanceVO leaveBalanceVO = new LeaveBalanceVO();
 				leaveBalanceVO.setLeaveCode(leaveRequestVO.getLeaveCode());
 				leaveBalanceVO.setLeaveType(leaveRequestVO.getLeaveType());
-				
+
 				if (leaveRequestVO.getSelectLeave() != null) {
 					String leaveType = leaveRequestVO.getSelectLeave().trim();
 
@@ -698,38 +757,62 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 				leaveBalanceRepo.saveAll(leaveBalanceVOs);
 //	            leaveRequestRepo.save(leaveRequestVO);
-				
+
 			}
-		leaveRequestVO.setApproveStatus(action);
+
+			// 🔔 Create Notification for Employee
+			NotificationVO notification = new NotificationVO();
+
+			UserVO user = userRepo.findByUserName(leaveRequestVO.getEmployeeCode());
+
+			notification.setUserid(user.getId());
+
+			notification.setNotificationType("LEAVE " + action);
+
+			if ("APPROVED".equalsIgnoreCase(action)) {
+				notification.setMessage("Your leave request from " + leaveRequestVO.getFromDate() + " to "
+						+ leaveRequestVO.getToDate() + " has been APPROVED");
+			} else if ("REJECTED".equalsIgnoreCase(action)) {
+				notification.setMessage("Your leave request from " + leaveRequestVO.getFromDate() + " to "
+						+ leaveRequestVO.getToDate() + " has been REJECTED");
+			}
+
+			notification.setRead(false);
+			notification.setDeleted(false);
+
+			notification.setCreatedBy(actionBy);
+			notification.setUpdatedBy(actionBy);
+			notification.setOrgId(orgId);
+
+			// save notification
+			notificationRepo.save(notification);
+
+			leaveRequestVO.setApproveStatus(action);
+			leaveRequestVO.setReason(reason);
 			System.out.println(action);
 			leaveRequestVO.setApproveBy(actionBy);
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
 			leaveRequestVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
 			leaveRequestRepo.save(leaveRequestVO);
-			
+
 			if (leaveRequestVO.getApproveStatus().equalsIgnoreCase("Approved")) {
-			    message = "Approved Successfully";
+				message = "Approved Successfully";
 			} else if (leaveRequestVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
-			    message = "Rejected Successfully";
+				message = "Rejected Successfully";
 			}
-			
-			
-			
+
 		} else if (leaveRequestVO.getApproveStatus().equalsIgnoreCase("Approved")) {
 			throw new ApplicationException("This LeaveRequest Already Approved,");
 		} else if (leaveRequestVO.getApproveStatus().equalsIgnoreCase("rejected")) {
 			throw new ApplicationException("This LeaveRequest Already Rejected");
 		}
 		Map<String, Object> response = new HashMap<>();
-	    response.put("leaveRequestVO", leaveRequestVO);
-	    response.put("message", message);
-	    return response;
-		
-		
+		response.put("leaveRequestVO", leaveRequestVO);
+		response.put("message", message);
+		return response;
+
 	}
 
-	
-	
 	// AUTO LEAVE CREDIT DAYS
 
 //	@Scheduled(fixedRate = 86400000) // Runs every 24 hours
@@ -737,7 +820,8 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 	@Transactional
 	public void checkAndAssignLeaveCredits() {
 		try {
-			System.out.println("Run																																																			ning Leave Credit Scheduler...");
+			System.out.println(
+					"Run																																																			ning Leave Credit Scheduler...");
 
 			// 🔹 Fetch all company records
 			List<Object[]> policies = entityManager
@@ -991,7 +1075,6 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 //	    }
 //	}
 
-	
 //	@Override
 //	public List<Map<String, Object>> getCheckInAndOutDaysForLeaveProcess(@RequestParam String fromDate,
 //			@RequestParam String toDate, @RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String empCode) {
@@ -1021,111 +1104,103 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 //		return detailsList;
 //	}
 
-	
 	@Override
-	public List<Map<String, Object>> getCheckInAndOutDaysForLeaveProcess(
-	        @RequestParam String fromDate,
-	        @RequestParam String toDate,
-	        @RequestParam Long orgId,
-	        @RequestParam String branchCode,
-	        @RequestParam String empCode) {
+	public List<Map<String, Object>> getCheckInAndOutDaysForLeaveProcess(@RequestParam String fromDate,
+			@RequestParam String toDate, @RequestParam Long orgId, @RequestParam String branchCode,
+			@RequestParam String empCode) {
 
-	    Set<Object[]> result = checkInRepo.getCheckInAndOutDaysForLeaveProcess(fromDate, toDate, orgId, branchCode, empCode);
-	    return processCheckInAndOutDays(result, fromDate, toDate, orgId, branchCode, empCode);
+		Set<Object[]> result = checkInRepo.getCheckInAndOutDaysForLeaveProcess(fromDate, toDate, orgId, branchCode,
+				empCode);
+		return processCheckInAndOutDays(result, fromDate, toDate, orgId, branchCode, empCode);
 	}
 
-	private List<Map<String, Object>> processCheckInAndOutDays(
-	        Set<Object[]> result,
-	        String fromDate,
-	        String toDate,
-	        Long orgId,
-	        String branchCode,
-	        String empCode) {
+	private List<Map<String, Object>> processCheckInAndOutDays(Set<Object[]> result, String fromDate, String toDate,
+			Long orgId, String branchCode, String empCode) {
 
-	    List<Map<String, Object>> detailsList = new ArrayList<>();
+		List<Map<String, Object>> detailsList = new ArrayList<>();
 
-	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-	    LocalDate from = LocalDate.parse(fromDate, formatter);
-	    LocalDate to = LocalDate.parse(toDate, formatter);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate from = LocalDate.parse(fromDate, formatter);
+		LocalDate to = LocalDate.parse(toDate, formatter);
 
-	    long totalCompanyWorkingDays = ChronoUnit.DAYS.between(from, to) + 1;
+		long totalCompanyWorkingDays = ChronoUnit.DAYS.between(from, to) + 1;
 
-	    List<HolidayVO> holidayList = holidayRepo.findByFromDateAndToDateAndOrgIdAndBranchCode(
-	            fromDate, toDate, orgId, branchCode);
+		List<HolidayVO> holidayList = holidayRepo.findByFromDateAndToDateAndOrgIdAndBranchCode(fromDate, toDate, orgId,
+				branchCode);
 
-	    List<ApprovalLeavesVO> approvalLeavesList = approvalLeavesRepo.findByFromDateAndToDateAndOrgIdAndBranchCodeAndEmployeeCode(
-	            fromDate, toDate, orgId, branchCode, empCode);
+		List<ApprovalLeavesVO> approvalLeavesList = approvalLeavesRepo
+				.findByFromDateAndToDateAndOrgIdAndBranchCodeAndEmployeeCode(fromDate, toDate, orgId, branchCode,
+						empCode);
 
-	    int empLeaveCount = approvalLeavesList != null ? approvalLeavesList.size() : 0;
-	    int holidayCount = holidayList != null ? holidayList.size() : 0;
+		int empLeaveCount = approvalLeavesList != null ? approvalLeavesList.size() : 0;
+		int holidayCount = holidayList != null ? holidayList.size() : 0;
 
-	    List<Object[]> weekOffPattern = companyWeekOffRepo.findWeekOffDaysAndWeeks(orgId, branchCode);
-	    int weekOffCount = countWeekOffsBetweenDates(from, to, weekOffPattern);
+		List<Object[]> weekOffPattern = companyWeekOffRepo.findWeekOffDaysAndWeeks(orgId, branchCode);
+		int weekOffCount = countWeekOffsBetweenDates(from, to, weekOffPattern);
 
-	    List<String> missingDates = checkInRepo.findByFromDateAndToDateAndEmpCodeAndOrgId(fromDate, toDate, empCode, orgId);
+		List<String> missingDates = checkInRepo.findByFromDateAndToDateAndEmpCodeAndOrgId(fromDate, toDate, empCode,
+				orgId);
 
-	    for (Object[] record : result) {
-	        Map<String, Object> map = new HashMap<>();
+		for (Object[] record : result) {
+			Map<String, Object> map = new HashMap<>();
 
-	        // ✅ FIX: Remove (int) cast to preserve decimal part (e.g. 29.5)
-	        double workingDays = record[0] != null ? Double.parseDouble(record[0].toString()) : 0.0;
+			// ✅ FIX: Remove (int) cast to preserve decimal part (e.g. 29.5)
+			double workingDays = record[0] != null ? Double.parseDouble(record[0].toString()) : 0.0;
 
-	        double totalLeavedays1 = workingDays + holidayCount + empLeaveCount + weekOffCount;
-	        long totalLeavedays2 = totalCompanyWorkingDays - empLeaveCount;
+			double totalLeavedays1 = workingDays + holidayCount + empLeaveCount + weekOffCount;
+			long totalLeavedays2 = totalCompanyWorkingDays - empLeaveCount;
 
-	        map.put("empCode", empCode);
-	        map.put("EmpcheckInOutDays", workingDays); // ✅ Now it shows 29.5 correctly
-	        map.put("holidaysCount", holidayCount);
-	        map.put("empLeaveCount", empLeaveCount);
-	        map.put("weekOffCount", weekOffCount);
-	        map.put("totalCheckInOutLeave", totalLeavedays1);
-	        map.put("totalCompanyWorkingDays", totalCompanyWorkingDays);
-	        map.put("totalApprovedLeave", totalLeavedays2);
-	        map.put("missingDates", missingDates);
+			map.put("empCode", empCode);
+			map.put("EmpcheckInOutDays", workingDays); // ✅ Now it shows 29.5 correctly
+			map.put("holidaysCount", holidayCount);
+			map.put("empLeaveCount", empLeaveCount);
+			map.put("weekOffCount", weekOffCount);
+			map.put("totalCheckInOutLeave", totalLeavedays1);
+			map.put("totalCompanyWorkingDays", totalCompanyWorkingDays);
+			map.put("totalApprovedLeave", totalLeavedays2);
+			map.put("missingDates", missingDates);
 
-	        map.put("status", (missingDates == null || missingDates.isEmpty()) ? "MATCHED" : "MISMATCHED");
+			map.put("status", (missingDates == null || missingDates.isEmpty()) ? "MATCHED" : "MISMATCHED");
 
-	        detailsList.add(map);
-	    }
+			detailsList.add(map);
+		}
 
-	    return detailsList;
+		return detailsList;
 	}
 
 	public int countWeekOffsBetweenDates(LocalDate from, LocalDate to, List<Object[]> weekOffPattern) {
-	    int count = 0;
-	    Map<DayOfWeek, Set<Integer>> weekMap = new HashMap<>();
+		int count = 0;
+		Map<DayOfWeek, Set<Integer>> weekMap = new HashMap<>();
 
-	    for (Object[] row : weekOffPattern) {
-	        String day = row[0].toString().toUpperCase();
-	        Integer week = Integer.parseInt(row[1].toString());
-	        DayOfWeek dayOfWeek = DayOfWeek.valueOf(day);
-	        weekMap.computeIfAbsent(dayOfWeek, k -> new HashSet<>()).add(week);
-	    }
+		for (Object[] row : weekOffPattern) {
+			String day = row[0].toString().toUpperCase();
+			Integer week = Integer.parseInt(row[1].toString());
+			DayOfWeek dayOfWeek = DayOfWeek.valueOf(day);
+			weekMap.computeIfAbsent(dayOfWeek, k -> new HashSet<>()).add(week);
+		}
 
-	    LocalDate current = from;
-	    while (!current.isAfter(to)) {
-	        DayOfWeek currentDay = current.getDayOfWeek();
-	        int weekOfMonth = (current.getDayOfMonth() - 1) / 7 + 1;
+		LocalDate current = from;
+		while (!current.isAfter(to)) {
+			DayOfWeek currentDay = current.getDayOfWeek();
+			int weekOfMonth = (current.getDayOfMonth() - 1) / 7 + 1;
 
-	        if (weekMap.containsKey(currentDay)) {
-	            Set<Integer> weeks = weekMap.get(currentDay);
-	            if (weeks.contains(-1) || weeks.contains(weekOfMonth)) {
-	                count++;
-	            }
-	        }
-	        current = current.plusDays(1);
-	    }
-	    return count;
+			if (weekMap.containsKey(currentDay)) {
+				Set<Integer> weeks = weekMap.get(currentDay);
+				if (weeks.contains(-1) || weeks.contains(weekOfMonth)) {
+					count++;
+				}
+			}
+			current = current.plusDays(1);
+		}
+		return count;
 	}
-
-
-
 
 	// InboxLeaveRequest Approval
 
 	@Override
-	public List<Map<String, Object>> getLeaveRequestForDashBoard(Long orgId, String reportingPersonCode,String branchCode) {
-		Set<Object[]> result = leaveRequestRepo.getLeaveRequestForDashBoard(orgId, reportingPersonCode,branchCode);
+	public List<Map<String, Object>> getLeaveRequestForDashBoard(Long orgId, String reportingPersonCode,
+			String branchCode) {
+		Set<Object[]> result = leaveRequestRepo.getLeaveRequestForDashBoard(orgId, reportingPersonCode, branchCode);
 		return getLeaveRequestForDashBoard(result);
 	}
 
@@ -1145,15 +1220,15 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 			map.put("employeeEmail", record[8] != null ? record[8].toString() : "");
 			map.put("screenName", record[9] != null ? record[9].toString() : "");
 
-
 			detailsList.add(map);
 		}
 		return detailsList;
 	}
-	
+
 	@Override
-	public List<Map<String, Object>> getAllApprovedLeaveForTeam(Long orgId, String reportingPersonCode,String branchCode) {
-		Set<Object[]> result = leaveRequestRepo.getAllApprovedLeaveForTeam(orgId, reportingPersonCode,branchCode);
+	public List<Map<String, Object>> getAllApprovedLeaveForTeam(Long orgId, String reportingPersonCode,
+			String branchCode) {
+		Set<Object[]> result = leaveRequestRepo.getAllApprovedLeaveForTeam(orgId, reportingPersonCode, branchCode);
 		return getAllApprovedLeaveForTeam(result);
 	}
 
@@ -1172,7 +1247,6 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 			map.put("id", record[7] != null ? record[7].toString() : " ");
 			map.put("employeeEmail", record[8] != null ? record[8].toString() : "");
 			map.put("screenName", record[9] != null ? record[9].toString() : "");
-
 
 			detailsList.add(map);
 		}
@@ -1284,180 +1358,248 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 	}
 
 	@Override
-	public List<CompensatoryOffVO> getCompensatoryOffByOrgId(Long orgId,String empCode) {
+	public List<CompensatoryOffVO> getCompensatoryOffByOrgId(Long orgId, String empCode) {
 		// TODO Auto-generated method stub
-		return compensatoryOffRepo.getCompensatoryOffByOrgId(orgId,empCode);
+		return compensatoryOffRepo.getCompensatoryOffByOrgId(orgId, empCode);
 	}
-	
-	
+
 	@Override
 	public Map<String, Object> createUpdateCompOff(@Valid List<CompensatoryOffDTO> compensatoryOffDTOList)
-	        throws ApplicationException {
+			throws ApplicationException {
 
-	    List<CompensatoryOffVO> compensatoryOffVOList = new ArrayList<>();
-	    String message = "";
+		List<CompensatoryOffVO> compensatoryOffVOList = new ArrayList<>();
+		String message = "";
 
-	    // ✅ Step 1: Check duplicate inside incoming request list
-	    Set<String> duplicateCheckSet = new HashSet<>();
+		// ✅ Step 1: Check duplicate inside incoming request list
+		Set<String> duplicateCheckSet = new HashSet<>();
 
-	    for (CompensatoryOffDTO dto : compensatoryOffDTOList) {
-	        // Unique key based on duplicate rule (Branch + Emp + Org + LeaveCode + Date)
-	        String uniqueKey = dto.getBranch().trim().toUpperCase() + "|"
-	                + dto.getEmployeeCode().trim().toUpperCase() + "|"
-	                + dto.getOrgId() + "|"
-	                + dto.getLeaveCode().trim().toUpperCase() + "|"
-	                + dto.getCompOffDate();
+		for (CompensatoryOffDTO dto : compensatoryOffDTOList) {
+			// Unique key based on duplicate rule (Branch + Emp + Org + LeaveCode + Date)
+			String uniqueKey = dto.getBranch().trim().toUpperCase() + "|" + dto.getEmployeeCode().trim().toUpperCase()
+					+ "|" + dto.getOrgId() + "|" + dto.getLeaveCode().trim().toUpperCase() + "|" + dto.getCompOffDate();
 
-	        if (!duplicateCheckSet.add(uniqueKey)) {
-	            throw new ApplicationException("Duplicate CompensatoryOff found in request for Date: "
-	                    + dto.getCompOffDate() + " Employee: " + dto.getEmployeeCode());
-	        }
-	    }
-	    
-	    for (CompensatoryOffDTO dto : compensatoryOffDTOList) {
-	        CompensatoryOffVO vo;
+			if (!duplicateCheckSet.add(uniqueKey)) {
+				throw new ApplicationException("Duplicate CompensatoryOff found in request for Date: "
+						+ dto.getCompOffDate() + " Employee: " + dto.getEmployeeCode());
+			}
+		}
 
-	        if (ObjectUtils.isNotEmpty(dto.getId())) {
-	            vo = compensatoryOffRepo.findById(dto.getId())
-	                    .orElseThrow(() -> new ApplicationException("Invalid compensatoryOff details"));
-	            vo.setUpdatedBy(dto.getCreatedBy());
-	            message = "Compensatory Off updated successfully";
-	        } else {
-	            vo = new CompensatoryOffVO();
-	            
-	            List<CompensatoryOffVO> existingList = compensatoryOffRepo.findByBranchAndEmployeeCodeAndOrgIdAndLeaveCodeAndCompOffDate(
-	            	    dto.getBranch(), dto.getEmployeeCode(), dto.getOrgId(), dto.getLeaveCode(), dto.getCompOffDate());
+		for (CompensatoryOffDTO dto : compensatoryOffDTOList) {
+			CompensatoryOffVO vo;
 
-	            	if (!existingList.isEmpty()) {
-	            	    throw new ApplicationException("This Date: " + dto.getCompOffDate() + " CompensatoryOff Already Applied ");
-	            	}
+			if (ObjectUtils.isNotEmpty(dto.getId())) {
+				vo = compensatoryOffRepo.findById(dto.getId())
+						.orElseThrow(() -> new ApplicationException("Invalid compensatoryOff details"));
+				vo.setUpdatedBy(dto.getCreatedBy());
+				message = "Compensatory Off updated successfully";
+			} else {
+				vo = new CompensatoryOffVO();
 
-	            vo.setCreatedBy(dto.getCreatedBy());
-	            vo.setUpdatedBy(dto.getCreatedBy());
-	            message = "Compensatory Off created successfully";
-	        }
+				List<CompensatoryOffVO> existingList = compensatoryOffRepo
+						.findByBranchAndEmployeeCodeAndOrgIdAndLeaveCodeAndCompOffDate(dto.getBranch(),
+								dto.getEmployeeCode(), dto.getOrgId(), dto.getLeaveCode(), dto.getCompOffDate());
 
-	        mapDtoToVo(dto, vo);
-	        compensatoryOffVOList.add(vo);
-	    }
+				boolean alreadyApplied = existingList.stream()
+				        .anyMatch(e -> !"REJECTED".equalsIgnoreCase(e.getApprovalStatus()));
 
-	    compensatoryOffRepo.saveAll(compensatoryOffVOList); // Save all records
+				if (alreadyApplied) {
+				    throw new ApplicationException(
+				        "This Date: " + dto.getCompOffDate() + " CompensatoryOff Already Applied ");
+				}
 
-	    Map<String, Object> response = new HashMap<>();
-	    response.put("compensatoryOffVO", compensatoryOffVOList);
-	    response.put("message", message);
-	    return response;
+				vo.setCreatedBy(dto.getCreatedBy());
+				vo.setUpdatedBy(dto.getCreatedBy());
+				message = "Compensatory Off created successfully";
+			}
+
+			mapDtoToVo(dto, vo);
+			compensatoryOffVOList.add(vo);
+		}
+
+		compensatoryOffRepo.saveAll(compensatoryOffVOList); // Save all records
+
+		for (CompensatoryOffVO vo : compensatoryOffVOList) {
+
+			// 🔔 Message
+			String notifyMessage;
+			if (vo.getId() == null) {
+				notifyMessage = "New Compensatory Off request submitted by " + vo.getEmployeeName() + " for date "
+						+ vo.getCompOffDate();
+			} else {
+				notifyMessage = "Compensatory Off request updated by " + vo.getEmployeeName() + " for date "
+						+ vo.getCompOffDate();
+			}
+
+			/* 🔹 1. Notify main approver */
+			createNotificationForUser(vo.getNotifyCode(), vo.getId(), notifyMessage, vo.getCreatedBy(), vo.getOrgId(),
+					"COMPOFF REQUEST");
+
+			/* 🔹 2. Notify CC users */
+			if (vo.getCompoffNotifyVO() != null) {
+				for (CompoffNotifyVO notifyVO : vo.getCompoffNotifyVO()) {
+					createNotificationForUser(notifyVO.getNotify2Code(), vo.getId(), notifyMessage, vo.getCreatedBy(),
+							vo.getOrgId(), "COMPOFF REQUEST");
+				}
+			}
+		}
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("compensatoryOffVO", compensatoryOffVOList);
+		response.put("message", message);
+		return response;
 	}
 
 	private void mapDtoToVo(CompensatoryOffDTO dto, CompensatoryOffVO vo) {
-	    vo.setEmployeeCode(dto.getEmployeeCode());
-	    vo.setEmployeeName(dto.getEmployeeName());
-	    vo.setOrgId(dto.getOrgId());
-	    vo.setDepartment(dto.getDepartment());
-	    vo.setDesignation(dto.getDesignation());
+		vo.setEmployeeCode(dto.getEmployeeCode());
+		vo.setEmployeeName(dto.getEmployeeName());
+		vo.setOrgId(dto.getOrgId());
+		vo.setDepartment(dto.getDepartment());
+		vo.setDesignation(dto.getDesignation());
 
-	    vo.setLeaveType(dto.getLeaveType());
-	    vo.setLeaveCode(dto.getLeaveCode());
-	    vo.setCompOffDate(dto.getCompOffDate());
-	    vo.setCompOffDay(dto.getCompOffDay());
-	    vo.setTotalDays(dto.getTotalDays());
-	    vo.setNotes(dto.getNotes());
-	    vo.setNotify(dto.getNotify());
-	    vo.setAssignedBy(dto.getAssignedBy());
-	    vo.setNotifyCode(dto.getNotifyCode());
-	    vo.setNotifyEmail(dto.getNotifyEmail());
-	    
-	      if (dto.getId() != null) {
-	            List<CompoffNotifyVO> compoff = compoffNotifyRepo.findByCompensatoryOffVO(vo);
-	            compoffNotifyRepo.deleteAll(compoff);
-	        }
+		vo.setLeaveType(dto.getLeaveType());
+		vo.setLeaveCode(dto.getLeaveCode());
+		vo.setCompOffDate(dto.getCompOffDate());
+		vo.setCompOffDay(dto.getCompOffDay());
+		vo.setTotalDays(dto.getTotalDays());
+		vo.setNotes(dto.getNotes());
+		vo.setNotify(dto.getNotify());
+		vo.setAssignedBy(dto.getAssignedBy());
+		vo.setNotifyCode(dto.getNotifyCode());
+		vo.setNotifyEmail(dto.getNotifyEmail());
 
-	        // Set Poll Details from PollDetailsDTO
-	        List<CompoffNotifyVO> compoffNotifyVOs = new ArrayList<>();
-	        for (CompoffNotifyDTO compoffNotifyDTO : dto.getCompoffNotifyDTO()) {
-	            CompoffNotifyVO compoffNotifyVO = new CompoffNotifyVO();
-	            compoffNotifyVO.setNotify2(compoffNotifyDTO.getNotify2());
-	            compoffNotifyVO.setNotify2Code(compoffNotifyDTO.getNotify2Code());
-	            compoffNotifyVO.setNotify2Email(compoffNotifyDTO.getNotify2Email());
+		if (dto.getId() != null) {
+			List<CompoffNotifyVO> compoff = compoffNotifyRepo.findByCompensatoryOffVO(vo);
+			compoffNotifyRepo.deleteAll(compoff);
+		}
 
-	            compoffNotifyVO.setCompensatoryOffVO(vo);  // Set parent reference in child
-	            compoffNotifyVOs.add(compoffNotifyVO);
-	        }
-	        vo.setCompoffNotifyVO(compoffNotifyVOs);
-	    
-	    vo.setApprovalStatus("PENDING");
+		// Set Poll Details from PollDetailsDTO
+		List<CompoffNotifyVO> compoffNotifyVOs = new ArrayList<>();
+		for (CompoffNotifyDTO compoffNotifyDTO : dto.getCompoffNotifyDTO()) {
+			CompoffNotifyVO compoffNotifyVO = new CompoffNotifyVO();
+			compoffNotifyVO.setNotify2(compoffNotifyDTO.getNotify2());
+			compoffNotifyVO.setNotify2Code(compoffNotifyDTO.getNotify2Code());
+			compoffNotifyVO.setNotify2Email(compoffNotifyDTO.getNotify2Email());
 
-	    vo.setBranch(dto.getBranch());
-	    vo.setBranchCode(dto.getBranchCode());
+			compoffNotifyVO.setCompensatoryOffVO(vo); // Set parent reference in child
+			compoffNotifyVOs.add(compoffNotifyVO);
+		}
+		vo.setCompoffNotifyVO(compoffNotifyVOs);
+
+		vo.setApprovalStatus("PENDING");
+
+		vo.setBranch(dto.getBranch());
+		vo.setBranchCode(dto.getBranchCode());
 	}
-	
+
+	private void createNotificationForUser(String employeeCode, Long refId, String message, String actionBy, Long orgId,
+			String notificationType) {
+
+		if (employeeCode == null || employeeCode.trim().isEmpty()) {
+			return;
+		}
+
+		UserVO user = userRepo.findByUserName(employeeCode);
+		if (user == null) {
+			return;
+		}
+
+		NotificationVO notification = new NotificationVO();
+		notification.setUserid(user.getId());
+		notification.setNotificationType(notificationType);
+		notification.setMessage(message);
+		notification.setRead(false);
+		notification.setDeleted(false);
+		notification.setCreatedBy(actionBy);
+		notification.setUpdatedBy(actionBy);
+		notification.setOrgId(orgId);
+
+		notificationRepo.save(notification);
+	}
+
 	private String joinList(List<String> list) {
-	    return (list == null || list.isEmpty()) ? null : String.join(",", list);
+		return (list == null || list.isEmpty()) ? null : String.join(",", list);
 	}
 
-
-	
 	@Override
-	public Map<String, Object> createApprovalCompOff(Long orgId, Long id, String employeeCode, String action, String actionBy,String notifyCode, String notify,String screenName)
-	        throws ApplicationException {
+	public Map<String, Object> createApprovalCompOff(Long orgId, Long id, String employeeCode, String action,
+			String actionBy, String notifyCode, String notify, String screenName,String reason) throws ApplicationException {
 
-	    CompensatoryOffVO compensatoryOffVO = compensatoryOffRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
-	    String message = "";
-	    
-	    if (compensatoryOffVO.getApprovalStatus() == null
-	            || (!compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Approved")
-	            && !compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Rejected"))) {
+		CompensatoryOffVO compensatoryOffVO = compensatoryOffRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id,
+				employeeCode);
+		String message = "";
 
-	        if ("APPROVED".equalsIgnoreCase(action) || "REJECTED".equalsIgnoreCase(action)) {
-	        	
-	        	if("APPROVED".equalsIgnoreCase(action)) {
-	        	List<LeaveBalanceVO> leaveBalanceVOs = new ArrayList<LeaveBalanceVO>();
+		if (compensatoryOffVO.getApprovalStatus() == null
+				|| (!compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Approved")
+						&& !compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Rejected"))) {
 
-	        	 LeaveBalanceVO leaveBalanceVO = new LeaveBalanceVO();
-	 	        leaveBalanceVO.setLeaveCode(compensatoryOffVO.getLeaveCode());
-	 	        leaveBalanceVO.setLeaveType(compensatoryOffVO.getLeaveType());
-	 	        leaveBalanceVO.setTotalLeave(compensatoryOffVO.getTotalDays());
-	 	        leaveBalanceVO.setEmployeeName(compensatoryOffVO.getEmployeeName());
-	 	        leaveBalanceVO.setEmployeeCode(compensatoryOffVO.getEmployeeCode());
-	 	        leaveBalanceVO.setOrgId(compensatoryOffVO.getOrgId());
-	 	        leaveBalanceVO.setBranch(compensatoryOffVO.getBranch());
-	 	        leaveBalanceVO.setBranchCode(compensatoryOffVO.getBranchCode());
-	 	        leaveBalanceVO.setLeaveStatus("Assigned");
-	 	        leaveBalanceVOs.add(leaveBalanceVO);
+			if ("APPROVED".equalsIgnoreCase(action) || "REJECTED".equalsIgnoreCase(action)) {
 
-				leaveBalanceRepo.saveAll(leaveBalanceVOs);
-			}
-	        	
-	        	compensatoryOffVO.setApprovalStatus(action);
-	        	compensatoryOffVO.setApproveBy(actionBy);
+				if ("APPROVED".equalsIgnoreCase(action)) {
+					List<LeaveBalanceVO> leaveBalanceVOs = new ArrayList<LeaveBalanceVO>();
 
-	            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
-	            compensatoryOffVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+					LeaveBalanceVO leaveBalanceVO = new LeaveBalanceVO();
+					leaveBalanceVO.setLeaveCode(compensatoryOffVO.getLeaveCode());
+					leaveBalanceVO.setLeaveType(compensatoryOffVO.getLeaveType());
+					leaveBalanceVO.setTotalLeave(compensatoryOffVO.getTotalDays());
+					leaveBalanceVO.setEmployeeName(compensatoryOffVO.getEmployeeName());
+					leaveBalanceVO.setEmployeeCode(compensatoryOffVO.getEmployeeCode());
+					leaveBalanceVO.setOrgId(compensatoryOffVO.getOrgId());
+					leaveBalanceVO.setBranch(compensatoryOffVO.getBranch());
+					leaveBalanceVO.setBranchCode(compensatoryOffVO.getBranchCode());
+					leaveBalanceVO.setLeaveStatus("Assigned");
+					leaveBalanceVOs.add(leaveBalanceVO);
 
-	            compensatoryOffRepo.save(compensatoryOffVO);
-	            
-	        	if (compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Approved")) {
-				    message = "Approved Successfully";
-				} else if (compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Rejected")) {
-				    message = "Rejected Successfully";
+					leaveBalanceRepo.saveAll(leaveBalanceVOs);
 				}
-	        }
-	    }
-	     else if (compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Approved")) {
-	        throw new ApplicationException("This CompensatoryOff Already Approved");
-	    } else if (compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Rejected")) {
-	        throw new ApplicationException("This CompensatoryOff Already Rejected");
-	    }
 
-	    Map<String, Object> response = new HashMap<>();
-	    response.put("compensatoryOffVO", compensatoryOffVO);
-	    response.put("message", message);
-	    return response;	
-	    }
-	
+				compensatoryOffVO.setApprovalStatus(action);
+				compensatoryOffVO.setApproveBy(actionBy);
+				compensatoryOffVO.setReason(reason);
+
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+				compensatoryOffVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+
+				compensatoryOffRepo.save(compensatoryOffVO);
+
+				if (compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Approved")) {
+					message = "Approved Successfully";
+				} else if (compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Rejected")) {
+					message = "Rejected Successfully";
+				}
+			}
+		} else if (compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Approved")) {
+			throw new ApplicationException("This CompensatoryOff Already Approved");
+		} else if (compensatoryOffVO.getApprovalStatus().equalsIgnoreCase("Rejected")) {
+			throw new ApplicationException("This CompensatoryOff Already Rejected");
+		}
+
+		// 🔔 Notify employee after APPROVE / REJECT
+		String notifyMessage;
+
+		if ("APPROVED".equalsIgnoreCase(action)) {
+			notifyMessage = "Your Compensatory Off for date " + compensatoryOffVO.getCompOffDate()
+					+ " has been APPROVED";
+		} else {
+			notifyMessage = "Your Compensatory Off for date " + compensatoryOffVO.getCompOffDate()
+					+ " has been REJECTED";
+		}
+
+		// 🔹 Notify employee
+		createNotificationForUser(compensatoryOffVO.getEmployeeCode(), // employee who applied
+				compensatoryOffVO.getId(), // compoff id
+				notifyMessage, actionBy, compensatoryOffVO.getOrgId(), "COMPOFF "+action);
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("compensatoryOffVO", compensatoryOffVO);
+		response.put("message", message);
+		return response;
+	}
+
 	@Override
-	public List<Map<String, Object>> getCompoffRequestForDashBoard(Long orgId, String reportingPersonCode,String branchCode) {
-		Set<Object[]> result = compensatoryOffRepo.getCompoffRequestForDashBoard(orgId, reportingPersonCode,branchCode);
+	public List<Map<String, Object>> getCompoffRequestForDashBoard(Long orgId, String reportingPersonCode,
+			String branchCode) {
+		Set<Object[]> result = compensatoryOffRepo.getCompoffRequestForDashBoard(orgId, reportingPersonCode,
+				branchCode);
 		return getCompoffRequestForDashBoard(result);
 	}
 
@@ -1480,593 +1622,598 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		}
 		return detailsList;
 	}
-	
-	//uploadcheckin
-	
+
+	// uploadcheckin
+
 	@Override
 	public Map<String, Object> uploadExcelData(MultipartFile files, Long orgId) {
-	    Map<String, Object> response = new HashMap<>();
-	    List<CheckInVO> checkIns = new ArrayList<>();
+		Map<String, Object> response = new HashMap<>();
+		List<CheckInVO> checkIns = new ArrayList<>();
 
-	    try (Workbook workbook = WorkbookFactory.create(files.getInputStream())) {
-	        Sheet sheet = workbook.getSheetAt(0);
-	        boolean isFirstRow = true;
+		try (Workbook workbook = WorkbookFactory.create(files.getInputStream())) {
+			Sheet sheet = workbook.getSheetAt(0);
+			boolean isFirstRow = true;
 
-	        for (Row row : sheet) {
-	            if (isFirstRow) {
-	                isFirstRow = false;
-	                continue;
-	            }
+			for (Row row : sheet) {
+				if (isFirstRow) {
+					isFirstRow = false;
+					continue;
+				}
 
-	            String branch = getCellValueAsString(row.getCell(0));
-	            String empCode = getCellValueAsString(row.getCell(1));
-	            String empName = getCellValueAsString(row.getCell(2));
-	            LocalDate checkInDate = getCellValueAsDate(row.getCell(3));
-	            LocalTime entryTime = getCellValueAsTime(row.getCell(4));
-	            String status = getCellValueAsString(row.getCell(5));
+				String branch = getCellValueAsString(row.getCell(0));
+				String empCode = getCellValueAsString(row.getCell(1));
+				String empName = getCellValueAsString(row.getCell(2));
+				LocalDate checkInDate = getCellValueAsDate(row.getCell(3));
+				LocalTime entryTime = getCellValueAsTime(row.getCell(4));
+				String status = getCellValueAsString(row.getCell(5));
 
-	            // Skip if required fields are missing
-	            if (empCode == null || checkInDate == null || entryTime == null || status == null) {
-	                continue;
-	            }
+				// Skip if required fields are missing
+				if (empCode == null || checkInDate == null || entryTime == null || status == null) {
+					continue;
+				}
 
-	            CheckInVO checkIn = new CheckInVO();
-	            checkIn.setBranch(branch);
-	            checkIn.setEmpCode(empCode);
-	            checkIn.setEmpName(empName);
-	            checkIn.setCheckInDate(checkInDate);
-	            checkIn.setEntryTime(entryTime);
-	            checkIn.setStatus(status);
-	            checkIn.setOrgId(orgId);
-	            checkIn.setCreatedOn(LocalDateTime.of(checkInDate, LocalTime.now()));
+				CheckInVO checkIn = new CheckInVO();
+				checkIn.setBranch(branch);
+				checkIn.setEmpCode(empCode);
+				checkIn.setEmpName(empName);
+				checkIn.setCheckInDate(checkInDate);
+				checkIn.setEntryTime(entryTime);
+				checkIn.setStatus(status);
+				checkIn.setOrgId(orgId);
+				checkIn.setCreatedOn(LocalDateTime.of(checkInDate, LocalTime.now()));
 
-	            checkIns.add(checkIn);
-	        }
+				checkIns.add(checkIn);
+			}
 
-	        checkInRepo.saveAll(checkIns);
-	        response.put("message", "CheckInOut data uploaded successfully");
-	        return response;
+			checkInRepo.saveAll(checkIns);
+			response.put("message", "CheckInOut data uploaded successfully");
+			return response;
 
-	    } catch (Exception e) {
-	        response.put("message", "Failed to process Excel file: " + e.getMessage());
-	        return response;
-	    }
+		} catch (Exception e) {
+			response.put("message", "Failed to process Excel file: " + e.getMessage());
+			return response;
+		}
 	}
 
 	private String getCellValueAsString(Cell cell) {
-	    if (cell == null) return null;
+		if (cell == null)
+			return null;
 
-	    switch (cell.getCellType()) {
-	        case STRING:
-	            return cell.getStringCellValue().trim();
-	        case NUMERIC:
-	            return String.valueOf((long) cell.getNumericCellValue());
-	        case BLANK:
-	            return null;
-	        default:
-	            return null;
-	    }
+		switch (cell.getCellType()) {
+		case STRING:
+			return cell.getStringCellValue().trim();
+		case NUMERIC:
+			return String.valueOf((long) cell.getNumericCellValue());
+		case BLANK:
+			return null;
+		default:
+			return null;
+		}
 	}
 
 	private LocalDate getCellValueAsDate(Cell cell) {
-	    if (cell == null) return null;
+		if (cell == null)
+			return null;
 
-	    try {
-	        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-	            return cell.getLocalDateTimeCellValue().toLocalDate();
-	        } else if (cell.getCellType() == CellType.STRING) {
-	            String dateStr = cell.getStringCellValue().trim();
-	            if (dateStr.isEmpty()) return null;
+		try {
+			if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+				return cell.getLocalDateTimeCellValue().toLocalDate();
+			} else if (cell.getCellType() == CellType.STRING) {
+				String dateStr = cell.getStringCellValue().trim();
+				if (dateStr.isEmpty())
+					return null;
 
-	            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy"); // ✅ FIXED
-	            return LocalDate.parse(dateStr, formatter);
-	        }
-	    } catch (Exception e) {
-	        System.err.println("Error parsing date cell: " + e.getMessage());
-	    }
-	    return null;
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy"); // ✅ FIXED
+				return LocalDate.parse(dateStr, formatter);
+			}
+		} catch (Exception e) {
+			System.err.println("Error parsing date cell: " + e.getMessage());
+		}
+		return null;
 	}
 
 	private LocalTime getCellValueAsTime(Cell cell) {
-	    if (cell == null) return null;
+		if (cell == null)
+			return null;
 
-	    try {
-	        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-	            return cell.getLocalDateTimeCellValue().toLocalTime();
-	        } else if (cell.getCellType() == CellType.STRING) {
-	            String timeStr = cell.getStringCellValue().trim();
-	            if (timeStr.isEmpty()) return null;
-	            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-	            return LocalTime.parse(timeStr, formatter);
-	        }
-	    } catch (Exception e) {
-	        System.err.println("Error parsing time cell: " + e.getMessage());
-	    }
-	    return null;
+		try {
+			if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+				return cell.getLocalDateTimeCellValue().toLocalTime();
+			} else if (cell.getCellType() == CellType.STRING) {
+				String timeStr = cell.getStringCellValue().trim();
+				if (timeStr.isEmpty())
+					return null;
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+				return LocalTime.parse(timeStr, formatter);
+			}
+		} catch (Exception e) {
+			System.err.println("Error parsing time cell: " + e.getMessage());
+		}
+		return null;
 	}
 
-	    //AttandanceReport
-	    
-		@Override
-		public List<LeaveProcessVO> getAttandanceReport( Long orgId,
-				 String employeeCode, String year, String month) {
-			// TODO Auto-generated method stub
-			return leaveProcessRepo.getAttandanceReport(orgId,employeeCode,year,month);
+	// AttandanceReport
+
+	@Override
+	public List<LeaveProcessVO> getAttandanceReport(Long orgId, String employeeCode, String year, String month) {
+		// TODO Auto-generated method stub
+		return leaveProcessRepo.getAttandanceReport(orgId, employeeCode, year, month);
+	}
+
+	// CheckInOutReport
+
+	@Override
+	public List<Map<String, Object>> getCheckInOutReport(Long orgId, String employeeCode, String fromDate,
+			String toDate, String branch) {
+		Set<Object[]> result = checkInRepo.getCheckInOutReport(orgId, employeeCode, fromDate, toDate, branch);
+		return CheckInOutReport(result);
+	}
+
+	private List<Map<String, Object>> CheckInOutReport(Set<Object[]> result) {
+		List<Map<String, Object>> detailsList = new ArrayList<>();
+
+		for (Object[] record : result) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("employeeCode", record[0] != null ? record[0].toString() : "");
+			map.put("employeeName", record[1] != null ? record[1].toString() : "");
+			map.put("entryDate", record[2] != null ? record[2].toString() : " ");
+			map.put("checkInTime", record[3] != null ? record[3].toString() : " ");
+			map.put("checkOutTime", record[4] != null ? record[4].toString() : "0");
+			map.put("grossHours", record[5] != null ? record[5].toString() : " ");
+			map.put("effectiveHours", record[6] != null ? record[6].toString() : " ");
+			map.put("otHours", record[7] != null ? record[7].toString() : " ");
+
+			detailsList.add(map);
 		}
+		return detailsList;
+	}
 
-		//CheckInOutReport
-		
-		@Override
-		public List<Map<String, Object>>  getCheckInOutReport( Long orgId,
-				 String employeeCode, String fromDate, String toDate,String branch) {
-			Set<Object[]> result = checkInRepo.getCheckInOutReport(orgId,employeeCode,fromDate,toDate,branch);
-			return CheckInOutReport(result);
-		}
+	// ApprovalALL
 
-		private List<Map<String, Object>> CheckInOutReport(Set<Object[]> result) {
-			List<Map<String, Object>> detailsList = new ArrayList<>();
+	@Override
+	public String createUnifiedApprovalAllTypes(Long orgId, String action, String actionBy, String notifyCode,
+			String notify) throws ApplicationException {
 
-			for (Object[] record : result) {
-				Map<String, Object> map = new HashMap<>();
-				map.put("employeeCode", record[0] != null ? record[0].toString() : "");
-				map.put("employeeName", record[1] != null ? record[1].toString() : "");
-				map.put("entryDate", record[2] != null ? record[2].toString() : " ");
-				map.put("checkInTime", record[3] != null ? record[3].toString() : " ");
-				map.put("checkOutTime", record[4] != null ? record[4].toString() : "0");
-				map.put("grossHours", record[5] != null ? record[5].toString() : " ");
-				map.put("effectiveHours", record[6] != null ? record[6].toString() : " ");
-				map.put("otHours",  record[7] != null ? record[7].toString() : " ");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+		String formattedDateTime = LocalDateTime.now().format(formatter).toUpperCase();
+		String finalMessage = "";
 
+		// ------------------- 1. Leave Request Approval -------------------
+		List<LeaveRequestVO> leaveRequests = leaveRequestRepo.findByOrgIdAndNotifyCode(orgId, notifyCode);
+		for (LeaveRequestVO leaveRequestVO : leaveRequests) {
+			if (leaveRequestVO.getApproveStatus() == null
+					|| (!leaveRequestVO.getApproveStatus().equalsIgnoreCase("Approved")
+							&& !leaveRequestVO.getApproveStatus().equalsIgnoreCase("Rejected"))) {
 
-				detailsList.add(map);
-			}
-			return detailsList;
-		}
-		
-		
-		//ApprovalALL
-		
-		@Override
-		public String createUnifiedApprovalAllTypes(Long orgId, String action, String actionBy, String notifyCode, String notify)
-		        throws ApplicationException {
+				LocalDate fromDate = leaveRequestVO.getFromDate();
+				LocalDate toDate = leaveRequestVO.getToDate();
+				CompanyVO company = companyRepo.findById(orgId)
+						.orElseThrow(() -> new ApplicationException("Company not found"));
 
-		    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
-		    String formattedDateTime = LocalDateTime.now().format(formatter).toUpperCase();
-		    String finalMessage = "";
+				String policyType = company.getLeavePolicy();
+				List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(company.getId());
+				List<LocalDate> holidays = holidayRepo.findByOrgId(orgId).stream().map(HolidayVO::getHolidayDate)
+						.collect(Collectors.toList());
 
-		    // ------------------- 1. Leave Request Approval -------------------
-		    List<LeaveRequestVO> leaveRequests = leaveRequestRepo.findByOrgIdAndNotifyCode(orgId, notifyCode);
-		    for (LeaveRequestVO leaveRequestVO : leaveRequests) {
-		        if (leaveRequestVO.getApproveStatus() == null ||
-		            (!leaveRequestVO.getApproveStatus().equalsIgnoreCase("Approved") &&
-		             !leaveRequestVO.getApproveStatus().equalsIgnoreCase("Rejected"))) {
+				List<ApprovalLeavesVO> approvalLeavesList = new ArrayList<>();
+				BigDecimal totalDays = BigDecimal.ZERO;
 
-		            LocalDate fromDate = leaveRequestVO.getFromDate();
-		            LocalDate toDate = leaveRequestVO.getToDate();
-		            CompanyVO company = companyRepo.findById(orgId)
-		                .orElseThrow(() -> new ApplicationException("Company not found"));
+				while (!fromDate.isAfter(toDate)) {
+					boolean isWeekOff = isWeekOffDay(fromDate, weekOffPatterns);
+					boolean isHoliday = holidays.contains(fromDate);
 
-		            String policyType = company.getLeavePolicy();
-		            List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(company.getId());
-		            List<LocalDate> holidays = holidayRepo.findByOrgId(orgId).stream()
-		                .map(HolidayVO::getHolidayDate).collect(Collectors.toList());
-
-		            List<ApprovalLeavesVO> approvalLeavesList = new ArrayList<>();
-		            BigDecimal totalDays = BigDecimal.ZERO;
-
-		            while (!fromDate.isAfter(toDate)) {
-		                boolean isWeekOff = isWeekOffDay(fromDate, weekOffPatterns);
-		                boolean isHoliday = holidays.contains(fromDate);
-
-		                if ("REGULAR".equalsIgnoreCase(policyType) && (isWeekOff || isHoliday)) {
-		                    fromDate = fromDate.plusDays(1);
-		                    continue;
-		                }
-
-		                ApprovalLeavesVO approvalLeavesVO = new ApprovalLeavesVO();
-		                approvalLeavesVO.setEmployeeCode(leaveRequestVO.getEmployeeCode());
-		                approvalLeavesVO.setEmployeeName(leaveRequestVO.getEmployeeName());
-		                approvalLeavesVO.setLeaveType(leaveRequestVO.getLeaveType());
-		                approvalLeavesVO.setLeaveDate(fromDate);
-		                approvalLeavesVO.setOrgId(orgId);
-		                approvalLeavesVO.setBranch(leaveRequestVO.getBranch());
-		                approvalLeavesVO.setBranchCode(leaveRequestVO.getBranchCode());
-		                approvalLeavesVO.setApproveStatus(action);
-		                approvalLeavesVO.setApproveBy(actionBy);
-
-		                if ("HALF DAY".equalsIgnoreCase(leaveRequestVO.getSelectLeave())) {
-		                    approvalLeavesVO.setTotalLeave(BigDecimal.valueOf(0.5));
-		                    totalDays = totalDays.add(BigDecimal.valueOf(0.5));
-		                } else {
-		                    approvalLeavesVO.setTotalLeave(BigDecimal.ONE);
-		                    totalDays = totalDays.add(BigDecimal.ONE);
-		                }
-
-		                approvalLeavesList.add(approvalLeavesVO);
-		                fromDate = fromDate.plusDays(1);
-		            }
-
-		            approvalLeavesRepo.saveAll(approvalLeavesList);
-
-		            LeaveBalanceVO leaveBalanceVO = new LeaveBalanceVO();
-		            leaveBalanceVO.setLeaveCode(leaveRequestVO.getLeaveCode());
-		            leaveBalanceVO.setLeaveType(leaveRequestVO.getLeaveType());
-		            leaveBalanceVO.setEmployeeName(leaveRequestVO.getEmployeeName());
-		            leaveBalanceVO.setEmployeeCode(leaveRequestVO.getEmployeeCode());
-		            leaveBalanceVO.setOrgId(orgId);
-		            leaveBalanceVO.setBranch(leaveRequestVO.getBranch());
-		            leaveBalanceVO.setBranchCode(leaveRequestVO.getBranchCode());
-		            leaveBalanceVO.setLeaveStatus("Leave");
-		            leaveBalanceVO.setTotalLeave(totalDays.negate());
-
-		            leaveBalanceRepo.save(leaveBalanceVO);
-
-		            leaveRequestVO.setApproveStatus(action);
-		            leaveRequestVO.setApproveBy(actionBy);
-		            leaveRequestVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());		            
-		            leaveRequestRepo.save(leaveRequestVO);
-		        }
-		    }
-
-		    // ------------------- 2. Compensatory Off Approval -------------------
-		    List<CompensatoryOffVO> compensatoryOffList = compensatoryOffRepo.findByOrgIdAndNotifyCode(orgId, notifyCode);
-		    List<LeaveBalanceVO> leaveBalanceList = new ArrayList<>();
-
-		    for (CompensatoryOffVO compOff : compensatoryOffList) {
-		        if (compOff.getApprovalStatus() == null ||
-		            (!compOff.getApprovalStatus().equalsIgnoreCase("Approved") &&
-		             !compOff.getApprovalStatus().equalsIgnoreCase("Rejected"))) {
-
-		            if ("APPROVED".equalsIgnoreCase(action)) {
-		                LeaveBalanceVO leaveBalanceVO = new LeaveBalanceVO();
-		                leaveBalanceVO.setLeaveCode(compOff.getLeaveCode());
-		                leaveBalanceVO.setLeaveType(compOff.getLeaveType());
-		                leaveBalanceVO.setTotalLeave(compOff.getTotalDays());
-		                leaveBalanceVO.setEmployeeName(compOff.getEmployeeName());
-		                leaveBalanceVO.setEmployeeCode(compOff.getEmployeeCode());
-		                leaveBalanceVO.setOrgId(compOff.getOrgId());
-		                leaveBalanceVO.setBranch(compOff.getBranch());
-		                leaveBalanceVO.setBranchCode(compOff.getBranchCode());
-		                leaveBalanceVO.setLeaveStatus("Assigned");
-
-		                leaveBalanceList.add(leaveBalanceVO);
-		            }
-
-		            compOff.setApprovalStatus(action);
-		            compOff.setApproveBy(actionBy);
-		          
-		            compOff.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());		            
-		            
-		            compensatoryOffRepo.save(compOff);
-		        }
-		    }
-
-		    if (!leaveBalanceList.isEmpty()) {
-		        leaveBalanceRepo.saveAll(leaveBalanceList);
-		    }
-
-		    // ------------------- 3. CheckInOutAdjustment Approval -------------------
-		    List<CheckInOutAdjustmentVO> adjustments = checkInOutAdjustmentRepo.findByOrgIdAndNotifyCode(orgId, notifyCode);
-		    for (CheckInOutAdjustmentVO adj : adjustments) {
-		        if (!"APPROVED".equalsIgnoreCase(adj.getApprovalStatus()) && !"REJECTED".equalsIgnoreCase(adj.getApprovalStatus())) {
-		            adj.setApprovalStatus(action.toUpperCase());
-		            adj.setApproveBy(actionBy);
-		            adj.setApproveOn(formattedDateTime);
-		        }
-		    }
-		    checkInOutAdjustmentRepo.saveAll(adjustments);
-
-		    // ------------------- 4. CheckOut Approval -------------------
-		    List<CheckInVO> checkOutList = checkInRepo.findByOrgIdAndNotifyCodeAndStatus(orgId, notifyCode, "OUT");
-		    for (CheckInVO checkOutVO : checkOutList) {
-		        if (!"APPROVED".equalsIgnoreCase(checkOutVO.getApprovalStatus()) &&
-		            !"REJECTED".equalsIgnoreCase(checkOutVO.getApprovalStatus())) {
-
-		            if ("REJECTED".equalsIgnoreCase(action)) {
-		                checkOutVO.setEntryTime(LocalTime.parse("00:00:00"));
-		            }
-
-		            checkOutVO.setApprovalStatus(action.toUpperCase());
-		            checkOutVO.setApproveBy(actionBy);
-		            checkOutVO.setApproveOn(formattedDateTime);
-		        }
-		    }
-		    checkInRepo.saveAll(checkOutList);
-
-		    // Final return message
-		    return action.equalsIgnoreCase("APPROVED") ?
-		            "All types approved successfully" : "All types rejected successfully";
-		}
-		
-		//travelrequest
-		
-		@Override
-		public Map<String, Object> createUpdateTravelRequest(TravelRequestDTO travelRequestDTO) throws ApplicationException {
-
-			TravelRequestVO travelRequestVO = new TravelRequestVO();
-			String message;
-			String screenCode = "TR";
-			if (ObjectUtils.isNotEmpty(travelRequestDTO.getId())) {
-				travelRequestVO = travelRequestRepo.findById(travelRequestDTO.getId())
-						.orElseThrow(() -> new ApplicationException("Invalid travelRequest details"));
-
-				travelRequestVO.setUpdatedBy(travelRequestDTO.getCreatedBy());
-				message = "TravelRequest Updated Successfully";
-			} else {
-
-
-				travelRequestVO.setCreatedBy(travelRequestDTO.getCreatedBy());
-				travelRequestVO.setUpdatedBy(travelRequestDTO.getCreatedBy());
-				message = "TravelRequest Created Successfully";
-			}
-
-			createUpdateTravelRequestVOByTravelRequestDTO(travelRequestDTO, travelRequestVO);
-			travelRequestRepo.save(travelRequestVO);
-			Map<String, Object> response = new HashMap<>();
-			response.put("travelRequestVO", travelRequestVO);
-			response.put("message", message);
-			return response;
-		}
-
-		private void createUpdateTravelRequestVOByTravelRequestDTO(TravelRequestDTO travelRequestDTO, TravelRequestVO travelRequestVO) {
-			travelRequestVO.setFromDate(travelRequestDTO.getFromDate());
-			travelRequestVO.setToDate(travelRequestDTO.getToDate());
-			travelRequestVO.setTravelReason(travelRequestDTO.getTravelReason());
-			travelRequestVO.setModeOfTravel(travelRequestDTO.getModeOfTravel());
-			travelRequestVO.setApprovingAuthorities(travelRequestDTO.getApprovingAuthorities());
-			travelRequestVO.setApprovingAuthoritiesCode(travelRequestDTO.getApprovingAuthoritiesCode());
-			travelRequestVO.setApprovingAuthoritiesEmail(travelRequestDTO.getApprovingAuthoritiesEmail());
-
-			travelRequestVO.setBranch(travelRequestDTO.getBranch());
-			travelRequestVO.setBranchCode(travelRequestDTO.getBranchCode());
-			travelRequestVO.setFinYear(travelRequestDTO.getFinYear());
-			travelRequestVO.setEmployeeCode(travelRequestDTO.getEmployeeCode());
-			travelRequestVO.setEmployeeName(travelRequestDTO.getEmployeeName());
-			travelRequestVO.setOrgId(travelRequestDTO.getOrgId());
-			travelRequestVO.setApproveStatus("PENDING");
-
-
-		}
-		
-		
-		@Override
-		public TravelRequestVO getTravelRequestById(Long id) {
-
-			return travelRequestRepo.getTravelRequestById(id);
-		}
-		
-		@Override
-		public List<TravelRequestVO> getTravelRequestByOrgId(Long orgId) {
-			// TODO Auto-generated method stub
-			return travelRequestRepo.getTravelRequestByOrgId(orgId);
-		}
-		
-		//WORKFROMHOME
-		
-		@Override
-		public Map<String, Object> createUpdateWorkFromHome(WorkFromHomeDTO workFromHomeDTO) throws ApplicationException {
-
-			WorkFromHomeVO workFromHomeVO = new WorkFromHomeVO();
-			String message;
-			String screenCode = "WFH";
-			if (ObjectUtils.isNotEmpty(workFromHomeDTO.getId())) {
-				workFromHomeVO = workFromHomeRepo.findById(workFromHomeDTO.getId())
-						.orElseThrow(() -> new ApplicationException("Invalid WorkFromHome details"));
-
-				workFromHomeVO.setUpdatedBy(workFromHomeDTO.getCreatedBy());
-				message = "WorkFromHome Updated Successfully";
-			} else {
-				workFromHomeVO.setCreatedBy(workFromHomeDTO.getCreatedBy());
-				workFromHomeVO.setUpdatedBy(workFromHomeDTO.getCreatedBy());
-				message = "WorkFromHome Created Successfully";
-			}
-
-			createUpdateWorkFromHomeVOByWorkFromHomeDTO(workFromHomeDTO, workFromHomeVO);
-			workFromHomeRepo.save(workFromHomeVO);
-			Map<String, Object> response = new HashMap<>();
-			response.put("workFromHomeVO", workFromHomeVO);
-			response.put("message", message);
-			return response;
-		}
-
-		private void createUpdateWorkFromHomeVOByWorkFromHomeDTO(WorkFromHomeDTO workFromHomeDTO, WorkFromHomeVO workFromHomeVO) {
-			workFromHomeVO.setWfhDate(workFromHomeDTO.getWfhDate());
-			workFromHomeVO.setReason(workFromHomeDTO.getReason());
-			workFromHomeVO.setWorkAccomplished(workFromHomeDTO.getWorkAccomplished());
-			workFromHomeVO.setReportingManager(workFromHomeDTO.getReportingManager());
-			workFromHomeVO.setReportingManagerCode(workFromHomeDTO.getReportingManagerCode());
-			workFromHomeVO.setReportingManagerEmail(workFromHomeDTO.getReportingManagerEmail());
-			workFromHomeVO.setDepartmentHead(workFromHomeDTO.getDepartmentHead());
-			workFromHomeVO.setDepartmentHeadCode(workFromHomeDTO.getDepartmentHeadCode());
-			workFromHomeVO.setDepartmentHeadEmail(workFromHomeDTO.getDepartmentHeadEmail());
-			workFromHomeVO.setBranch(workFromHomeDTO.getBranch());
-			workFromHomeVO.setBranchCode(workFromHomeDTO.getBranchCode());
-			workFromHomeVO.setFinYear(workFromHomeDTO.getFinYear());
-			workFromHomeVO.setEmployeeCode(workFromHomeDTO.getEmployeeCode());
-			workFromHomeVO.setEmployeeName(workFromHomeDTO.getEmployeeName());
-			workFromHomeVO.setOrgId(workFromHomeDTO.getOrgId());
-			workFromHomeVO.setEmployeeEmail(workFromHomeDTO.getEmployeeEmail());
-			workFromHomeVO.setApproveStatus("PENDING");
-
-
-		}
-		
-		@Override
-		public WorkFromHomeVO getWorkFromHomeById(Long id) {
-
-			return workFromHomeRepo.getWorkFromHomeById(id);
-		}
-		
-
-		@Override
-		public List<WorkFromHomeVO> getWorkFromHomeByOrgId(Long orgId) {
-			// TODO Auto-generated method stub
-			return workFromHomeRepo.getWorkFromHomeByOrgId(orgId);
-		}
-		
-		
-		@Override
-		public Map<String, Object> createApprovalTravelRequest(Long orgId, String employeeCode, String action, String actionBy,
-				Long id, String notifyCode, String notify,String screenName) throws ApplicationException {
-
-			TravelRequestVO ticketRequestVO = travelRequestRepo.findByOrgIdAndEmployeeCodeAndId(orgId,
-					employeeCode, id);
-			String message = "";
-
-			if (ticketRequestVO.getApproveStatus() == null || (!ticketRequestVO.getApproveStatus().equalsIgnoreCase("Approved"))  && (!ticketRequestVO.getApproveStatus().equalsIgnoreCase("Rejected") )) {
-
-				if ("APPROVED".equalsIgnoreCase(action) || "REJECTED".equalsIgnoreCase(action)) {
-
-					if ("REJECTED".equalsIgnoreCase(action)) {
-						// Type casting from String to LocalTime
-
-						// Set entry time
-						ticketRequestVO.setApproveStatus(action);
+					if ("REGULAR".equalsIgnoreCase(policyType) && (isWeekOff || isHoliday)) {
+						fromDate = fromDate.plusDays(1);
+						continue;
 					}
 
+					ApprovalLeavesVO approvalLeavesVO = new ApprovalLeavesVO();
+					approvalLeavesVO.setEmployeeCode(leaveRequestVO.getEmployeeCode());
+					approvalLeavesVO.setEmployeeName(leaveRequestVO.getEmployeeName());
+					approvalLeavesVO.setLeaveType(leaveRequestVO.getLeaveType());
+					approvalLeavesVO.setLeaveDate(fromDate);
+					approvalLeavesVO.setOrgId(orgId);
+					approvalLeavesVO.setBranch(leaveRequestVO.getBranch());
+					approvalLeavesVO.setBranchCode(leaveRequestVO.getBranchCode());
+					approvalLeavesVO.setApproveStatus(action);
+					approvalLeavesVO.setApproveBy(actionBy);
+
+					if ("HALF DAY".equalsIgnoreCase(leaveRequestVO.getSelectLeave())) {
+						approvalLeavesVO.setTotalLeave(BigDecimal.valueOf(0.5));
+						totalDays = totalDays.add(BigDecimal.valueOf(0.5));
+					} else {
+						approvalLeavesVO.setTotalLeave(BigDecimal.ONE);
+						totalDays = totalDays.add(BigDecimal.ONE);
+					}
+
+					approvalLeavesList.add(approvalLeavesVO);
+					fromDate = fromDate.plusDays(1);
+				}
+
+				approvalLeavesRepo.saveAll(approvalLeavesList);
+
+				LeaveBalanceVO leaveBalanceVO = new LeaveBalanceVO();
+				leaveBalanceVO.setLeaveCode(leaveRequestVO.getLeaveCode());
+				leaveBalanceVO.setLeaveType(leaveRequestVO.getLeaveType());
+				leaveBalanceVO.setEmployeeName(leaveRequestVO.getEmployeeName());
+				leaveBalanceVO.setEmployeeCode(leaveRequestVO.getEmployeeCode());
+				leaveBalanceVO.setOrgId(orgId);
+				leaveBalanceVO.setBranch(leaveRequestVO.getBranch());
+				leaveBalanceVO.setBranchCode(leaveRequestVO.getBranchCode());
+				leaveBalanceVO.setLeaveStatus("Leave");
+				leaveBalanceVO.setTotalLeave(totalDays.negate());
+
+				leaveBalanceRepo.save(leaveBalanceVO);
+
+				leaveRequestVO.setApproveStatus(action);
+				leaveRequestVO.setApproveBy(actionBy);
+				leaveRequestVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+				leaveRequestRepo.save(leaveRequestVO);
+			}
+		}
+
+		// ------------------- 2. Compensatory Off Approval -------------------
+		List<CompensatoryOffVO> compensatoryOffList = compensatoryOffRepo.findByOrgIdAndNotifyCode(orgId, notifyCode);
+		List<LeaveBalanceVO> leaveBalanceList = new ArrayList<>();
+
+		for (CompensatoryOffVO compOff : compensatoryOffList) {
+			if (compOff.getApprovalStatus() == null || (!compOff.getApprovalStatus().equalsIgnoreCase("Approved")
+					&& !compOff.getApprovalStatus().equalsIgnoreCase("Rejected"))) {
+
+				if ("APPROVED".equalsIgnoreCase(action)) {
+					LeaveBalanceVO leaveBalanceVO = new LeaveBalanceVO();
+					leaveBalanceVO.setLeaveCode(compOff.getLeaveCode());
+					leaveBalanceVO.setLeaveType(compOff.getLeaveType());
+					leaveBalanceVO.setTotalLeave(compOff.getTotalDays());
+					leaveBalanceVO.setEmployeeName(compOff.getEmployeeName());
+					leaveBalanceVO.setEmployeeCode(compOff.getEmployeeCode());
+					leaveBalanceVO.setOrgId(compOff.getOrgId());
+					leaveBalanceVO.setBranch(compOff.getBranch());
+					leaveBalanceVO.setBranchCode(compOff.getBranchCode());
+					leaveBalanceVO.setLeaveStatus("Assigned");
+
+					leaveBalanceList.add(leaveBalanceVO);
+				}
+
+				compOff.setApprovalStatus(action);
+				compOff.setApproveBy(actionBy);
+
+				compOff.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+
+				compensatoryOffRepo.save(compOff);
+			}
+		}
+
+		if (!leaveBalanceList.isEmpty()) {
+			leaveBalanceRepo.saveAll(leaveBalanceList);
+		}
+
+		// ------------------- 3. CheckInOutAdjustment Approval -------------------
+		List<CheckInOutAdjustmentVO> adjustments = checkInOutAdjustmentRepo.findByOrgIdAndNotifyCode(orgId, notifyCode);
+		for (CheckInOutAdjustmentVO adj : adjustments) {
+			if (!"APPROVED".equalsIgnoreCase(adj.getApprovalStatus())
+					&& !"REJECTED".equalsIgnoreCase(adj.getApprovalStatus())) {
+				adj.setApprovalStatus(action.toUpperCase());
+				adj.setApproveBy(actionBy);
+				adj.setApproveOn(formattedDateTime);
+			}
+		}
+		checkInOutAdjustmentRepo.saveAll(adjustments);
+
+		// ------------------- 4. CheckOut Approval -------------------
+		List<CheckInVO> checkOutList = checkInRepo.findByOrgIdAndNotifyCodeAndStatus(orgId, notifyCode, "OUT");
+		for (CheckInVO checkOutVO : checkOutList) {
+			if (!"APPROVED".equalsIgnoreCase(checkOutVO.getApprovalStatus())
+					&& !"REJECTED".equalsIgnoreCase(checkOutVO.getApprovalStatus())) {
+
+				if ("REJECTED".equalsIgnoreCase(action)) {
+					checkOutVO.setEntryTime(LocalTime.parse("00:00:00"));
+				}
+
+				checkOutVO.setApprovalStatus(action.toUpperCase());
+				checkOutVO.setApproveBy(actionBy);
+				checkOutVO.setApproveOn(formattedDateTime);
+			}
+		}
+		checkInRepo.saveAll(checkOutList);
+
+		// Final return message
+		return action.equalsIgnoreCase("APPROVED") ? "All types approved successfully"
+				: "All types rejected successfully";
+	}
+
+	// travelrequest
+
+	@Override
+	public Map<String, Object> createUpdateTravelRequest(TravelRequestDTO travelRequestDTO)
+			throws ApplicationException {
+
+		TravelRequestVO travelRequestVO = new TravelRequestVO();
+		String message;
+		String screenCode = "TR";
+		if (ObjectUtils.isNotEmpty(travelRequestDTO.getId())) {
+			travelRequestVO = travelRequestRepo.findById(travelRequestDTO.getId())
+					.orElseThrow(() -> new ApplicationException("Invalid travelRequest details"));
+
+			travelRequestVO.setUpdatedBy(travelRequestDTO.getCreatedBy());
+			message = "TravelRequest Updated Successfully";
+		} else {
+
+			travelRequestVO.setCreatedBy(travelRequestDTO.getCreatedBy());
+			travelRequestVO.setUpdatedBy(travelRequestDTO.getCreatedBy());
+			message = "TravelRequest Created Successfully";
+		}
+
+		createUpdateTravelRequestVOByTravelRequestDTO(travelRequestDTO, travelRequestVO);
+		travelRequestRepo.save(travelRequestVO);
+		Map<String, Object> response = new HashMap<>();
+		response.put("travelRequestVO", travelRequestVO);
+		response.put("message", message);
+		return response;
+	}
+
+	private void createUpdateTravelRequestVOByTravelRequestDTO(TravelRequestDTO travelRequestDTO,
+			TravelRequestVO travelRequestVO) {
+		travelRequestVO.setFromDate(travelRequestDTO.getFromDate());
+		travelRequestVO.setToDate(travelRequestDTO.getToDate());
+		travelRequestVO.setTravelReason(travelRequestDTO.getTravelReason());
+		travelRequestVO.setModeOfTravel(travelRequestDTO.getModeOfTravel());
+		travelRequestVO.setApprovingAuthorities(travelRequestDTO.getApprovingAuthorities());
+		travelRequestVO.setApprovingAuthoritiesCode(travelRequestDTO.getApprovingAuthoritiesCode());
+		travelRequestVO.setApprovingAuthoritiesEmail(travelRequestDTO.getApprovingAuthoritiesEmail());
+
+		travelRequestVO.setBranch(travelRequestDTO.getBranch());
+		travelRequestVO.setBranchCode(travelRequestDTO.getBranchCode());
+		travelRequestVO.setFinYear(travelRequestDTO.getFinYear());
+		travelRequestVO.setEmployeeCode(travelRequestDTO.getEmployeeCode());
+		travelRequestVO.setEmployeeName(travelRequestDTO.getEmployeeName());
+		travelRequestVO.setOrgId(travelRequestDTO.getOrgId());
+		travelRequestVO.setApproveStatus("PENDING");
+
+	}
+
+	@Override
+	public TravelRequestVO getTravelRequestById(Long id) {
+
+		return travelRequestRepo.getTravelRequestById(id);
+	}
+
+	@Override
+	public List<TravelRequestVO> getTravelRequestByOrgId(Long orgId) {
+		// TODO Auto-generated method stub
+		return travelRequestRepo.getTravelRequestByOrgId(orgId);
+	}
+
+	// WORKFROMHOME
+
+	@Override
+	public Map<String, Object> createUpdateWorkFromHome(WorkFromHomeDTO workFromHomeDTO) throws ApplicationException {
+
+		WorkFromHomeVO workFromHomeVO = new WorkFromHomeVO();
+		String message;
+		String screenCode = "WFH";
+		if (ObjectUtils.isNotEmpty(workFromHomeDTO.getId())) {
+			workFromHomeVO = workFromHomeRepo.findById(workFromHomeDTO.getId())
+					.orElseThrow(() -> new ApplicationException("Invalid WorkFromHome details"));
+
+			workFromHomeVO.setUpdatedBy(workFromHomeDTO.getCreatedBy());
+			message = "WorkFromHome Updated Successfully";
+		} else {
+			workFromHomeVO.setCreatedBy(workFromHomeDTO.getCreatedBy());
+			workFromHomeVO.setUpdatedBy(workFromHomeDTO.getCreatedBy());
+			message = "WorkFromHome Created Successfully";
+		}
+
+		createUpdateWorkFromHomeVOByWorkFromHomeDTO(workFromHomeDTO, workFromHomeVO);
+		workFromHomeRepo.save(workFromHomeVO);
+		Map<String, Object> response = new HashMap<>();
+		response.put("workFromHomeVO", workFromHomeVO);
+		response.put("message", message);
+		return response;
+	}
+
+	private void createUpdateWorkFromHomeVOByWorkFromHomeDTO(WorkFromHomeDTO workFromHomeDTO,
+			WorkFromHomeVO workFromHomeVO) {
+		workFromHomeVO.setWfhDate(workFromHomeDTO.getWfhDate());
+		workFromHomeVO.setReason(workFromHomeDTO.getReason());
+		workFromHomeVO.setWorkAccomplished(workFromHomeDTO.getWorkAccomplished());
+		workFromHomeVO.setReportingManager(workFromHomeDTO.getReportingManager());
+		workFromHomeVO.setReportingManagerCode(workFromHomeDTO.getReportingManagerCode());
+		workFromHomeVO.setReportingManagerEmail(workFromHomeDTO.getReportingManagerEmail());
+		workFromHomeVO.setDepartmentHead(workFromHomeDTO.getDepartmentHead());
+		workFromHomeVO.setDepartmentHeadCode(workFromHomeDTO.getDepartmentHeadCode());
+		workFromHomeVO.setDepartmentHeadEmail(workFromHomeDTO.getDepartmentHeadEmail());
+		workFromHomeVO.setBranch(workFromHomeDTO.getBranch());
+		workFromHomeVO.setBranchCode(workFromHomeDTO.getBranchCode());
+		workFromHomeVO.setFinYear(workFromHomeDTO.getFinYear());
+		workFromHomeVO.setEmployeeCode(workFromHomeDTO.getEmployeeCode());
+		workFromHomeVO.setEmployeeName(workFromHomeDTO.getEmployeeName());
+		workFromHomeVO.setOrgId(workFromHomeDTO.getOrgId());
+		EmployeeVO employeeOpt = employeeRepo.findByEmployeeCode(workFromHomeDTO.getEmployeeCode());
+
+	
+		workFromHomeVO.setEmployeeEmail(employeeOpt.getEmail());
+		workFromHomeVO.setApproveStatus("PENDING");
+
+	}
+
+	@Override
+	public WorkFromHomeVO getWorkFromHomeById(Long id) {
+
+		return workFromHomeRepo.getWorkFromHomeById(id);
+	}
+
+	@Override
+	public List<WorkFromHomeVO> getWorkFromHomeByOrgId(Long orgId) {
+		// TODO Auto-generated method stub
+		return workFromHomeRepo.getWorkFromHomeByOrgId(orgId);
+	}
+
+	@Override
+	public Map<String, Object> createApprovalTravelRequest(Long orgId, String employeeCode, String action,
+			String actionBy, Long id, String notifyCode, String notify, String screenName) throws ApplicationException {
+
+		TravelRequestVO ticketRequestVO = travelRequestRepo.findByOrgIdAndEmployeeCodeAndId(orgId, employeeCode, id);
+		String message = "";
+
+		if (ticketRequestVO.getApproveStatus() == null
+				|| (!ticketRequestVO.getApproveStatus().equalsIgnoreCase("Approved"))
+						&& (!ticketRequestVO.getApproveStatus().equalsIgnoreCase("Rejected"))) {
+
+			if ("APPROVED".equalsIgnoreCase(action) || "REJECTED".equalsIgnoreCase(action)) {
+
+				if ("REJECTED".equalsIgnoreCase(action)) {
+					// Type casting from String to LocalTime
+
+					// Set entry time
 					ticketRequestVO.setApproveStatus(action);
-					ticketRequestVO.setApproveBy(actionBy);
-
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
-					ticketRequestVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
-
-					travelRequestRepo.save(ticketRequestVO);
-					
-					if (ticketRequestVO.getApproveStatus().equalsIgnoreCase("Approved")) {
-					    message = "Approved Successfully";
-					} else if (ticketRequestVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
-					    message = "Rejected Successfully";
-					}
 				}
 
-			} else if (ticketRequestVO.getApproveStatus().equalsIgnoreCase("Approved")) {
-				throw new ApplicationException("This TicketRequest Already Approved");
-			} else if (ticketRequestVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
-				throw new ApplicationException("This TicketRequest Already Rejected");
+				ticketRequestVO.setApproveStatus(action);
+				ticketRequestVO.setApproveBy(actionBy);
+
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+				ticketRequestVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+
+				travelRequestRepo.save(ticketRequestVO);
+
+				if (ticketRequestVO.getApproveStatus().equalsIgnoreCase("Approved")) {
+					message = "Approved Successfully";
+				} else if (ticketRequestVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
+					message = "Rejected Successfully";
+				}
 			}
 
-			Map<String, Object> response = new HashMap<>();
-			response.put("ticketRequestVO", ticketRequestVO);
-			response.put("message", message);
-			return response;
+		} else if (ticketRequestVO.getApproveStatus().equalsIgnoreCase("Approved")) {
+			throw new ApplicationException("This TicketRequest Already Approved");
+		} else if (ticketRequestVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
+			throw new ApplicationException("This TicketRequest Already Rejected");
 		}
-		
 
-		@Override
-		public Map<String, Object> createApprovalWorkFromHome(Long orgId, String employeeCode, String action, String actionBy,
-				Long id, String notifyCode, String notify,String screenName) throws ApplicationException {
+		Map<String, Object> response = new HashMap<>();
+		response.put("ticketRequestVO", ticketRequestVO);
+		response.put("message", message);
+		return response;
+	}
 
-			WorkFromHomeVO workFromHomeVO = workFromHomeRepo.findByOrgIdAndEmployeeCodeAndId(orgId,
-					employeeCode, id);
-			String message = "";
+	@Override
+	public Map<String, Object> createApprovalWorkFromHome(Long orgId, String employeeCode, String action,
+			String actionBy, Long id, String notifyCode, String notify, String screenName) throws ApplicationException {
 
-			if (workFromHomeVO.getApproveStatus() == null || (!workFromHomeVO.getApproveStatus().equalsIgnoreCase("Approved"))  && (!workFromHomeVO.getApproveStatus().equalsIgnoreCase("Rejected") )) {
+		WorkFromHomeVO workFromHomeVO = workFromHomeRepo.findByOrgIdAndEmployeeCodeAndId(orgId, employeeCode, id);
+		String message = "";
 
-				if ("APPROVED".equalsIgnoreCase(action) || "REJECTED".equalsIgnoreCase(action)) {
+		if (workFromHomeVO.getApproveStatus() == null
+				|| (!workFromHomeVO.getApproveStatus().equalsIgnoreCase("Approved"))
+						&& (!workFromHomeVO.getApproveStatus().equalsIgnoreCase("Rejected"))) {
 
-					if ("REJECTED".equalsIgnoreCase(action)) {
-						// Type casting from String to LocalTime
+			if ("APPROVED".equalsIgnoreCase(action) || "REJECTED".equalsIgnoreCase(action)) {
 
-						// Set entry time
-						workFromHomeVO.setApproveStatus(action);
-					}
+				if ("REJECTED".equalsIgnoreCase(action)) {
+					// Type casting from String to LocalTime
 
+					// Set entry time
 					workFromHomeVO.setApproveStatus(action);
-					workFromHomeVO.setApproveBy(actionBy);
+					AttendanceDailyVO attendanceDailyVO = attendanceDailyRepo.findByCheckInDateAndEmpCodeAndOrgId(workFromHomeVO.getWfhDate(),workFromHomeVO.getEmployeeCode(),workFromHomeVO.getOrgId());
+					attendanceDailyVO.setInTime(LocalTime.MIDNIGHT);
+					attendanceDailyVO.setOutTime(LocalTime.MIDNIGHT);
+					attendanceDailyVO.setEffectiveHours(0);
+					attendanceDailyVO.setGrossHours(0);				}
 
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
-					workFromHomeVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+				workFromHomeVO.setApproveStatus(action);
+				workFromHomeVO.setApproveBy(actionBy);
 
-					workFromHomeRepo.save(workFromHomeVO);
-					
-					if (workFromHomeVO.getApproveStatus().equalsIgnoreCase("Approved")) {
-					    message = "Approved Successfully";
-					} else if (workFromHomeVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
-					    message = "Rejected Successfully";
-					}
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+				workFromHomeVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
+
+				workFromHomeRepo.save(workFromHomeVO);
+
+				if (workFromHomeVO.getApproveStatus().equalsIgnoreCase("Approved")) {
+					message = "Approved Successfully";
+				} else if (workFromHomeVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
+					message = "Rejected Successfully";
 				}
-
-			} else if (workFromHomeVO.getApproveStatus().equalsIgnoreCase("Approved")) {
-				throw new ApplicationException("This WorkFromHome Already Approved");
-			} else if (workFromHomeVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
-				throw new ApplicationException("This WorkFromHome Already Rejected");
 			}
 
-			Map<String, Object> response = new HashMap<>();
-			response.put("workFromHomeVO", workFromHomeVO);
-			response.put("message", message);
-			return response;
-		}
-		
-		
-		@Override
-		public List<Map<String, Object>> getPendingWorkFromHomeForDashBoard(Long orgId, String reportingPersonCode,String branchCode) {
-			Set<Object[]> result = workFromHomeRepo.getPendingWorkFromHomeForDashBoard(orgId, reportingPersonCode,branchCode);
-			return getPendingWorkFromHomeForDashBoard(result);
+		} else if (workFromHomeVO.getApproveStatus().equalsIgnoreCase("Approved")) {
+			throw new ApplicationException("This WorkFromHome Already Approved");
+		} else if (workFromHomeVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
+			throw new ApplicationException("This WorkFromHome Already Rejected");
 		}
 
-		private List<Map<String, Object>> getPendingWorkFromHomeForDashBoard(Set<Object[]> result) {
-			List<Map<String, Object>> detailsList = new ArrayList<>();
+		Map<String, Object> response = new HashMap<>();
+		response.put("workFromHomeVO", workFromHomeVO);
+		response.put("message", message);
+		return response;
+	}
 
-			for (Object[] record : result) {
-				Map<String, Object> map = new HashMap<>();
-				map.put("employeeName", record[0] != null ? record[0].toString() : "");
-				map.put("employeeCode", record[1] != null ? record[1].toString() : "");
-				map.put("wfhDate", record[2] != null ? record[2].toString() : " ");
-				map.put("workAccomplished", record[3] != null ? record[3].toString() : " ");
-				map.put("departmentHead", record[4] != null ? record[4].toString() : " ");
-				map.put("departmentHeadCode", record[5] != null ? record[5].toString() : " ");
-				map.put("departmentHeadEmail", record[6] != null ? record[6].toString() : " ");
-				map.put("screenName", record[7] != null ? record[7].toString() : " ");
-				map.put("reportingManager", record[8] != null ? record[8].toString() : "");
-				map.put("reportingManagerCode", record[9] != null ? record[9].toString() : "");
-				map.put("reportingManagerEmail", record[10] != null ? record[10].toString() : "");
-				map.put("reason", record[11] != null ? record[11].toString() : "");
-				map.put("finYear", record[12] != null ? record[12].toString() : "");
-				map.put("orgId", record[13] != null ? record[13].toString() : "");
-				map.put("employeeEmail", record[14] != null ? record[14].toString() : "");
-				map.put("id", record[15] != null ? record[15].toString() : "");
+	@Override
+	public List<Map<String, Object>> getPendingWorkFromHomeForDashBoard(Long orgId, String reportingPersonCode,
+			String branchCode) {
+		Set<Object[]> result = workFromHomeRepo.getPendingWorkFromHomeForDashBoard(orgId, reportingPersonCode,
+				branchCode);
+		return getPendingWorkFromHomeForDashBoard(result);
+	}
 
-				detailsList.add(map);
-			}
-			return detailsList;
+	private List<Map<String, Object>> getPendingWorkFromHomeForDashBoard(Set<Object[]> result) {
+		List<Map<String, Object>> detailsList = new ArrayList<>();
+
+		for (Object[] record : result) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("employeeName", record[0] != null ? record[0].toString() : "");
+			map.put("employeeCode", record[1] != null ? record[1].toString() : "");
+			map.put("wfhDate", record[2] != null ? record[2].toString() : " ");
+			map.put("workAccomplished", record[3] != null ? record[3].toString() : " ");
+			map.put("departmentHead", record[4] != null ? record[4].toString() : " ");
+			map.put("departmentHeadCode", record[5] != null ? record[5].toString() : " ");
+			map.put("departmentHeadEmail", record[6] != null ? record[6].toString() : " ");
+			map.put("screenName", record[7] != null ? record[7].toString() : " ");
+			map.put("reportingManager", record[8] != null ? record[8].toString() : "");
+			map.put("reportingManagerCode", record[9] != null ? record[9].toString() : "");
+			map.put("reportingManagerEmail", record[10] != null ? record[10].toString() : "");
+			map.put("reason", record[11] != null ? record[11].toString() : "");
+			map.put("finYear", record[12] != null ? record[12].toString() : "");
+			map.put("orgId", record[13] != null ? record[13].toString() : "");
+			map.put("employeeEmail", record[14] != null ? record[14].toString() : "");
+			map.put("id", record[15] != null ? record[15].toString() : "");
+
+			detailsList.add(map);
 		}
-		
-		
+		return detailsList;
+	}
 
-		@Override
-		public List<Map<String, Object>> getPendingTravelRequestForDashBoard(Long orgId, String reportingPersonCode,String branchCode) {
-			Set<Object[]> result = travelRequestRepo.getPendingTravelRequestForDashBoard(orgId, reportingPersonCode,branchCode);
-			return getPendingTravelRequestForDashBoard(result);
+	@Override
+	public List<Map<String, Object>> getPendingTravelRequestForDashBoard(Long orgId, String reportingPersonCode,
+			String branchCode) {
+		Set<Object[]> result = travelRequestRepo.getPendingTravelRequestForDashBoard(orgId, reportingPersonCode,
+				branchCode);
+		return getPendingTravelRequestForDashBoard(result);
+	}
+
+	private List<Map<String, Object>> getPendingTravelRequestForDashBoard(Set<Object[]> result) {
+		List<Map<String, Object>> detailsList = new ArrayList<>();
+
+		for (Object[] record : result) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("employeeName", record[0] != null ? record[0].toString() : "");
+			map.put("employeeCode", record[1] != null ? record[1].toString() : "");
+			map.put("approvingAuthorities", record[2] != null ? record[2].toString() : " ");
+			map.put("fromDate", record[3] != null ? record[3].toString() : " ");
+			map.put("modeOfTravel", record[4] != null ? record[4].toString() : " ");
+			map.put("toDate", record[5] != null ? record[5].toString() : " ");
+			map.put("travelReason", record[6] != null ? record[6].toString() : " ");
+			map.put("screenName", record[7] != null ? record[7].toString() : " ");
+			map.put("screenCode", record[8] != null ? record[8].toString() : "");
+			map.put("approvingAuthoritiesCode", record[9] != null ? record[9].toString() : "");
+			map.put("approvingAuthoritiesEmail", record[10] != null ? record[10].toString() : "");
+			map.put("finYear", record[11] != null ? record[11].toString() : "");
+			map.put("orgId", record[12] != null ? record[12].toString() : "");
+			map.put("employeeEmail", record[13] != null ? record[13].toString() : "");
+			map.put("id", record[14] != null ? record[14].toString() : "");
+
+			detailsList.add(map);
 		}
+		return detailsList;
+	}
 
-		private List<Map<String, Object>> getPendingTravelRequestForDashBoard(Set<Object[]> result) {
-			List<Map<String, Object>> detailsList = new ArrayList<>();
-			
-			for (Object[] record : result) {
-				Map<String, Object> map = new HashMap<>();
-				map.put("employeeName", record[0] != null ? record[0].toString() : "");
-				map.put("employeeCode", record[1] != null ? record[1].toString() : "");
-				map.put("approvingAuthorities", record[2] != null ? record[2].toString() : " ");
-				map.put("fromDate", record[3] != null ? record[3].toString() : " ");
-				map.put("modeOfTravel", record[4] != null ? record[4].toString() : " ");
-				map.put("toDate", record[5] != null ? record[5].toString() : " ");
-				map.put("travelReason", record[6] != null ? record[6].toString() : " ");
-				map.put("screenName", record[7] != null ? record[7].toString() : " ");
-				map.put("screenCode", record[8] != null ? record[8].toString() : "");
-				map.put("approvingAuthoritiesCode", record[9] != null ? record[9].toString() : "");
-				map.put("approvingAuthoritiesEmail", record[10] != null ? record[10].toString() : "");
-				map.put("finYear", record[11] != null ? record[11].toString() : "");
-				map.put("orgId", record[12] != null ? record[12].toString() : "");
-				map.put("employeeEmail", record[13] != null ? record[13].toString() : "");
-				map.put("id", record[14] != null ? record[14].toString() : "");
-
-
-				detailsList.add(map);
-			}
-			return detailsList;
-		}
-		
-
-}		           
-
+}

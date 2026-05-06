@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Ticket Notification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f1f5f9; font-family:Arial, Helvetica, sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;">
+    <tr>
+        <td align="center">
+
+            <table width="600" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.12); overflow:hidden;">
+
+                <!-- Header -->
+                <tr>
+                    <td style="background:#0f4c81; padding:22px; text-align:center;">
+                        <h2 style="margin:0; color:#ffffff; font-size:22px;">
+                            🎫 Support Ticket Notification
+                        </h2>
+                    </td>
+                </tr>
+
+                <!-- Content -->
+                <tr>
+                    <td style="padding:32px;">
+
+                        <h3 style="margin-top:0; color:#1e293b;">
+                            ${subject}
+                        </h3>
+
+                        <table width="100%" cellpadding="6" cellspacing="0">
+
+                            <tr>
+                                <td width="35%" style="color:#334155;"><strong>Ticket ID</strong></td>
+                                <td style="color:#14b8a6; font-weight:600;">${ticketId}</td>
+                            </tr>
+
+                            <tr>
+                                <td style="color:#334155;"><strong>Raised By</strong></td>
+                                <td style="color:#14b8a6; font-weight:600;">${raisedBy}</td>
+                            </tr>
+
+                            <tr>
+                                <td style="color:#334155;"><strong>Email</strong></td>
+                                <td style="color:#14b8a6; font-weight:600;">${raisedEamil}</td>
+                            </tr>
+
+                            <tr>
+                                <td style="color:#334155;"><strong>Raised On</strong></td>
+                                <td style="color:#14b8a6; font-weight:600;">${raisedOn}</td>
+                            </tr>
+
+                            <tr>
+                                <td style="color:#334155;"><strong>Status</strong></td>
+                                <td style="color:#2563eb; font-weight:700;">${status}</td>
+                            </tr>
+
+                        </table>
+
+                        <!-- Description -->
+                        <div style="margin-top:28px;">
+                            <h4 style="margin-bottom:10px; color:#334155;">Description</h4>
+
+                            <div style="background:#ecfeff; border-left:5px solid #14b8a6;
+                                        padding:16px; border-radius:8px;
+                                        color:#0f172a; font-size:14px;">
+                                ${description}
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="background:#f8fafc; padding:20px; text-align:center; font-size:13px; color:#64748b;">
+                        <p style="margin:0;">© 2025 WHY DIGIT SYSTEM PVT LTD</p>
+                        <p style="margin-top:6px;">This is an automated message — please do not reply.</p>
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
