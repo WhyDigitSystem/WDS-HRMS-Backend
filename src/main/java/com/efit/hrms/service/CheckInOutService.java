@@ -96,5 +96,8 @@ public interface CheckInOutService {
 	Map<String, Object> deleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode,String department);
 
 //	List<AttendanceRecordVO> processExcel(MultipartFile file) throws Exception;
+	
+	List<Map<String, Object>> getLeaveCountForDashBoard(String fromDate, String toDate, Long orgId,
+			String department, String branch, String type, String contractor);
 
 }
