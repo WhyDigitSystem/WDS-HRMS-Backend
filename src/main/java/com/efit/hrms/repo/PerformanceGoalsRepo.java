@@ -69,18 +69,16 @@ public interface PerformanceGoalsRepo extends JpaRepository<PerformanceGoalsVO, 
 		       nativeQuery = true)	
 	List<PerformanceGoalsVO> getPerformanceGoalsForFirstLevelSInput(Long orgId, String empCode, String appraisalId);
 
-	@Query(value = """
-		    SELECT d.firstlevelsinputdetailsid,
-		           d.goals,
-		           d.supervisorrating,
-		           d.score
-		    FROM firstlevelsupinputdetails d
-		    JOIN firstlevelsupervisorinput h 
-		        ON h.firstlevelsupervisorinputid = d.firstlevelsupervisorinputid
-		    WHERE h.orgid = ?1
-		      AND h.employeecode = ?2
-		      AND h.finyear = ?3
-		      AND h.active = 1
-		""", nativeQuery = true)
+	@Query(value = "SELECT d.firstlevelsinputdetailsid,\r\n"
+			+ "		           d.goals,\r\n"
+			+ "		           d.supervisorrating,\r\n"
+			+ "		           d.score\r\n"
+			+ "		    FROM firstlevelsupinputdetails d\r\n"
+			+ "		    JOIN firstlevelsupervisorinput h \r\n"
+			+ "		        ON h.firstlevelsupervisorinputid = d.firstlevelsupervisorinputid\r\n"
+			+ "		    WHERE h.orgid = ?1\r\n"
+			+ "		      AND h.employeecode = ?2\r\n"
+			+ "		      AND h.finyear = ?3\r\n"
+			+ "		      AND h.active = 1", nativeQuery = true)
 		List<Object[]> getSupervisorRatings(Long orgId, String empCode, String appraisalYear);
 }
