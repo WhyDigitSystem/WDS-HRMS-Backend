@@ -124,7 +124,7 @@ public class AttendanceMailScheduler {
                     + "\r\n"
                     + "LEFT JOIN attendancedaily a\r\n"
                     + "       ON a.empcode = e.employeecode\r\n"
-                    + "      AND a.checkindate = '2026-05-07'\r\n"
+                    + "      AND a.checkindate = CURRENT_DATE()\r\n"
                     + "\r\n"
                     + "WHERE e.orgid = '1000000001'\r\n"
                     + "AND e.active = 1\r\n"
@@ -189,7 +189,7 @@ public class AttendanceMailScheduler {
                  // AFTER 10:59 -> SHOW "-"
                  // ==========================================
                  LocalTime allowedTime =
-                         LocalTime.of(58, 10);
+                         LocalTime.of(10, 58);
 
                  if (inTime.isAfter(allowedTime)) {
 
