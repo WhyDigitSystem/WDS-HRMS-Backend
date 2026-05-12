@@ -51,7 +51,7 @@ public interface LeaveProcessService {
 
 	Map<String, Object> createApprovalLeave(Long orgId, Long id,String employeeCode,String action, String actionBy, String notifyCode, String notify, String screenName, String email, String reason) throws ApplicationException;
 
-	Map<String, Object> calculateLeavedays(Long orgId, LocalDate fromDate, LocalDate toDate, String selectLeave) throws ApplicationException;
+	Map<String, Object> calculateLeavedays(Long orgId, LocalDate fromDate, LocalDate toDate, String selectLeave, String employeeCode) throws ApplicationException;
 
 	//Leave Process
 	

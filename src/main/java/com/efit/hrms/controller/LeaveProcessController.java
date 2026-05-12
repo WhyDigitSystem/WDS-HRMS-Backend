@@ -292,9 +292,9 @@ public class LeaveProcessController extends BaseController {
 	public ResponseEntity<?> calculateLeavedays(@RequestParam Long orgId,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
-			@RequestParam String selectLeave) throws ApplicationException {
+			@RequestParam String selectLeave,@RequestParam String employeeCode) throws ApplicationException {
 
-		Map<String, Object> result = leaveProcessService.calculateLeavedays(orgId, fromDate, toDate, selectLeave);
+		Map<String, Object> result = leaveProcessService.calculateLeavedays(orgId, fromDate, toDate, selectLeave,employeeCode);
 		return ResponseEntity.ok(result);
 	}
 
