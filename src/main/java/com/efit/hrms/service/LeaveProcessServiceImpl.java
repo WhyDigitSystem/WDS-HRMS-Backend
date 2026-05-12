@@ -388,7 +388,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 	// LeaveRequestTOTALDAYS
 
-	public Map<String, Object> calculateLeavedays(Long orgId, LocalDate fromDate, LocalDate toDate, String selectLeave)
+	public Map<String, Object> calculateLeavedays(Long orgId, LocalDate fromDate, LocalDate toDate, String selectLeave,String employeeCode)
 			throws ApplicationException {
 
 		// Get company
@@ -398,7 +398,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		Long companyId = company.getId();
 
 		// Fetch week-off pattern (e.g., [("SUNDAY", -1), ("SATURDAY", 1)])
-		List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(companyId);
+		List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(companyId,employeeCode);
 
 		// Fetch holiday dates
 		List<HolidayVO> holidayVOList = holidayRepo.findByOrgId(orgId);
@@ -658,7 +658,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 				String policyType = company.getLeavePolicy();
 
 				// 🔹 Fetch week-off days
-				List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(company.getId());
+				List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(company.getId(),employeeCode);
 
 				List<ApprovalLeavesVO> approvalLeavesList = new ArrayList<>();
 				BigDecimal totalWorkingDays = BigDecimal.ZERO;
@@ -1135,7 +1135,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		int empLeaveCount = approvalLeavesList != null ? approvalLeavesList.size() : 0;
 		int holidayCount = holidayList != null ? holidayList.size() : 0;
 
-		List<Object[]> weekOffPattern = companyWeekOffRepo.findWeekOffDaysAndWeeks(orgId, branchCode);
+		List<Object[]> weekOffPattern = companyWeekOffRepo.findWeekOffDaysAndWeeks(orgId, branchCode,empCode);
 		int weekOffCount = countWeekOffsBetweenDates(from, to, weekOffPattern);
 
 		List<String> missingDates = checkInRepo.findByFromDateAndToDateAndEmpCodeAndOrgId(fromDate, toDate, empCode,
@@ -1791,7 +1791,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 						.orElseThrow(() -> new ApplicationException("Company not found"));
 
 				String policyType = company.getLeavePolicy();
-				List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(company.getId());
+				List<Object[]> weekOffPatterns = companyWeekOffRepo.findWeekOffOccurrencesByCompanyId(company.getId(),leaveRequestVO.getEmployeeCode());
 				List<LocalDate> holidays = holidayRepo.findByOrgId(orgId).stream().map(HolidayVO::getHolidayDate)
 						.collect(Collectors.toList());
 

@@ -25,16 +25,18 @@ public interface CommentsRepo extends JpaRepository<CommentsVO, Long>{
 	@Query(nativeQuery =true,value ="select * from comments where ticketid=?1 and orgid=?2 and notificationflag=1")
 	List<CommentsVO> findByTicketIdAndorgId(Long ticketId, Long orgId);
 
-	List<CommentsVO> getAllCommentsMyServer(Long ticketId);
 
+	@Query(nativeQuery = true, value = "select * from comments where ticketid=?1 and orgid is null")
 	List<CommentsVO> getAllCommentsAnotherServer(Long ticketId);
+	
+	@Query(nativeQuery = true, value = "select * from comments where ticketid=?1 and orgid is not  null")
+	List<CommentsVO> getAllCommentsMyServer(Long ticketId);
+	
 
+	@Query(nativeQuery = true, value = "select * from comments where sourceid=?1")
 	Optional<CommentsVO> findBySourceId(Long sourceId);
 
-	Optional<CommentsVO> findBySourceId(String sourceId);
-
-
-
+	
 
 }
 

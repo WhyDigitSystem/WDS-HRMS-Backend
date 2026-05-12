@@ -13,4 +13,8 @@ public interface EmailService {
 	 * Send an HTML formatted email
 	 */
 	void sendHtmlEmail(String fromEail, String toEmail, String subject, String htmlContent);
+
+
+
+	public void sendOtpEmail(String email, String employeeName, String otp);
 }

@@ -48,8 +48,15 @@ public class CommentsVO {
 	@Column(name = "ticketid")
 	private Long ticketId;
 	
-	@Column(name = "sourceticketid")
+	@Column(name="sourceusername")
+	private String sourceUserName;
+	
+	@Column(name="sourceticketid")
 	private Long sourceTicketId;
+	
+	@Column(name="sourceid")
+	private Long sourceId;
+
 	
 	@Column(name="notificationflag")
 	private Boolean notificationFlag=false;

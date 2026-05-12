@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.efit.hrms.entity.CommentsVO;
 
+
 @Service
 public class CommentSyncService {
 
@@ -34,12 +35,14 @@ public class CommentSyncService {
 			body.put("sourceOrgId", commentsVO.getOrgId());
 			body.put("sourceTicketId", commentsVO.getTicketId());
 			body.put("sourceUserName", commentsVO.getUserName());
-			body.put("application", "VCARGO");
+			body.put("application", "HRMS");
+
 			body.put("ticketId", commentsVO.getTicketId());
 
 //			String url = "http://localhost:8061/api/ticket/createComments";
 
-			String url = "http://localhost:8061/api/ticket/createComments";
+			String url = "http://139.5.190.244:8061/api/ticket/createComments";
+
 
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
@@ -111,4 +114,4 @@ public class CommentSyncService {
 	        e.printStackTrace();
 	    }
 	}
-}
+
