@@ -17,6 +17,10 @@ private Long id;
 	private String userName;
 	private Long orgId;
 	private Long ticketId;
+	private String sourceUserName;
+	private Long sourceId;
+	private Long sourceTicketId;
+
 	
 //	private String status;
 	
