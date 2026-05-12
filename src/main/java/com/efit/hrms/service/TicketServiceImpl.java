@@ -1,9 +1,7 @@
 package com.efit.hrms.service;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,77 +68,9 @@ public class TicketServiceImpl implements TicketService {
 	@Autowired
 	private RestTemplate restTemplate;
 	
-	private String externalUrl = "http://139.5.190.244:8061/api/ticket/createticket";
 
-//	@Override
-//	public Map<String, Object> createUpdateTicket(@Valid TicketDTO ticketDTO) throws ApplicationException {
-//		TicketVO ticketVO = new TicketVO();
-//		String toEmail = adminEmail;
-//		String fromMail = noReplayEmail;
-//
-//		String message = null;
-//
-//		ticketVO.setCreatedBy(ticketDTO.getCreatedBy());
-//		ticketVO.setUpdatedBy(ticketDTO.getCreatedBy());
-//		message = "Ticket Creation Successfully";
-//
-//		ticketVO = getTicketVOFroTticketDTO(ticketVO, ticketDTO);
-//		ticketRepo.save(ticketVO);
-//		boolean mailSent = false;
-//
-//		Date currentDate = new Date();
-//		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a");
-//		String createdOn = dateFormat.format(currentDate);
-//
-//		try {
-//			String htmlContent = loadHtmlTemplate(ticketVO.getId(), ticketVO.getSubject(), ticketVO.getStatus(),
-//					ticketVO.getDescription(), ticketVO.getCreatedBy(), ticketVO.getEmail(), createdOn);
-//
-//			emailService.sendHtmlEmail(fromMail, toEmail, ticketVO.getSubject(), htmlContent);
-//
-//			String Acknowledgement = loadHtmlTemplate(ticketVO.getId(), ticketVO.getSubject(), ticketVO.getStatus(),
-//					ticketVO.getDescription(), ticketVO.getCreatedBy(), ticketVO.getEmail(), createdOn);
-//
-//			// Send the mail
-//			emailService.sendHtmlEmail(fromMail, ticketVO.getEmail(), ticketVO.getSubject(), Acknowledgement);
-//
-//			mailSent = true;
-//
-//		} catch (Exception e) {
-//			System.err.println("❌ Failed to send mail for ticket ID " + ticketVO.getId() + ": " + e.getMessage());
-//			e.printStackTrace();
-//		}
-//
-//		if (mailSent) {
-//			message = "Ticket created successfully and mail sent.";
-//		} else {
-//			message = "Ticket created successfully, but mail not sent.";
-//		}
-//
-//		Map<String, Object> response = new HashMap<>();
-//		response.put("message", message);
-//		response.put("ticketVO", ticketVO);
-//		return response;
-//	}
-//
-//	private TicketVO getTicketVOFroTticketDTO(TicketVO ticketVO, @Valid TicketDTO ticketDTO) {
-//
-//		ticketVO.setSubject(ticketDTO.getSubject());
-//		ticketVO.setDescription(ticketDTO.getDescription());
-//		ticketVO.setUserName(ticketDTO.getUserName());
-//		ticketVO.setOrgId(ticketDTO.getOrgId());
-//		ticketVO.setStatus(ticketDTO.getStatus());
-//		ticketVO.setEmail(ticketDTO.getEmail());
-//		return ticketVO;
-//
-//	}
-//
-//	@Override
-//	public TicketVO uploadTicketScreenShotInBloob(MultipartFile file, Long id) throws IOException {
-//		TicketVO ticketVO = ticketRepo.findById(id).get();
-//		ticketVO.setScreenShot(file.getBytes());
-//		return ticketRepo.save(ticketVO);
-//	}
+	@Autowired
+	private AsyncService asyncService;
 	
 	
 	@Override
@@ -149,46 +79,25 @@ public class TicketServiceImpl implements TicketService {
 
 		TicketVO ticketVO = new TicketVO();
 
-		// ======================
-		// SET DATA
-		// ======================
 		ticketVO.setCreatedBy(ticketDTO.getCreatedBy());
 		ticketVO.setUpdatedBy(ticketDTO.getCreatedBy());
 
 		mapDtoToVo(ticketVO, ticketDTO);
 
-		// ======================
-		// STEP 1: SAVE → GENERATE ID
-		// ======================
 		ticketVO = ticketRepo.save(ticketVO);
 
 		Long generatedId = ticketVO.getId();
-		System.out.println("✅ Ticket ID: " + generatedId);
-
-		// ======================
-		// STEP 2: SET sourceId
-		// ======================
-//	    ticketVO.setSourceId(generatedId);
 		ticketVO.setSourceId(generatedId);
 		ticketRepo.saveAndFlush(ticketVO);
 
-		// ❗ NO NEED saveAgain → JPA auto update
-		System.out.println("✅ SourceId Set: " + ticketVO.getSourceId());
-
-		// ======================
-		// STEP 3: EXTERNAL API
-		// ======================
-		externalApiCall(ticketVO);
-
-		// ======================
-		// STEP 4: EMAIL
-		// ======================
-		boolean mailSent = sendEmail(ticketVO);
+		asyncService.externalApiCallAsync(ticketVO);
+		asyncService.sendEmailAsync(ticketVO);
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("ticketId", ticketVO.getId());
 		response.put("sourceId", ticketVO.getSourceId());
 		response.put("ticketVO", ticketVO);
+		response.put("message", "Ticket created successfully. Email & sync in progress.");
 
 		return response;
 	}
@@ -203,43 +112,44 @@ public class TicketServiceImpl implements TicketService {
 		vo.setBranch(dto.getBranch());
 		vo.setBranchCode(dto.getBranchCode());
 		vo.setCompanyName(dto.getCompanyName());
+		vo.setTicketStatus(dto.getTicketStatus());
 	}
 
-	private void externalApiCall(TicketVO ticketVO) {
-
-		try {
-			Map<String, Object> body = new HashMap<>();
-
-			body.put("client", "LOCAL_APP");
-			body.put("createdBy", ticketVO.getCreatedBy());
-			body.put("description", ticketVO.getDescription());
-			body.put("email", ticketVO.getEmail());
-			body.put("modifiedBy", ticketVO.getUpdatedBy());
-			body.put("priority", "HIGH");
-			body.put("title", ticketVO.getSubject());
-
-			// 🔥 IMPORTANT
-			body.put("sourceId", ticketVO.getSourceId());
-			body.put("customer", ticketVO.getCompanyName());
-			body.put("sourceOrgId", ticketVO.getOrgId());
-			body.put("sourceBranch", ticketVO.getBranch());
-			body.put("sourceBranchCode", ticketVO.getBranchCode());
-			body.put("projectName",  ticketVO.getCompanyName());
-			body.put("application", "HRMS");
-
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-
-			HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
-			ResponseEntity<String> response = restTemplate.postForEntity(externalUrl, request, String.class);
-
-			System.out.println("✅ External API Response: " + response.getBody());
-
-		} catch (Exception e) {
-			System.err.println("❌ External API Error: " + e.getMessage());
-		}
-	}
+//	private void externalApiCall(TicketVO ticketVO) {
+//
+//		try {
+//			Map<String, Object> body = new HashMap<>();
+//
+//			body.put("client", "LOCAL_APP");
+//			body.put("createdBy", ticketVO.getCreatedBy());
+//			body.put("description", ticketVO.getDescription());
+//			body.put("email", ticketVO.getEmail());
+//			body.put("modifiedBy", ticketVO.getUpdatedBy());
+//			body.put("priority", "HIGH");
+//			body.put("title", ticketVO.getSubject());
+//
+//			// 🔥 IMPORTANT
+//			body.put("sourceId", ticketVO.getSourceId());
+//			body.put("customer", ticketVO.getCompanyName());
+//			body.put("sourceOrgId", ticketVO.getOrgId());
+//			body.put("sourceBranch", ticketVO.getBranch());
+//			body.put("sourceBranchCode", ticketVO.getBranchCode());
+//			body.put("projectName",  ticketVO.getCompanyName());
+//			body.put("application", "HRMS");
+//
+//			HttpHeaders headers = new HttpHeaders();
+//			headers.setContentType(MediaType.APPLICATION_JSON);
+//
+//			HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+//
+//			ResponseEntity<String> response = restTemplate.postForEntity(externalUrl, request, String.class);
+//
+//			System.out.println("✅ External API Response: " + response.getBody());
+//
+//		} catch (Exception e) {
+//			System.err.println("❌ External API Error: " + e.getMessage());
+//		}
+//	}
 
 	@Override
 	public TicketVO uploadTicketScreenShotInBloob(MultipartFile file, Long id) throws IOException {
@@ -257,8 +167,6 @@ public class TicketServiceImpl implements TicketService {
 	private void callExternalImageAPI(MultipartFile file, Long sourceId) {
 
 		try {
-
-//			String url = "http://localhost:8061/api/ticket/uploadTicketBySourceId";
 
 			String url = "http://139.5.190.244:8061/api/ticket/uploadTicketBySourceId";
 
@@ -293,24 +201,24 @@ public class TicketServiceImpl implements TicketService {
 		}
 	}
 
-	private boolean sendEmail(TicketVO ticketVO) {
-
-		try {
-			String createdOn = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a").format(new Date());
-
-			String htmlContent = loadHtmlTemplate(ticketVO.getId(), ticketVO.getSubject(), ticketVO.getStatus(),
-					ticketVO.getDescription(), ticketVO.getCreatedBy(), ticketVO.getEmail(), createdOn);
-
-			emailService.sendHtmlEmail(noReplayEmail, adminEmail, ticketVO.getSubject(), htmlContent);
-			emailService.sendHtmlEmail(noReplayEmail, ticketVO.getEmail(), ticketVO.getSubject(), htmlContent);
-
-			return true;
-
-		} catch (Exception e) {
-			LOGGER.error("❌ Mail Failed", e);
-			return false;
-		}
-	}
+//	private boolean sendEmail(TicketVO ticketVO) {
+//
+//		try {
+//			String createdOn = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a").format(new Date());
+//
+//			String htmlContent = loadHtmlTemplate(ticketVO.getId(), ticketVO.getSubject(), ticketVO.getStatus(),
+//					ticketVO.getDescription(), ticketVO.getCreatedBy(), ticketVO.getEmail(), createdOn);
+//
+//			emailService.sendHtmlEmail(noReplayEmail, adminEmail, ticketVO.getSubject(), htmlContent);
+//			emailService.sendHtmlEmail(noReplayEmail, ticketVO.getEmail(), ticketVO.getSubject(), htmlContent);
+//
+//			return true;
+//
+//		} catch (Exception e) {
+//			LOGGER.error("❌ Mail Failed", e);
+//			return false;
+//		}
+//	}
 
 	@Override
 	public Optional<TicketVO> getTicketById(Long id) {
