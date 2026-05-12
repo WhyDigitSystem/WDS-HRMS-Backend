@@ -1757,33 +1757,6 @@ public class CheckInOutServiceImpl implements CheckInOutService {
 	}
 
 	
-	@Override
-	public List<Map<String, Object>> getLeaveCountForDashBoard(String fromDate, String toDate, Long orgId,
-			String department, String branch, String type, String contractor) {
-
-		Set<Object[]> result = attendanceProcessRepo.getLeaveCountForDashBoard(fromDate, toDate, orgId,
-				department, branch, type, contractor);
-		return getLeaveCountForDashBoard(result, fromDate, toDate);
-	}
-
-	private List<Map<String, Object>> getLeaveCountForDashBoard(Set<Object[]> result, String fromDate, String toDate) {
-		List<Map<String, Object>> detailsList = new ArrayList<>();
-		if (result == null || result.isEmpty()) {
-			// Compare fromDate and toDate
-			String monthName = getMonthWithMoreDays(fromDate, toDate);
-			throw new RuntimeException("NO DATA FOUND IN " + monthName.toUpperCase() + " MONTH.");
-		}
-		for (Object[] record : result) {
-			Map<String, Object> map = new HashMap<>();
-			map.put("employeeName", record[0] != null ? record[0].toString() : "");
-			map.put("employeeCode", record[1] != null ? record[1].toString() : "");
-			map.put("presentDays", record[2] != null ? ((BigDecimal) record[2]).toPlainString() : "0");
-
-			detailsList.add(map);
-		}
-		return detailsList;
-	}
-
 	
 //	@Override
 //	public List<OtCalculationVO> generateOtAndSave(Long orgId) {
