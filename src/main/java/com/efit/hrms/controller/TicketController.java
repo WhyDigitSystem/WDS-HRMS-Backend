@@ -498,8 +498,7 @@ public class TicketController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok(responseDTO);
 	}
-	
-	
+  
 	@PutMapping("/updateTicketFromRemote")
 	public ResponseEntity<ResponseDTO> updateTicketFromRemote(@RequestParam Long orgId, @RequestParam Long id,
 			@RequestParam String status, @RequestParam String empCode, @RequestParam String email,

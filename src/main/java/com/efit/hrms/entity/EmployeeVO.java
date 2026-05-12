@@ -100,8 +100,7 @@ public class EmployeeVO {
 	private LocalDate joiningDate;
 	@Column(name = "createdby",length = 30)
 	private String createdBy;
-	@Column(name = "modifiedby",length = 30)
-	private String updatedBy;
+	@Column(name = "modifiedby",length = 30)	private String updatedBy;
 	@Column(name = "orgid")
 	private Long orgId;
 	@Column(name = "cancel")

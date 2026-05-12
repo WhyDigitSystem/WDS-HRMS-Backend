@@ -54,7 +54,7 @@ public class UserVO {
 	@Column(name = "email")
 	private String email;
 	@Column(name = "orgid")
-	private Long orgId;
+    private Long orgId;
 	@Column(name = "mobileno")
 	private String mobileNo;
 	@Column(name = "usertype")
