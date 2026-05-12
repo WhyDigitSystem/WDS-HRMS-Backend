@@ -15,13 +15,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class InitiateSeparationDTO {
-
+	
 	private Long id;
 	private String employeeName;
 	private String employeeCode;
 	private String department;
 	private String position;
-//	private String reportingManager;
+	private String reportingManager;
 	private LocalDate joiningDate;
 	private String separationType;
 	private LocalDate resignation;
@@ -40,10 +40,12 @@ public class InitiateSeparationDTO {
 	private LocalDate interviewDate;
 	private int ExperienceRating;
 	private String exitInterviewFeedback;
-	private String reportingPerson;
-	private String reportingPersonCode;
-	private String reportingPersonEmail;
+	private List<String> reportingPerson;
+	private List<String> reportingPersonCode;
+	private List<String> reportingPersonEmail;
 	
  private List<ClearanceManagementDTO> clearanceManagementDTO;
 	
+ private List<ExitInterviewDTO> exitInterviewDTO;
+
 }

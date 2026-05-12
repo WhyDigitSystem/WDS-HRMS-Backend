@@ -112,7 +112,6 @@ public class EmployeeVO {
 	private boolean active;
 	@Column(name = "payslipeffectivedate")
 	private LocalDate payslipEffectiveDate;
-	
 	@Column(name = "contractor",length = 30)
 	private String contractor;
 	@Column(name = "contactperson",length = 150)
@@ -189,4 +188,10 @@ public class EmployeeVO {
 	
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
+
+	public EmployeeVO orElseThrow(Object object) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -55,6 +57,38 @@ public class PerformanceGoalsServiceImpl implements PerformanceGoalsService {
 
 		if (ObjectUtils.isEmpty(performanceGoalsDTO.getId())) {
 
+
+			 // 🔥 Get latest record
+	        Optional<PerformanceGoalsVO> lastRecord =
+	                performanceGoalsRepo
+	                        .findTopByEmpCodeOrderByCreatedUpdatedDateCreatedonDesc(
+	                                performanceGoalsDTO.getEmpCode());
+
+	        if (lastRecord.isPresent()) {
+
+	        	String createdOnStr =
+	        			 lastRecord.get()
+	        			           .getCreatedUpdatedDate()
+	        			           .getCreatedon();
+
+	        			DateTimeFormatter formatter =
+	        			 DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+
+	        			LocalDateTime lastCreated =
+	        			 LocalDateTime.parse(createdOnStr, formatter);
+
+	            LocalDateTime nextAllowedDate =
+	                    lastCreated.plusMonths(6);
+
+	            if (LocalDateTime.now().isBefore(nextAllowedDate)) {
+
+	                throw new ApplicationException(
+	                        "Performance Goals can be created only once in 6 months. "
+	                      + "Next allowed after : " + nextAllowedDate.toLocalDate());
+	            }
+	        }
+
+			
 			performanceGoalsVO = new PerformanceGoalsVO();
 
 			performanceGoalsVO.setCreatedBy(performanceGoalsDTO.getCreatedBy());
@@ -393,6 +427,37 @@ public class PerformanceGoalsServiceImpl implements PerformanceGoalsService {
 	public List<PerformanceGoalsVO> getPerformanceGoalsByOrgIdAndReportingPerson(Long orgId,String reportingPerson) {
 	
 	return  performanceGoalsRepo.getPerformanceGoalsByOrgIdAndReportingPerson( orgId, reportingPerson);
+	}
+	
+	@Override
+	public List<Map<String, Object>> getSupervisorRatings(
+	        Long orgId, String empCode, String appraisalYear) {
+
+	    List<Object[]> rows = performanceGoalsRepo.getSupervisorRatings(orgId, empCode, appraisalYear);
+
+	    if (rows.isEmpty()) {
+	        throw new RuntimeException("No Supervisor Ratings found for given inputs");
+	    }
+
+	    List<Map<String, Object>> list = new ArrayList<>();
+
+	    for (Object[] row : rows) {
+
+	        Map<String, Object> map = new HashMap<>();
+
+	        map.put("detailsId", ((Number) row[0]).longValue());
+	        map.put("goals", (String) row[1]);
+
+	        // 🔥 safe conversion
+	        map.put("supervisorRating",
+	                row[2] != null ? row[2].toString() : null);
+
+	        map.put("score",
+	                row[3] != null ? Integer.parseInt(row[3].toString()) : null);
+	        list.add(map);
+	    }
+
+	    return list;
 	}
 	
 	@Override

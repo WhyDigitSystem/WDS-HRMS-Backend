@@ -1,7 +1,8 @@
 package com.efit.hrms.dto;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +15,7 @@ public class AssetMasterDTO {
 
 	private Long id;
 	private String assetName;
-	private String assetCode;
+//	private String assetCode;
 	private String category;
 	private String brand;	
 	private String model;
@@ -33,5 +34,7 @@ public class AssetMasterDTO {
 	
 	private String createdBy;
 	private Long orgId;
+	
+	private MultipartFile[] files;
 	
 }

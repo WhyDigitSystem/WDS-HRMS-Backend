@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Ticket Notification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, Helvetica, sans-serif;">
+
+    <!-- Wrapper -->
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 3px 10px rgba(0,0,0,0.1);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" bgcolor="#047857" style="padding: 20px 0;">
+                            <h2 style="color:#ffffff; margin:0;">🎫 Support Ticket Notification</h2>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+
+                                <!-- Ticket Details -->
+                                <tr>
+                                    <td style="padding-bottom: 20px;">
+                                        <h3 style="color:#1e293b; font-size:18px; margin:0;">${subject}</h3>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="padding-bottom:10px;">
+                                        <strong style="color:#334155;">Ticket ID:</strong>
+                                        <span style="color:#059669; font-weight:600;">${ticketId}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-bottom:20px;">
+                                        <strong style="color:#334155;">Status:</strong>
+                                        <span style="color:#2563eb; font-weight:600;">${status}</span>
+                                    </td>
+                                </tr>
+                                <!-- Description -->
+                                <tr>
+                                    <td>
+                                        <h4 style="color:#475569; font-size:16px; margin-bottom:10px;">Description:</h4>
+                                        <div style="background-color:#f0fdf4; border-left:4px solid #10b981; border-radius:6px; padding:15px; color:#1e293b; font-size:14px;">
+                                            ${description}
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td bgcolor="#f8fafc" style="padding: 20px; text-align:center; font-size:13px; color:#64748b;">
+                            <p style="margin:0;">© 2025 WHY DIGIT SYSTEM PVT LTD. All rights reserved.</p>
+                            <p style="margin-top:5px;">This is an automated message — please do not reply.</p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

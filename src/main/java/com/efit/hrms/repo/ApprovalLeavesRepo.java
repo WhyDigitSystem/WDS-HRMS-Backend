@@ -30,7 +30,15 @@ public interface ApprovalLeavesRepo extends JpaRepository<ApprovalLeavesVO, Long
 		            "            MAX(CASE WHEN c.status = 'OUT' THEN c.entrytime END) " +
 		            "        ), 60), 2, '0') " +
 		            "    ) AS totalduration, " +
-		            "    CASE " +
+		            "    CASE "
+		            + " WHEN EXISTS (\r\n"
+		            + "        SELECT 1 \r\n"
+		            + "        FROM workfromhome w\r\n"
+		            + "        WHERE w.orgid = ?1\r\n"
+		            + "          AND w.wfhDate = ?2\r\n"
+		            + "          AND w.employeeCode = ?3\r\n"
+		            + "          AND w.approveStatus = 'APPROVED'\r\n"
+		            + "    ) THEN 'WFH' " +
 		            "        WHEN EXISTS ( " +
 		            "            SELECT 1 " +
 		            "            FROM approvalleaves a " +

@@ -36,16 +36,16 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
 
 	@Autowired
 	DocTypeRepo docTypeRepo;
-	
+
 	@Autowired
 	DocTypeMappingRepo docTypeMappingRepo;
-	
+
 	@Autowired
 	BranchRepo branchRepo;
-	
+
 	@Autowired
 	DocTypeMappingDetailsRepo docTypeMappingDetailsRepo;
-	
+
 	@Override
 	public DocTypeVO createDocType(DocTypeDTO docTypeDTO) throws ApplicationException {
 
@@ -73,6 +73,7 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
 		docTypeVO.setBranchCodePos(docTypeDTO.getBranchCodePos());
 //		docTypeVO.setFinYearPos(docTypeDTO.getFinYearPos());
 		docTypeVO.setSeqPos(docTypeDTO.getSeqPos());
+		docTypeVO.setSeqPos(docTypeDTO.getSeqPos());
 		docTypeVO.setSeqDigit(docTypeDTO.getSeqDigit());
 		docTypeVO.setCodePattern(docTypeDTO.getCodePattern());
 
@@ -80,8 +81,6 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
 
 		return docTypeVO;
 	}
-
-
 
 //@Override
 //	public List<Map<String, Object>> getPendingDocTypeMapping(String branch, String branchCode) throws NumberFormatException, ApplicationException {
@@ -174,94 +173,91 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
 //				.replaceAll("^[-_/\\.]+|[-_/\\.]+$", ""); // trim ends
 //	}
 
-	
 	@Override
 	public List<Map<String, Object>> getPendingDocTypeMapping(String branch, String branchCode)
-	        throws NumberFormatException, ApplicationException {
+			throws NumberFormatException, ApplicationException {
 
-	    Set<Object[]> pendingDocTypeDetails = docTypeMappingRepo.getPendingDocTypeMappingDetails(branch, branchCode);
-	    return getDetails(pendingDocTypeDetails);
+		Set<Object[]> pendingDocTypeDetails = docTypeMappingRepo.getPendingDocTypeMappingDetails(branch, branchCode);
+		return getDetails(pendingDocTypeDetails);
 	}
 
 	private List<Map<String, Object>> getDetails(Set<Object[]> pendingDocTypeDetails)
-	        throws NumberFormatException, ApplicationException {
+			throws NumberFormatException, ApplicationException {
 
-	    List<Map<String, Object>> detailsList = new ArrayList<>();
+		List<Map<String, Object>> detailsList = new ArrayList<>();
 
-	    for (Object[] record : pendingDocTypeDetails) {
-	        Map<String, Object> map = new HashMap<>();
-	        map.put("branch", record[0] != null ? record[0].toString() : null);
-	        map.put("branchCode", record[1] != null ? record[1].toString() : null);
-	        map.put("docCode", record[2] != null ? record[2].toString() : null);
-	        map.put("screenCode", record[3] != null ? record[3].toString() : null);
-	        map.put("screenName", record[4] != null ? record[4].toString() : null);
+		for (Object[] record : pendingDocTypeDetails) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("branch", record[0] != null ? record[0].toString() : null);
+			map.put("branchCode", record[1] != null ? record[1].toString() : null);
+			map.put("docCode", record[2] != null ? record[2].toString() : null);
+			map.put("screenCode", record[3] != null ? record[3].toString() : null);
+			map.put("screenName", record[4] != null ? record[4].toString() : null);
 
-	        // ✅ Use branchCode for prefix generation
-	        String prefix = generateDocIdUsingPrefix(record[1].toString(), record[3].toString());
-	        map.put("prefix", prefix != null ? prefix : null);
-	        map.put("lastNo", 1);
+			// ✅ Use branchCode for prefix generation
+			String prefix = generateDocIdUsingPrefix(record[1].toString(), record[3].toString());
+			map.put("prefix", prefix != null ? prefix : null);
+			map.put("lastNo", 1);
 
-	        detailsList.add(map);
-	    }
-	    return detailsList;
+			detailsList.add(map);
+		}
+		return detailsList;
 	}
 
 	public String generateDocIdUsingPrefix(String branchCode, String screenCode) throws ApplicationException {
-	    // Step 1: Get DocType configuration
-	    DocTypeVO config = docTypeRepo.findByScreenCode(screenCode)
-	            .orElseThrow(() -> new RuntimeException("No code config found for screenCode: " + screenCode));
+		// Step 1: Get DocType configuration
+		DocTypeVO config = docTypeRepo.findByScreenCode(screenCode)
+				.orElseThrow(() -> new RuntimeException("No code config found for screenCode: " + screenCode));
 
-	    // Step 2: Get branch details by branchCode (✅ unique)
-	    BranchVO branchVO = branchRepo.findByBranchCode(branchCode);
-	    if (branchVO == null) {
-	        throw new ApplicationException("Branch not found for branchCode: " + branchCode);
-	    }
+		// Step 2: Get branch details by branchCode (✅ unique)
+		BranchVO branchVO = branchRepo.findByBranchCode(branchCode);
+		if (branchVO == null) {
+			throw new ApplicationException("Branch not found for branchCode: " + branchCode);
+		}
 
-	    // Step 3: Prepare value map
-	    Map<String, Object> values = new HashMap<>();
-	    if (config.getDocCode() != null) {
-	        values.put("docCode", config.getDocCode());
-	    }
-	    if (branchVO.getBranchCode() != null) {
-	        values.put("branchCode", branchVO.getBranchCode());
-	    } else {
-	        throw new ApplicationException("Branch does not have a valid Branch Code: " + branchCode);
-	    }
+		// Step 3: Prepare value map
+		Map<String, Object> values = new HashMap<>();
+		if (config.getDocCode() != null) {
+			values.put("docCode", config.getDocCode());
+		}
+		if (branchVO.getBranchCode() != null) {
+			values.put("branchCode", branchVO.getBranchCode());
+		} else {
+			throw new ApplicationException("Branch does not have a valid Branch Code: " + branchCode);
+		}
 
-	    // Step 4: Replace pattern dynamically
-	    String code = resolvePatternWithSmartSkippingNew(config.getCodePattern(), values);
-	    System.out.println("Generated Prefix: " + code);
-	    return code;
+		// Step 4: Replace pattern dynamically
+		String code = resolvePatternWithSmartSkippingNew(config.getCodePattern(), values);
+		System.out.println("Generated Prefix: " + code);
+		return code;
 	}
 
 	private String resolvePatternWithSmartSkippingNew(String pattern, Map<String, Object> values) {
-	    Pattern regex = Pattern.compile("\\$\\{(.*?)}");
-	    Matcher matcher = regex.matcher(pattern);
+		Pattern regex = Pattern.compile("\\$\\{(.*?)}");
+		Matcher matcher = regex.matcher(pattern);
 
-	    StringBuilder result = new StringBuilder();
-	    int lastIndex = 0;
+		StringBuilder result = new StringBuilder();
+		int lastIndex = 0;
 
-	    while (matcher.find()) {
-	        String placeholder = matcher.group(1);
-	        Object value = values.get(placeholder);
+		while (matcher.find()) {
+			String placeholder = matcher.group(1);
+			Object value = values.get(placeholder);
 
-	        String separator = pattern.substring(lastIndex, matcher.start());
+			String separator = pattern.substring(lastIndex, matcher.start());
 
-	        if (value != null && !(value instanceof Integer && (Integer) value == 0)) {
-	            result.append(separator).append(value);
-	        }
+			if (value != null && !(value instanceof Integer && (Integer) value == 0)) {
+				result.append(separator).append(value);
+			}
 
-	        lastIndex = matcher.end();
-	    }
+			lastIndex = matcher.end();
+		}
 
-	    result.append(pattern.substring(lastIndex));
+		result.append(pattern.substring(lastIndex));
 
-	    return result.toString()
-	            .replaceAll("[-_/\\.]{2,}", "-")  // prevent duplicate separators
-	            .replaceAll("^[-_/\\.]+|[-_/\\.]+$", ""); // trim edges
+		return result.toString().replaceAll("[-_/\\.]{2,}", "-") // prevent duplicate separators
+				.replaceAll("^[-_/\\.]+|[-_/\\.]+$", ""); // trim edges
 	}
 
-	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
 	public DocTypeMappingVO createDocTypeMappingVO(DocTypeMappingDTO docTypeMappingDTO) throws ApplicationException {
@@ -278,43 +274,43 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
 		List<DocTypeMappingDetailsVO> detailsVOs = new ArrayList<>();
 
 		if (docTypeMappingDTO.getDocTypeMappingDetailsDTO() != null) {
-			for (DocTypeMappingDetailsDTO detailsDTO : docTypeMappingDTO.getDocTypeMappingDetailsDTO())
-			{
+			for (DocTypeMappingDetailsDTO detailsDTO : docTypeMappingDTO.getDocTypeMappingDetailsDTO()) {
 				DocTypeMappingDetailsVO documentTypeMappingDetailsVO = new DocTypeMappingDetailsVO();
 				documentTypeMappingDetailsVO.setBranch(detailsDTO.getBranch());
-		        documentTypeMappingDetailsVO.setBranchCode(detailsDTO.getBranchCode());
+				documentTypeMappingDetailsVO.setBranchCode(detailsDTO.getBranchCode());
 //		        documentTypeMappingDetailsVO.setFinYear(detailsDTO.getFinYear());
 //		        documentTypeMappingDetailsVO.setFinYearId(detailsDTO.getFinYearId());
-		        documentTypeMappingDetailsVO.setScreenCode(detailsDTO.getScreenCode());
-		        documentTypeMappingDetailsVO.setScreenName(detailsDTO.getScreenName());
-		        documentTypeMappingDetailsVO.setDocCode(detailsDTO.getDocCode());
-		        documentTypeMappingDetailsVO.setPrefix(detailsDTO.getPrefix());
-		        documentTypeMappingDetailsVO.setLastNo(detailsDTO.getLastNo());
-		        documentTypeMappingDetailsVO.setOrgId(docTypeMappingDTO.getOrgId());
-		        documentTypeMappingDetailsVO.setDocTypeMappingVO(docTypeMappingVO);
-		        detailsVOs.add(documentTypeMappingDetailsVO);
+				documentTypeMappingDetailsVO.setScreenCode(detailsDTO.getScreenCode());
+				documentTypeMappingDetailsVO.setScreenName(detailsDTO.getScreenName());
+				documentTypeMappingDetailsVO.setDocCode(detailsDTO.getDocCode());
+				documentTypeMappingDetailsVO.setPrefix(detailsDTO.getPrefix());
+				documentTypeMappingDetailsVO.setLastNo(1);
+				documentTypeMappingDetailsVO.setOrgId(docTypeMappingDTO.getOrgId());
+				documentTypeMappingDetailsVO.setDocTypeMappingVO(docTypeMappingVO);
+				detailsVOs.add(documentTypeMappingDetailsVO);
 			}
 		}
-		
+
 		docTypeMappingVO.setDocumentTypeMappingDetailsVO(detailsVOs);
 		docTypeMappingRepo.save(docTypeMappingVO);
 		return docTypeMappingVO;
 	}
-	
+
 	@Override
 	@Transactional
-	public String getDocid(String branchCode,String screenCode) throws ApplicationException {
-		
-		return generateDocId(branchCode,screenCode);
-		
+	public String getDocid(String branchCode, String screenCode) throws ApplicationException {
+
+		return generateDocId(branchCode, screenCode);
+
 	}
-	
+
 	public String generateDocId(String branchCode, String screenCode) throws ApplicationException {
 
 		DocTypeVO config = docTypeRepo.findByScreenCode(screenCode)
 				.orElseThrow(() -> new RuntimeException("No code config found for screenCode: " + screenCode));
 
-		DocTypeMappingDetailsVO docTypeMappingDetailsVO= docTypeMappingDetailsRepo.findByBranchCodeAndScreenCode(branchCode,screenCode);
+		DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+				.findByBranchCodeAndScreenCode(branchCode, screenCode);
 //		FinancialYearVO financialYearVO = financialYearRepo.findByFinYear(finYear);
 		BranchVO branchVO = branchRepo.findByBranchCode(branchCode);
 		// Step 3: Prepare value map
@@ -332,51 +328,72 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
 //		} else {
 //			throw new ApplicationException("FinYear Does not have Finyear ID or not Found: " + finYear);
 //		}
-		
-		String paddedSeq = String.format("%0" + config.getSeqDigit() + "d",docTypeMappingDetailsVO.getLastNo());
+
+		String paddedSeq = String.format("%0" + config.getSeqDigit() + "d", docTypeMappingDetailsVO.getLastNo());
+		System.out.println(paddedSeq);
 		values.put("seq", paddedSeq);
-		
-		
 
 		// Step 4: Replace pattern dynamically
 		String code = resolvePatternWithSmartSkipping(config.getCodePattern(), values);
 		System.out.println("EmployeeCode: " + code);
 		return code;
 	}
-	
+
 	private String resolvePatternWithSmartSkipping(String pattern, Map<String, Object> values) {
 		Pattern regex = Pattern.compile("\\$\\{(.*?)}");
 		Matcher matcher = regex.matcher(pattern);
 
 		StringBuilder result = new StringBuilder();
 		int lastIndex = 0;
+
 		while (matcher.find()) {
-			String placeholder = matcher.group(1); // e.g., companyCode
+			String placeholder = matcher.group(1);
 			Object value = values.get(placeholder);
 
-			// Extract separator text before placeholder
 			String separator = pattern.substring(lastIndex, matcher.start());
 
-			// Include only if value is not zero
-			if (value != null && !(value instanceof Integer && (Integer) value == 0)) {
+			// include if value exists (seq like 00001 should not be skipped)
+			if (value != null) {
 				result.append(separator).append(value);
 			}
 
 			lastIndex = matcher.end();
 		}
 
-		// Append trailing part after last placeholder
 		result.append(pattern.substring(lastIndex));
 
-		// Optional cleanup
-		return result.toString().replaceAll("[-_/\\.]{2,}", "-") // prevent multiple symbols
-				.replaceAll("^[-_/\\.]+|[-_/\\.]+$", ""); // trim ends
+		return result.toString().replaceAll("[-_/\\.]{2,}", "-").replaceAll("^[-_/\\.]+|[-_/\\.]+$", "");
 	}
 
+//	private String resolvePatternWithSmartSkipping(String pattern, Map<String, Object> values) {
+//		Pattern regex = Pattern.compile("\\$\\{(.*?)}");
+//		Matcher matcher = regex.matcher(pattern);
+//
+//		StringBuilder result = new StringBuilder();
+//		int lastIndex = 0;
+//		while (matcher.find()) {
+//			String placeholder = matcher.group(1); // e.g., companyCode
+//			Object value = values.get(placeholder);
+//
+//			// Extract separator text before placeholder
+//			String separator = pattern.substring(lastIndex, matcher.start());
+//
+//			// Include only if value is not zero
+//			if (value != null && !(value instanceof Integer && (Integer) value == 0)) {
+//				result.append(separator).append(value);
+//			}
+//
+//			lastIndex = matcher.end();
+//		}
+//
+//		// Append trailing part after last placeholder
+//		result.append(pattern.substring(lastIndex));
+//
+//		// Optional cleanup
+//		return result.toString().replaceAll("[-_/\\.]{2,}", "-") // prevent multiple symbols
+//				.replaceAll("^[-_/\\.]+|[-_/\\.]+$", ""); // trim ends
+//	}
 
-
-	
-	
 //	@Override
 //	public Map<String, Object> createUpdateDocType(DocTypeDTO docTypeDTO) throws ApplicationException {
 //
@@ -420,6 +437,5 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
 //
 //	}
 //
-
 
 }

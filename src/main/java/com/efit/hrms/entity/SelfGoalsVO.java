@@ -38,6 +38,7 @@ public class SelfGoalsVO {
 	private String appraisalId;
 	@Column(name = "code")
 	private String code;
+	private String designation;
 	@Column(name = "supervisorcode")
 	private String supervisorCode;
 	@Column(name = "name")

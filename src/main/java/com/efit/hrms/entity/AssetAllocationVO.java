@@ -43,6 +43,8 @@ public class AssetAllocationVO {
 	private String assetcondition;
 	@Column(name = "allocationnotes")
 	private String allocationnotes;
+	@Column(name = "serialnumber")
+	private String serialNumber;
 
 	@Column(name = "branch")
 	private String branch;

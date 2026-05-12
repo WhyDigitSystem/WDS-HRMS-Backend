@@ -2,10 +2,6 @@ package com.efit.hrms.dto;
 
 import java.time.LocalDate;
 
-import javax.persistence.Column;
-
-import com.efit.hrms.entity.AssetAllocationVO;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,7 +21,7 @@ public class AssetAllocationDTO {
 	private String assetcondition;
 	private String allocationnotes;
 	private boolean active ;
-
+	private String serialNumber;
 	private String branch;
 	private String branchCode;	
 	private String finyear;

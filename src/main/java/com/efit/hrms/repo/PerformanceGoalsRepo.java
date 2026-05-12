@@ -1,6 +1,7 @@
 package com.efit.hrms.repo;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -53,4 +54,31 @@ public interface PerformanceGoalsRepo extends JpaRepository<PerformanceGoalsVO, 
 	@Query(nativeQuery = true, value = "select  * from performancegoals  where orgid = ?1 and  pmonth = ?2 and     appraisalyear = ?3 and empcode=?4")
 	List<PerformanceGoalsVO> getDashBoardDetails(Long orgId,String pmonth,String appraisalYear,String employeeCode);
 
+	Optional<PerformanceGoalsVO>
+	findTopByEmpCodeOrderByCreatedUpdatedDateCreatedonDesc(String empCode);
+
+	@Query(value = "\r\n"
+			+ "SELECT *\r\n"
+			+ "FROM performancegoals s\r\n"
+			+ "JOIN performancegoalsdetails d \r\n"
+			+ "    ON s.performancegoalsid = d.performancegoalsid\r\n"
+			+ "    join selfgoals a on a.code=s.empcode and a.orgid=s.orgid\r\n"
+			+ "WHERE s.orgid = ?1\r\n"
+			+ "  AND s.empcode = ?2\r\n"
+			+ "  and a.appraisalid=?3 ", 
+		       nativeQuery = true)	
+	List<PerformanceGoalsVO> getPerformanceGoalsForFirstLevelSInput(Long orgId, String empCode, String appraisalId);
+
+	@Query(value = "SELECT d.firstlevelsinputdetailsid,\r\n"
+			+ "		           d.goals,\r\n"
+			+ "		           d.supervisorrating,\r\n"
+			+ "		           d.score\r\n"
+			+ "		    FROM firstlevelsupinputdetails d\r\n"
+			+ "		    JOIN firstlevelsupervisorinput h \r\n"
+			+ "		        ON h.firstlevelsupervisorinputid = d.firstlevelsupervisorinputid\r\n"
+			+ "		    WHERE h.orgid = ?1\r\n"
+			+ "		      AND h.employeecode = ?2\r\n"
+			+ "		      AND h.finyear = ?3\r\n"
+			+ "		      AND h.active = 1", nativeQuery = true)
+		List<Object[]> getSupervisorRatings(Long orgId, String empCode, String appraisalYear);
 }

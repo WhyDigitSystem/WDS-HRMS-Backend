@@ -24,32 +24,33 @@ import com.efit.hrms.exception.ApplicationException;
 @Service
 public interface CheckInOutService {
 
-
 	String checkInOutUploadExcel(MultipartFile file, Long orgId, String createdBy) throws Exception;
 
 	List<Map<String, Object>> getLeaveDetailsForAttendanceProcess(String fromDate, String toDate, Long orgId,
 			String department, String branch, String type, String contractor);
 
-
 	List<OtCalculationVO> generateOtAndSave(Long orgId);
 
-	Map<String, Object> createCheckInOutBiometric(CheckInOutBiometricDTO checkInOutBiometricDTO) throws ApplicationException;
+	Map<String, Object> createCheckInOutBiometric(CheckInOutBiometricDTO checkInOutBiometricDTO)
+			throws ApplicationException;
 
-	//monthlyprocess
-	List<Map<String, Object>> getMonthlyProcess(int month, int year, Long orgId, String branch, String department, String type, String contractor);
+	// monthlyprocess
+	List<Map<String, Object>> getMonthlyProcess(int month, int year, Long orgId, String branch, String department,
+			String type, String contractor);
 
-	List<AttendanceDailyVO> getAttendanceDailyByOrgId(String fromDate, String toDate, Long orgId,
-			String employeeCode, String branch);
+	List<AttendanceDailyVO> getAttendanceDailyByOrgId(String fromDate, String toDate, Long orgId, String employeeCode,
+			String branch);
 
-	Map<String, Object> createUpdateAttendanceSummary(@Valid List<AttendanceSummaryDTO> attendanceSummaryDTO) throws ApplicationException;
+	Map<String, Object> createUpdateAttendanceSummary(@Valid List<AttendanceSummaryDTO> attendanceSummaryDTO)
+			throws ApplicationException;
 
-	Map<String, Object> createApprovalAttendanceSummary(Long orgId, List<Long> id, String action,
-			String actionBy) throws ApplicationException;
+	Map<String, Object> createApprovalAttendanceSummary(Long orgId, List<Long> id, String action, String actionBy)
+			throws ApplicationException;
 
-	List<AttendanceSummaryVO> getPendingAttendanceSummaryByOrgId( Long orgId,
-			 String branch);
+	List<AttendanceSummaryVO> getPendingAttendanceSummaryByOrgId(Long orgId, String branch);
 
-	List<AttendanceSummaryVO> getAttendanceSummaryByOrgId(String empCode, Integer month, String finYear, Long orgId, String branch);
+	List<AttendanceSummaryVO> getAttendanceSummaryByOrgId(String empCode, Integer month, String finYear, Long orgId,
+			String branch);
 
 	List<OtCalculationVO> getPendingOTHoursByOrgId(String fromDate, String toDate, Long orgId, String employeeCode,
 			String branch, String department, String type, String contractor);
@@ -57,24 +58,27 @@ public interface CheckInOutService {
 	List<OtCalculationVO> getApprovedOTHoursByOrgId(String fromDate, String toDate, Long orgId, String employeeCode,
 			String branch, String department, String type, String contractor);
 
-	Map<String, Object> createApprovalOtCalculation(Long orgId, List<Long> id, String action, String actionBy) throws ApplicationException;
+	Map<String, Object> createApprovalOtCalculation(Long orgId, List<Long> id, String action, String actionBy)
+			throws ApplicationException;
 
 	List<Map<String, Object>> getEmployeeNameForApprovalOtProcess(Long orgId, String department, String branch,
 			String type, String contractor);
 
-	List<Map<String, Object>> getEmployeeShiftHoursForMonthlyReport(String empCode, Integer month, String finYear, Long orgId,
-			String branchCode);
+	List<Map<String, Object>> getEmployeeShiftHoursForMonthlyReport(String empCode, Integer month, String finYear,
+			Long orgId, String branchCode);
 
 //	Map<String, Object> createCheckInOutBiometricDevice() throws ApplicationException;
-	
-	Map<String, Object> createCheckInOutBiometricDevice(Long orgId, String createdBy, LocalDate fromDate, LocalDate toDate, String branch, String branchCode) throws ApplicationException, Exception;
 
+	Map<String, Object> createCheckInOutBiometricDevice(Long orgId, String createdBy, LocalDate fromDate,
+			LocalDate toDate, String branch, String branchCode) throws ApplicationException, Exception;
 
 	String processDeviceLogs(Long orgId, String createdBy) throws Exception;
 
-	String uploadAdvanceExcel(MultipartFile file, Long orgId, String createdBy, String branch, String branchCode, Long month, Long year) throws Exception;
+	String uploadAdvanceExcel(MultipartFile file, Long orgId, String createdBy, String branch, String branchCode,
+			Long month, Long year) throws Exception;
 
-	String uploadOtherPaymentsExcel(MultipartFile file, Long orgId, String createdBy, String branch, String branchCode, Long month, Long year) throws Exception;
+	String uploadOtherPaymentsExcel(MultipartFile file, Long orgId, String createdBy, String branch, String branchCode,
+			Long month, Long year) throws Exception;
 
 	Map<String, Object> createUpdateAdvanceExcel(AdvanceUploadDTO advanceUploadDTO) throws ApplicationException;
 
@@ -87,10 +91,11 @@ public interface CheckInOutService {
 	Map<String, Object> createCheckInOutBiometricDeviceSchedular(Long orgId, String createdBy, LocalDate fromDate,
 			LocalDate toDate, String branch, String branchCode) throws Exception;
 
+//	AttendanceSummaryVO getDeleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode);
+
+	Map<String, Object> deleteAttendanceSummary(Long orgId, Long month, String finYear, String branchCode,String department);
+
 //	List<AttendanceRecordVO> processExcel(MultipartFile file) throws Exception;
-
-
-
-
-
+	
+	
 }

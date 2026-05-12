@@ -34,6 +34,10 @@ public class CompanyWeekOffVO {
 
 	@Column(name = "weekoffdays")
 	private String weekOffDays;
+	
+	@Column(name="type")
+	private String type; 
+	
 //	@Column(name = "orgid")
 //	private String orgId;
 

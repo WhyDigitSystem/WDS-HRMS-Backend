@@ -75,6 +75,8 @@ public class CandidatesVO {
 	@Column(name = "branch")
 	private String branch;
 
+	@Column(name = "interviewstatus")
+	private String interviewStatus;
 
 	@Column(name = "screencode", length = 5)
 	private String screenCode = "CD";

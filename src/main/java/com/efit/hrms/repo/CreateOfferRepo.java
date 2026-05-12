@@ -1,7 +1,6 @@
 package com.efit.hrms.repo;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -63,29 +62,15 @@ public interface CreateOfferRepo extends JpaRepository<CreateOfferVO, Long>{
 
 	CreateOfferVO findByOrgIdAndIdAndCandidateName(Long orgId, Long id, String employeeCode);
 
-	@Query(nativeQuery = true, value = " SELECT \r\n"
-			+ "    p.pending_count AS offer_pending,\r\n"
-			+ "    a.approved_count AS offer_approved,\r\n"
-			+ "    r.rejected_count AS offer_rejected,\r\n"
-			+ "    (p.pending_count + a.approved_count + r.rejected_count) AS offer_total_count\r\n"
-			+ "FROM\r\n"
-			+ "    (SELECT COUNT(*) AS pending_count\r\n"
-			+ "     FROM createoffer\r\n"
-			+ "     WHERE orgid = ?1\r\n"
-			+ "       AND branchcode = ?2\r\n"
-			+ "       AND approvestatus = 'PENDING') p,\r\n"
-			+ "       \r\n"
-			+ "    (SELECT COUNT(*) AS approved_count\r\n"
-			+ "     FROM createoffer\r\n"
-			+ "     WHERE orgid = ?1\r\n"
-			+ "       AND branchcode = ?2\r\n"
-			+ "       AND approvestatus = 'APPROVED') a,\r\n"
-			+ "       \r\n"
-			+ "    (SELECT COUNT(*) AS rejected_count\r\n"
-			+ "     FROM createoffer\r\n"
-			+ "     WHERE orgid = ?1\r\n"
-			+ "       AND branchcode = ?2\r\n"
-			+ "       AND approvestatus = 'REJECTED') r")
+	@Query(nativeQuery = true, value = " select sum(totalcount)totalcount,sum(pending)pending,sum(approved)approved, sum(rejected) rejected from (\r\n"
+			+ " select count(*) totalcount,0 pending ,0 approved, 0 rejected  from createoffer where orgid=?1 and branchcode=?2 \r\n"
+			+ " union\r\n"
+			+ " select 0 totalcount,count(*) pending ,0 approved, 0 rejected  from createoffer where orgid=?1 and branchcode=?2 and approvestatus='PENDING'\r\n"
+			+ " union \r\n"
+			+ " select 0 totalcount,0 pending ,count(*) approved, 0 rejected  from createoffer where orgid=?1 and branchcode=?2 and approvestatus='APPROVED' \r\n"
+			+ " union\r\n"
+			+ " select 0 totalcount,0 pending ,0 approved,count(*) rejected  from createoffer where orgid=?1 and branchcode=?2 and approvestatus='REJECTED'\r\n"
+			+ " ) a")
 	List<Object[]> getCreateOfferCountByOrgId(Long orgId, String branchCode);
 	
 	

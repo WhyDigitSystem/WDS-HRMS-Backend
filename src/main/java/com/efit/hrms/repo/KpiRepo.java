@@ -9,7 +9,7 @@ import com.efit.hrms.entity.KpiKraVO;
 import com.efit.hrms.entity.KpiVO;
 
 @Repository
-public interface KpiRepo extends JpaRepository<KpiVO, Long>{
+public interface KpiRepo extends JpaRepository<KpiVO, Long> {
 
 	List<KpiVO> findByKpiKraVO(KpiKraVO kpiKraVO);
 

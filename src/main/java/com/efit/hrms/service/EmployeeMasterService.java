@@ -83,7 +83,7 @@ public interface EmployeeMasterService {
 	List<Map<String, Object>> GetnewJoineDetails (Long Orgid);
 
 	Map<String, Object> createApprovalPermissionRequest(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName) throws ApplicationException;
+			String actionBy, String notifyCode, String notify, String screenName, String reason) throws ApplicationException;
 
 	//PermissionRequestForDashBoard
 	

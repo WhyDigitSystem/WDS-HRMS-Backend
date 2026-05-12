@@ -53,4 +53,6 @@ public interface PerformanceGoalsService {
 	List<PerformanceGoalsVO> getDashBoardDetails(Long orgId, String pmonth,  String appraisalYear,
 			String employeeCode);
 
+	List<Map<String, Object>> getSupervisorRatings(Long orgId, String empCode, String appraisalYear);
+
 }

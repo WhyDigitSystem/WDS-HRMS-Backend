@@ -58,8 +58,7 @@ public class DocTypeMappingVO {
 	@JsonManagedReference
 	private List<DocTypeMappingDetailsVO> documentTypeMappingDetailsVO;
 	
-	
-	
+
 	
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
