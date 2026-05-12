@@ -97,7 +97,5 @@ public interface CheckInOutService {
 
 //	List<AttendanceRecordVO> processExcel(MultipartFile file) throws Exception;
 	
-	List<Map<String, Object>> getLeaveCountForDashBoard(String fromDate, String toDate, Long orgId,
-			String department, String branch, String type, String contractor);
-
+	
 }
