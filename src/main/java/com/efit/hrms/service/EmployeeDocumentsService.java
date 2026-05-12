@@ -3,6 +3,7 @@ package com.efit.hrms.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.EmployeeDocumentsDTO;
 import com.efit.hrms.entity.EmployeeDocumentsVO;
@@ -19,6 +20,12 @@ public interface EmployeeDocumentsService {
 	
 	void deleteEmployeeDocById(Long id) throws ApplicationException;
 
+	List<EmployeeDocumentsVO> uploadDocuments(
+	        String employeeCode,
+	        String employeeName,
+	        String documentName,
+	        Long orgId,
+	        List<MultipartFile> files) throws IOException, java.io.IOException;
 
 }
 

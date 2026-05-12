@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
@@ -122,6 +124,43 @@ public class EmployeeDocumentsController extends BaseController{
 	    } else {
 	        errorMsg = "Failed to delete Employee Document with ID: " + id;
 	        responseDTO = createServiceResponseError(responseObjectsMap, "Employee Document deletion failed", errorMsg);
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+	    return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	// multiple file upload
+	
+	@PostMapping(value = "/uploademployeeDocs", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<ResponseDTO> uploadMultiple(
+	        @RequestParam String employeeCode,
+	        @RequestParam String employeeName,
+	        @RequestParam String documentName,
+	        @RequestParam Long orgId,
+	        @RequestParam("files") List<MultipartFile> files) {
+
+	    String methodName = "uploademployeeDocs()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    String errorMsg = null;
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO = null;
+
+	    try {
+	        List<EmployeeDocumentsVO> savedDocuments =
+	                employeeDocumentsService.uploadDocuments(employeeCode, employeeName, documentName, orgId, files);
+
+	        responseObjectsMap.put("documents", savedDocuments);
+	        responseObjectsMap.put("message", "Documents uploaded successfully");
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+	        errorMsg = e.getMessage();
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+
+	        responseObjectsMap.put("error", errorMsg);
+	        responseDTO = createServiceResponseError(responseObjectsMap, "Error uploading documents", errorMsg);
 	    }
 
 	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
