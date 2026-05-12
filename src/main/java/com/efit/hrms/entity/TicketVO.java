@@ -1,5 +1,7 @@
 package com.efit.hrms.entity;
 
+import java.time.LocalDate;
+
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -61,11 +63,17 @@ public class TicketVO {
 
 	@Column(name = "branchcode")
 	private String branchCode;
-	
+
 	@Column(name = "sourceId")
 	private Long sourceId;
-	
+
+	@Column(name = "updateddate")
+	private LocalDate updatedDate;
+
 	private boolean cancel;
+
+	@Column(name = "ticketstatus")
+	private String ticketStatus;
 
 	@Lob
 	@Column(name = "screenshot", columnDefinition = "LONGBLOB")
