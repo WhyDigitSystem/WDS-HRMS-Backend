@@ -124,7 +124,8 @@ public class AttendanceMailScheduler {
                     + "\r\n"
                     + "LEFT JOIN attendancedaily a\r\n"
                     + "       ON a.empcode = e.employeecode\r\n"
-                    + "      AND a.checkindate = CURRENT_DATE()\r\n"
+//                    + "      AND a.checkindate = CURRENT_DATE()\r\n"
+                    + "      AND a.checkindate = CURRENT_DATE() \r\n"
                     + "\r\n"
                     + "WHERE e.orgid = '1000000001'\r\n"
                     + "AND e.active = 1\r\n"
@@ -136,7 +137,13 @@ public class AttendanceMailScheduler {
                     + "    'wds025'\r\n"
                     + ")\r\n"
                     + "\r\n"
-                    + "ORDER BY e.employee ASC";
+                    + "ORDER BY \r\n"
+                    + "    CASE \r\n"
+                    + "        WHEN a.intime IS NULL THEN 1\r\n"
+                    + "        ELSE 0\r\n"
+                    + "    END,\r\n"
+                    + "    a.intime ASC,\r\n"
+                    + "    e.employee ASC";
 
             List<Map<String, Object>> list =
                     jdbcTemplate.queryForList(sql);

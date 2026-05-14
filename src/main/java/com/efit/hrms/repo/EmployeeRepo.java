@@ -272,6 +272,8 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "", nativeQuery = true)
 	List<Map<String, Object>> getSeparationEmployeeByOrgId(Long orgId);
 
+	Optional<EmployeeVO> findTopByOrgIdAndEmployeeCodeStartingWithOrderByIdDesc(Long orgId, String codePrefix);
+
 
 
 

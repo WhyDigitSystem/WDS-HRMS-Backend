@@ -32,6 +32,7 @@ import com.efit.hrms.dto.ProjectMasterDTO;
 import com.efit.hrms.entity.AemployeeLeaveVO;
 import com.efit.hrms.entity.AemployeeVO;
 import com.efit.hrms.entity.BranchVO;
+import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.DepartmentVO;
 import com.efit.hrms.entity.DesignationLeaveVO;
 import com.efit.hrms.entity.DesignationVO;
@@ -47,6 +48,7 @@ import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.AemployeeLeaveRepo;
 import com.efit.hrms.repo.AemployeeRepo;
 import com.efit.hrms.repo.BranchRepo;
+import com.efit.hrms.repo.CompanyRepo;
 import com.efit.hrms.repo.DepartmentRepo;
 import com.efit.hrms.repo.DesignationLeaveRepo;
 import com.efit.hrms.repo.DesignationRepo;
@@ -109,6 +111,9 @@ public class MasterServiceImpl implements MasterService {
 	
 	@Autowired
 	ListOfValuesDetailsRepo listOfValuesDetailsRepo;
+	
+	@Autowired
+	CompanyRepo companyRepo;
 	
 	// Branch
 
@@ -262,7 +267,9 @@ public class MasterServiceImpl implements MasterService {
 	    EmployeeVO employeeVO;
 	    String message;
 
-	    if (ObjectUtils.isEmpty(employeeDTO.getId())) {
+	    if (ObjectUtils.isEmpty(employeeDTO.getEmployeeCode())) {
+	    	employeeDTO.setEmployeeCode(generateEmployeeCode(employeeDTO.getOrgId()));
+	    	
 	        // CREATE
 	        if (employeeRepo.existsByEmployeeCodeAndOrgId(employeeDTO.getEmployeeCode(), employeeDTO.getOrgId())) {
 	            throw new ApplicationException(
@@ -308,6 +315,49 @@ public class MasterServiceImpl implements MasterService {
 	    response.put("createdEmployeeVO", employeeVO);
 	    return response;
 	}
+	
+	//auto generated code 
+	
+    private String generateEmployeeCode(Long orgId) throws ApplicationException {
+
+        CompanyVO company = companyRepo.findById(orgId)
+                .orElseThrow(() -> new ApplicationException("Company not found for orgId: " + orgId));
+
+        String prefix = company.getCompanyCode();
+
+        if (prefix == null || prefix.trim().isEmpty()) {
+            prefix = company.getCompanyName()
+                    .substring(0, Math.min(3, company.getCompanyName().length()))
+                    .toUpperCase();
+        }
+
+        String codePrefix = prefix + "-EMP-";
+
+        Optional<EmployeeVO> lastEmployeeOpt =
+                employeeRepo.findTopByOrgIdAndEmployeeCodeStartingWithOrderByIdDesc(orgId, codePrefix);
+
+        int nextNumber = 1;
+
+        if (lastEmployeeOpt.isPresent()) {
+
+            String lastCode = lastEmployeeOpt.get().getEmployeeCode();
+
+            String numberPart = lastCode.substring(codePrefix.length());
+
+            try {
+                nextNumber = Integer.parseInt(numberPart) + 1;
+            } catch (NumberFormatException e) {
+                nextNumber = 1;
+            }
+        }
+
+        return codePrefix + String.format("%04d", nextNumber);
+    }
+
+    
+
+   
+
 
 	/** Maps ONLY simple fields. NO save calls, NO child handling here. */
 	private void mapEmployeeBasics(EmployeeVO employeeVO, EmployeeDTO employeeDTO) throws ApplicationException {

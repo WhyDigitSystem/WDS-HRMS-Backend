@@ -1,8 +1,6 @@
 package com.efit.hrms.service;
 
-
 import java.util.HashMap;
-
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +36,13 @@ public class CommentSyncService {
 			body.put("sourceTicketId", commentsVO.getTicketId());
 			body.put("sourceUserName", commentsVO.getUserName());
 			body.put("application", "HRMS");
+
 			body.put("ticketId", commentsVO.getTicketId());
 
 //			String url = "http://localhost:8061/api/ticket/createComments";
 
 			String url = "http://139.5.190.244:8061/api/ticket/createComments";
+
 
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
@@ -114,6 +114,5 @@ public class CommentSyncService {
 	        e.printStackTrace();
 	    }
 	}
-
-
 }
+
