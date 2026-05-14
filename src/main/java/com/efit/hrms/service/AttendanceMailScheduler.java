@@ -35,7 +35,7 @@ public class AttendanceMailScheduler {
     // ==================================================
     // 11:30 AM LOGIN REPORT
     // ==================================================
-//    @Scheduled(cron = "0 0 11 * * *")
+    @Scheduled(cron = "0 0 11 * * *")
     public void morningReport() {
 
         if (isHoliday()) {
@@ -48,7 +48,7 @@ public class AttendanceMailScheduler {
     // ==================================================
     // 10 PM LOGOUT REPORT
     // ==================================================
-//    @Scheduled(cron = "0 0 22 * * *")
+    @Scheduled(cron = "0 0 22 * * *")
     public void nightReport() {
 
         if (isHoliday()) {
