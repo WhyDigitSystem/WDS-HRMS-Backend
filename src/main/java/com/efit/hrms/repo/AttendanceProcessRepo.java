@@ -1957,8 +1957,8 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 		        "    leaverequestid AS id, " +
 		        "    employeecode, " +
 		        "    employeename, " +
-		        "    leavecode, " +
-		        "    leavetype, " +
+		        "    screencode, " +
+		        "    screenname, " +
 		        "    fromdate, " +
 		        "    todate, " +
 		        "    NULL AS time, " +
@@ -1976,8 +1976,8 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 		        "    compensatoryoffid AS id, " +
 		        "    employeecode, " +
 		        "    employeename, " +
-		        "    leavecode, " +
-		        "    leavetype, " +
+		        "    screencode, " +
+		        "    screenname, " +
 		        "    compoffdate AS fromdate, " +
 		        "    compoffdate AS todate, " +
 		        "    NULL AS time, " +
@@ -1995,8 +1995,8 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 		        "    checkinoutadjustmentid AS id, " +
 		        "    empcode AS employeecode, " +
 		        "    empname AS employeename, " +
-		        "    status AS leavecode, " +
-		        "    screencode AS leavetype, " +
+		        "    screencode AS leavecode, " +
+		        "    screenname AS leavetype, " +
 		        "    checkindate AS fromdate, " +
 		        "    checkindate AS todate, " +
 		        "    entrytime AS time, " +
