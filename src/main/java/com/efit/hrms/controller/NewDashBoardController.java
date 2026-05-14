@@ -1,5 +1,6 @@
 package com.efit.hrms.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.efit.hrms.common.CommonConstant;
+import org.apache.commons.lang3.StringUtils;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.service.NewDashBoardService;
+
 
 @CrossOrigin
 @RestController
@@ -30,12 +33,12 @@ public class NewDashBoardController extends BaseController {
 	public static final Logger LOGGER = LoggerFactory.getLogger(AdvanceController.class);
 
 
-	@GetMapping("/getLeaveCountForDashBoard")
+	@GetMapping("/getMonthlyAttendanceForDashBoard")
 	public ResponseEntity<ResponseDTO> getLeaveCountForDashBoard(@RequestParam String employeeCode,
 	@RequestParam Long orgId, @RequestParam String department,
 			@RequestParam String branch, @RequestParam String type, @RequestParam(required = false) String contractor) {
 
-		String methodName = "getLeaveDetailsForLeaveProcess()";
+		String methodName = "getMonthlyAttendanceForDashBoard()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 
 		Map<String, Object> responseObjectsMap = new HashMap<>();
@@ -43,7 +46,7 @@ public class NewDashBoardController extends BaseController {
 		List<Map<String, Object>> leaveDetailsList;
 
 		try {
-			leaveDetailsList = newDashBoardService.getLeaveCountForDashBoard(employeeCode, orgId,
+			leaveDetailsList = newDashBoardService.getMonthlyAttendanceForDashBoard(employeeCode, orgId,
 					department, branch, type, contractor);
 			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "AttendanceProcess details retrieved successfully");
 			responseObjectsMap.put("attendanceProcessVO", leaveDetailsList); // ✅ Correct key name
@@ -58,4 +61,250 @@ public class NewDashBoardController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	@GetMapping("/getLeaveTakenReport")
+	public ResponseEntity<ResponseDTO> getLeaveTakenReport(
+	        @RequestParam Long orgId,
+	        @RequestParam String employeecode
+	) {
+
+	    String methodName = "getLeaveTakenReport()";
+
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    String errorMsg = null;
+
+	    Map<String, Object> responseObjectsMap =
+	            new HashMap<>();
+
+	    ResponseDTO responseDTO = null;
+
+	    List<Map<String, Object>> mapp =
+	            new ArrayList<>();
+
+	    try {
+
+	        mapp = newDashBoardService.getLeaveTakenReport(
+	                orgId,
+	                employeecode
+	        );
+
+	    } catch (Exception e) {
+
+	        errorMsg = e.getMessage();
+
+	        LOGGER.error(
+	                UserConstants.ERROR_MSG_METHOD_NAME,
+	                methodName,
+	                errorMsg
+	        );
+	    }
+
+	    if (StringUtils.isBlank(errorMsg)) {
+
+	        responseObjectsMap.put(
+	                CommonConstant.STRING_MESSAGE,
+	                "Leave Taken Report Retrieved Successfully"
+	        );
+
+	        responseObjectsMap.put(
+	                "leaveTakenReport",
+	                mapp
+	        );
+
+	        responseDTO =
+	                createServiceResponse(responseObjectsMap);
+
+	    } else {
+
+	        responseDTO =
+	                createServiceResponseError(
+	                        responseObjectsMap,
+	                        "Failed To Retrieve Leave Taken Report",
+	                        errorMsg
+	                );
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+	    return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	// ============================================
+
+	@GetMapping("/getLateLoginReportforDashBoard")
+	public ResponseEntity<ResponseDTO> getLateCheckinReport(
+	        @RequestParam Long orgId,
+	        @RequestParam String branchcode,
+	        @RequestParam String employeecode
+	) {
+
+	    String methodName = "getLateLoginReportforDashBoard()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+	    String errorMsg = null;
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO = null;
+	    List<Map<String, Object>> mapp = new ArrayList<>();
+
+	    try {
+
+	        mapp = newDashBoardService.getLateLoginReportforDashBoard(
+	                orgId,
+	                branchcode,
+	                employeecode
+	        );
+
+	    } catch (Exception e) {
+
+	        errorMsg = e.getMessage();
+
+	        LOGGER.error( UserConstants.ERROR_MSG_METHOD_NAME,
+	                methodName,errorMsg );
+	    }
+
+	    if (errorMsg == null || errorMsg.trim().isEmpty()) {
+	        responseObjectsMap.put(
+	                CommonConstant.STRING_MESSAGE,
+	                "Late Checkin Report Retrieved Successfully"
+	        );
+
+	        responseObjectsMap.put( "lateCheckinReport",mapp );
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } else {
+
+	        responseDTO =
+	                createServiceResponseError( responseObjectsMap,
+	                        "Failed To Retrieve Late Checkin Report",errorMsg);
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+	    return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
+	//pending request
+	
+	@GetMapping("/pendingApprovalForDashBoard")
+	public ResponseEntity<ResponseDTO> getPendingApprovalForDashBoard(
+	        @RequestParam Long orgId,
+	        @RequestParam String employeeCode) {
+
+	    String methodName = "getpendingApprovalForDashBoard()";
+
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    Map<String, Object> responseObjectsMap =
+	            new HashMap<>();
+
+	    ResponseDTO responseDTO;
+
+	    List<Map<String, Object>> approvalList;
+
+	    try {
+
+	        approvalList =
+	        		newDashBoardService
+	                        .pendingApprovalForDashBoard(orgId,employeeCode);
+
+	        responseObjectsMap.put(
+	                CommonConstant.STRING_MESSAGE,
+	                "Pending Approval details retrieved successfully");
+
+	        responseObjectsMap.put(
+	                "pendingApprovalVO",
+	                approvalList);
+
+	        responseDTO =
+	                createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+
+	        String errorMsg = e.getMessage();
+
+	        LOGGER.error(
+	                UserConstants.ERROR_MSG_METHOD_NAME,
+	                methodName,
+	                errorMsg);
+
+	        responseDTO =
+	                createServiceResponseError(
+	                        responseObjectsMap,
+	                        "Failed to retrieve Pending Approval details",
+	                        errorMsg);
+	    }
+
+	    LOGGER.debug(
+	            CommonConstant.ENDING_METHOD,
+	            methodName);
+
+	    return ResponseEntity
+	            .ok()
+	            .body(responseDTO);
+	}
+	
+	//working hours api
+	
+	@GetMapping("/getLastMonthSummaryDashboard")
+	public ResponseEntity<ResponseDTO> getAttendanceDashboard(
+	        @RequestParam Long orgId,
+	        @RequestParam String employeecode) {
+
+	    String methodName = "getAttendanceDashboard()";
+
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    String errorMsg = null;
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+
+	    ResponseDTO responseDTO = null;
+
+	    List<Map<String, Object>> mapp = new ArrayList<>();
+
+	    try {
+
+	        mapp = newDashBoardService
+	                .getAttendanceDashboard(orgId, employeecode);
+
+	    } catch (Exception e) {
+
+	        errorMsg = e.getMessage();
+
+	        LOGGER.error(
+	                UserConstants.ERROR_MSG_METHOD_NAME,
+	                methodName,
+	                errorMsg
+	        );
+	    }
+
+	    if (StringUtils.isEmpty(errorMsg)) {
+
+	        responseObjectsMap.put(
+	                CommonConstant.STRING_MESSAGE,
+	                "Attendance Dashboard retrieved successfully"
+	        );
+
+	        responseObjectsMap.put(
+	                "attendanceDashboard",
+	                mapp
+	        );
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } else {
+
+	        responseDTO = createServiceResponseError(
+	                responseObjectsMap,
+	                "Failed to retrieve Attendance Dashboard",
+	                errorMsg
+	        );
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+	    return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	
 }
