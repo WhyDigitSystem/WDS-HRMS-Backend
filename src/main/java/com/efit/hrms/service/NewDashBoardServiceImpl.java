@@ -269,23 +269,8 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	         );
 
 	         orderedMap.put(
-	                 "weekoff_days",
-	                 row.get("weekoff_days")
-	         );
-
-	         orderedMap.put(
 	                 "permission_hours",
 	                 row.get("permission_hours")
-	         );
-
-	         orderedMap.put(
-	                 "late_checkin_count",
-	                 row.get("late_checkin_count")
-	         );
-
-	         orderedMap.put(
-	                 "late_dates",
-	                 row.get("late_dates")
 	         );
 
 	         orderedMap.put(
@@ -306,6 +291,16 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	         orderedMap.put(
 	                 "extra_hours",
 	                 row.get("extra_hours")
+	         );
+
+	         orderedMap.put(
+	                 "current_month_extra_hours",
+	                 row.get("current_month_extra_hours")
+	         );
+
+	         orderedMap.put(
+	                 "final_balance_hours",
+	                 row.get("final_balance_hours")
 	         );
 
 	         orderedList.add(orderedMap);
