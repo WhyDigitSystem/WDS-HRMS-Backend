@@ -30,6 +30,7 @@ import com.efit.hrms.dto.OtMasterDetailsDTO;
 import com.efit.hrms.dto.ShiftAssignDTO;
 import com.efit.hrms.dto.ShiftAssignDetailsDTO;
 import com.efit.hrms.dto.ShiftMasterDTO;
+import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.ContractMasterVO;
 import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.GroupDetailsVO;
@@ -47,6 +48,7 @@ import com.efit.hrms.entity.ShiftAssignVO;
 import com.efit.hrms.entity.ShiftMasterVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.exception.GroupDetailsRepo;
+import com.efit.hrms.repo.CompanyRepo;
 import com.efit.hrms.repo.ContractMasterRepo;
 import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.GroupRepo;
@@ -107,6 +109,9 @@ public class ShiftMasterServiceImpl implements ShiftMasterService {
 	@Autowired
 	EmployeeRepo employeeRepo;
 
+	@Autowired
+	CompanyRepo companyRepo;
+	
 	ShiftMasterServiceImpl(NotificationRepo notificationRepo) {
 		this.notificationRepo = notificationRepo;
 	}
@@ -207,6 +212,12 @@ public class ShiftMasterServiceImpl implements ShiftMasterService {
 
 			contractMasterVO.setCreatedBy(contractMasterDTO.getCreatedBy());
 			contractMasterVO.setUpdatedBy(contractMasterDTO.getCreatedBy());
+			
+		    // AUTO GENERATE CODE
+		    contractMasterDTO.setContractorCode(
+		            generateContractMasterCode(
+		                    contractMasterDTO.getOrgId()));
+		    
 			message = "ContractMaster Created Successfully";
 		}
 
@@ -245,6 +256,42 @@ public class ShiftMasterServiceImpl implements ShiftMasterService {
 
 	}
 
+	private String generateContractMasterCode(Long orgId)
+	        throws ApplicationException {
+
+	    CompanyVO company = companyRepo.findById(orgId)
+	            .orElseThrow(() ->
+	                    new ApplicationException(
+	                            "Company not found"));
+
+	    String companyCode = company.getCompanyCode();
+
+	    if (companyCode == null ||
+	            companyCode.trim().isEmpty()) {
+
+	        throw new ApplicationException(
+	                "Company code is empty");
+	    }
+
+	    Integer lastNum = company.getMcLastNum();
+
+	    if (lastNum == null || lastNum <= 0) {
+	        lastNum = 1;
+	    }
+
+	    // Example: WDSMC001
+	    String contractorCode =
+	            companyCode + "MC" +
+	            String.format("%03d", lastNum);
+
+	    // Increment next number
+	    company.setMcLastNum(lastNum + 1);
+
+	    companyRepo.save(company);
+
+	    return contractorCode;
+	}
+	
 	@Override
 	public List<ContractMasterVO> getAllContractMasterByOrgId(Long orgId) {
 		return Optional.ofNullable(contractMasterRepo.getAllContractMasterByOrgId(orgId))
@@ -766,5 +813,25 @@ public class ShiftMasterServiceImpl implements ShiftMasterService {
 	    return list;
 	}
 
+	@Override
+	public String previewContractMasterCode(Long orgId)
+	        throws ApplicationException {
+
+	    CompanyVO company = companyRepo.findById(orgId)
+	            .orElseThrow(() ->
+	                    new ApplicationException(
+	                            "Company not found"));
+
+	    String companyCode = company.getCompanyCode();
+
+	    Integer lastNum = company.getMcLastNum();
+
+	    if (lastNum == null || lastNum <= 0) {
+	        lastNum = 1;
+	    }
+
+	    return companyCode + "MC" +
+	            String.format("%03d", lastNum);
+	}
 	
 }

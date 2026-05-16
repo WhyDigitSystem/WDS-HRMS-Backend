@@ -139,6 +139,9 @@ public class CompanyVO {
 	@Column(name = "clastnum")
 	private int cLastNum = 1;
 	
+	@Column(name = "mclastnum")
+	private int mcLastNum = 1;
+	
 	@OneToMany(mappedBy = "companyVO", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<CompanyWeekOffVO>companyWeekOffVO;

@@ -692,5 +692,64 @@ public class ShiftMasterController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	@GetMapping("/generateContractMasterCode")
+	public ResponseEntity<ResponseDTO> generateContractMasterCode(
+	        @RequestParam Long orgId) {
+
+	    String methodName = "generateContractMasterCode()";
+
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    String errorMsg = null;
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+
+	    ResponseDTO responseDTO = null;
+
+	    String contractorCode = null;
+
+	    try {
+
+	        contractorCode =
+	        		shiftMasterService
+	                .previewContractMasterCode(orgId);
+
+	    } catch (Exception e) {
+
+	        errorMsg = e.getMessage();
+
+	        LOGGER.error(
+	                UserConstants.ERROR_MSG_METHOD_NAME,
+	                methodName,
+	                errorMsg);
+	    }
+
+	    if (StringUtils.isBlank(errorMsg)) {
+
+	        responseObjectsMap.put(
+	                CommonConstant.STRING_MESSAGE,
+	                "Contract master code generated successfully");
+
+	        responseObjectsMap.put(
+	                "contractorCode",
+	                contractorCode);
+
+	        responseDTO =
+	                createServiceResponse(responseObjectsMap);
+
+	    } else {
+
+	        responseDTO =
+	                createServiceResponseError(
+	                        responseObjectsMap,
+	                        "Contract master code generation failed",
+	                        errorMsg);
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+	    return ResponseEntity.ok().body(responseDTO);
+	}
 
 }
