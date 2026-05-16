@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,16 +22,28 @@ public interface InvestmentDeclarationService {
 	Map<String, Object> updateCreateInvestmentDeclaration(@Valid InvestmentDeclarationDTO investmentDeclarationDTO)
 			throws ApplicationException;
 
-	List<InvestmentDeclarationVO> getInvestmentDeclarationDetails(Long orgId, String branchCode, String employeeCode);
+	List<InvestmentDeclarationVO> getInvestmentDeclarationDetails(Long orgId, String branch, String employeeCode);
 
 	InvestmentDeclarationVO getInvestmentDeclarationById(Long id);
 
 	List<Map<String, Object>> getDashBoardDetailsNew(Long orgId, String branch, String employeeCode);
 
-	String uploadImageInvestmentDeclarationDetails(List<MultipartFile> files, Long investmentDeclarationId,
-			List<Long> investmentDeclarationDetailsId) throws IOException;
+	Map<String, Object> uploadImageInvestmentDeclarationDetails(List<MultipartFile> files, Long investmentDeclarationId,
+			List<Long> investmentDeclarationDetailsId) throws IOException, ApplicationException;
 
 	Map<String, Object> approveInvestmentDeclaration(Long orgId, Long id, String employeeCode, String action,
 			String actionBy, Long sourceId) throws Exception;
 
+	List<Map<String, Object>> getDashBoardDetailsOldRegime(Long orgId, String branch, String employeeCode);
+
+	List<Map<String, Object>> getTdsSummaryDetails(Long orgId, String branch, String employeeCode);
+
+	List<Map<String, Object>> getTaxRegimeComparisonDetails(Long orgId, String branch, String employeeCode);
+
+	Resource viewInvestmentImage(Long detailId) throws IOException;
+
+	ResponseEntity<byte[]> viewFileInvestment(HttpServletRequest request) throws IOException;
+
+//	ResponseEntity<byte[]> viewFileInvestment(HttpServletRequest request);
+ 
 }

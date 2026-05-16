@@ -1,5 +1,6 @@
 package com.efit.hrms.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -52,6 +53,9 @@ public class InvestmentDeclarationVO {
 	private boolean cancel = false;
 	@Column(name = "cancelremarks", length = 150)
 	private String cancelRemarks;
+	
+	@Column(name = "totalamount", precision = 10, scale = 2)
+	private BigDecimal totalAmount;
 	
 	@Column(name = "employeename")
 	private String employeeName;
