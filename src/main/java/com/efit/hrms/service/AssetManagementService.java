@@ -101,7 +101,7 @@ public interface AssetManagementService {
 	List<Map<String, Object>> getAssetAllocationDetails(Long orgId, String branchCode);
 
 	List<Map<String, Object>> getAssetAllocationListAll(Long orgId, String branchCode, String employeeCode);
-	
+
 	Object saveAsset(AssetMasterDTO dto) throws IOException, Exception;
 
 	AssetMasterVO getAssetById(Long id);
@@ -109,5 +109,18 @@ public interface AssetManagementService {
 	byte[] viewImage(Long imageId) throws IOException;
 
 	String getImageFileType(Long imageId) throws IOException;
+
+	void excelUploadForAssetMaster(MultipartFile file, Long orgId, String createdBy, String branch, String branchCode,
+			String finYear) throws ApplicationException;
+
+	int getTotalRows();
+
+	int getSuccessfulUploads();
+
+	List<AssetMasterVO> getAssetMasterReportDetails(Long orgId, String category, String branchCode, String fromDate,
+			String toDate);
+
+	List<AssetAllocationVO> getAssetAllocationReportDetails(Long orgId, String employeeCode, String branchCode,
+			String fromDate, String toDate);
 
 }

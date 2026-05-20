@@ -1,6 +1,5 @@
 package com.efit.hrms.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -27,8 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -39,9 +36,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.efit.hrms.dto.InvestmentDeclarationDTO;
 import com.efit.hrms.dto.InvestmentDeclarationDetailsDTO;
+import com.efit.hrms.entity.FormVO;
 import com.efit.hrms.entity.InvestmentDeclarationDetailsVO;
 import com.efit.hrms.entity.InvestmentDeclarationVO;
 import com.efit.hrms.exception.ApplicationException;
+import com.efit.hrms.repo.FormRepo;
 import com.efit.hrms.repo.InvestmentDeclarationDetailsRepo;
 import com.efit.hrms.repo.InvestmentDeclarationRepo;
 
@@ -55,6 +54,9 @@ public class InvestmentDeclarationServiceImpl implements InvestmentDeclarationSe
 
 	@Autowired
 	InvestmentDeclarationDetailsRepo investmentDeclarationDetailsRepo;
+
+	@Autowired
+	FormRepo formRepo;
 
 	// CostEstimation
 
@@ -120,13 +122,13 @@ public class InvestmentDeclarationServiceImpl implements InvestmentDeclarationSe
 		investmentDeclarationVO.setCreatedBy(investmentDeclarationDTO.getCreatedBy());
 		investmentDeclarationVO.setOrgId(investmentDeclarationDTO.getOrgId());
 
-		if (ObjectUtils.isNotEmpty(investmentDeclarationVO.getId())) {
-
-			List<InvestmentDeclarationDetailsVO> existingDetails = investmentDeclarationDetailsRepo
-					.findByInvestmentDeclarationVO(investmentDeclarationVO);
-
-			investmentDeclarationDetailsRepo.deleteAll(existingDetails);
-		}
+//		if (ObjectUtils.isNotEmpty(investmentDeclarationVO.getId())) {
+//
+//			List<InvestmentDeclarationDetailsVO> existingDetails = investmentDeclarationDetailsRepo
+//					.findByInvestmentDeclarationVO(investmentDeclarationVO);
+//
+//			investmentDeclarationDetailsRepo.deleteAll(existingDetails);
+//		}
 
 		BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -134,9 +136,16 @@ public class InvestmentDeclarationServiceImpl implements InvestmentDeclarationSe
 
 		for (InvestmentDeclarationDetailsDTO investmentDeclarationDetailsDTO : investmentDeclarationDTO
 				.getInvestmentDeclarationDetailsDTO()) {
+			InvestmentDeclarationDetailsVO investmentDeclarationDetailsVO;
 
-			InvestmentDeclarationDetailsVO investmentDeclarationDetailsVO = new InvestmentDeclarationDetailsVO();
+			if (investmentDeclarationDTO.getId() != null) {
+				investmentDeclarationDetailsVO = investmentDeclarationDetailsRepo
+						.findById(investmentDeclarationDetailsDTO.getId())
+						.orElseThrow(() -> new ApplicationException("Investment Declaration Details Not Found"));
 
+			} else {
+				investmentDeclarationDetailsVO = new InvestmentDeclarationDetailsVO();
+			}
 			investmentDeclarationDetailsVO.setSection(investmentDeclarationDetailsDTO.getSection());
 
 			investmentDeclarationDetailsVO.setInvestmentType(investmentDeclarationDetailsDTO.getInvestmentType());
@@ -164,72 +173,6 @@ public class InvestmentDeclarationServiceImpl implements InvestmentDeclarationSe
 
 		investmentDeclarationVO.setInvestmentDeclarationDetailsVO(investmentDeclarationDetailsVOs);
 	}
-
-//	@Override
-//	public String uploadImageInvestmentDeclarationDetails(List<MultipartFile> files, Long investmentDeclarationId,
-//			List<Long> investmentDeclarationDetailsId) throws IOException {
-//
-//		if (files.size() != investmentDeclarationDetailsId.size()) {
-//
-//			throw new IllegalArgumentException("Mismatch between files and detail IDs.");
-//		}
-//
-//		InvestmentDeclarationVO investmentDeclarationVO = investmentDeclarationRepo.findById(investmentDeclarationId)
-//				.orElseThrow(() -> new RuntimeException("InvestmentDeclaration not found"));
-//
-//		String uploadDir = "C:/investmentfiles/";
-//
-//		File dir = new File(uploadDir);
-//
-//		if (!dir.exists()) {
-//			dir.mkdirs();
-//		}
-//
-//		for (int i = 0; i < files.size(); i++) {
-//
-//			MultipartFile file = files.get(i);
-//
-//			Long detailId = investmentDeclarationDetailsId.get(i);
-//
-//			InvestmentDeclarationDetailsVO detail = investmentDeclarationDetailsRepo.findById(detailId)
-//					.orElseThrow(() -> new RuntimeException("Details not found ID : " + detailId));
-//
-//			if (!detail.getInvestmentDeclarationVO().getId().equals(investmentDeclarationVO.getId())) {
-//
-//				throw new IllegalArgumentException("Detail ID " + detailId + " does not belong to declaration.");
-//			}
-//
-//			if (detail.getFilePath() != null && !detail.getFilePath().isEmpty()) {
-//
-//				File oldFile = new File(detail.getFilePath());
-//
-//				if (oldFile.exists()) {
-//
-//					boolean deleted = oldFile.delete();
-//
-//					if (deleted) {
-//						System.out.println("Old image deleted successfully");
-//					}
-//				}
-//			}
-//
-//			String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-//
-//			String filePath = uploadDir + filename;
-//
-//			File dest = new File(filePath);
-//
-//			file.transferTo(dest);
-//
-//			detail.setFileName(filename);
-//
-//			detail.setFilePath(filePath);
-//
-//			investmentDeclarationDetailsRepo.save(detail);
-//		}
-//
-//		return "Image uploaded/updated successfully";
-//	}
 
 	@Override
 	@Transactional
@@ -586,20 +529,156 @@ public class InvestmentDeclarationServiceImpl implements InvestmentDeclarationSe
 		return List1;
 	}
 
+	@Value("${file.upload-form}")
+	private String uploadBasePaths;
+
 	@Override
-	public Resource viewInvestmentImage(Long detailId) throws IOException {
+	@Transactional
+	public FormVO uploadImageForm16(MultipartFile file, Long orgId, String branch, String branchCode,
+			String employeeCode, String employeeName, Long finYear,String createdBy) throws IOException {
 
-		InvestmentDeclarationDetailsVO detail = investmentDeclarationDetailsRepo.findById(detailId)
-				.orElseThrow(() -> new RuntimeException("Image not found"));
+		FormVO formVO = new FormVO();
 
-		Path path = Paths.get(detail.getFilePath());
+		Path folderPath = Paths.get(uploadBasePaths);
 
-		Resource resource = new UrlResource(path.toUri());
+		createDirectoryTicket(folderPath);
 
-		if (!resource.exists()) {
-			throw new RuntimeException("Image not found in filepath");
+		String originalName = file.getOriginalFilename();
+
+		if (originalName == null || originalName.isEmpty()) {
+
+			originalName = "file";
 		}
 
-		return resource;
+		originalName = originalName.replaceAll("\\s+", "_");
+
+		// FILE EXTENSION
+		String extension = "";
+
+		if (originalName.contains(".")) {
+
+			extension = originalName.substring(originalName.lastIndexOf("."));
+
+			originalName = originalName.substring(0, originalName.lastIndexOf("."));
+		}
+
+		String fileName = employeeCode + "_" + System.currentTimeMillis() + extension;
+
+		Path filePath = folderPath.resolve(fileName);
+
+		try (InputStream inputStream = file.getInputStream()) {
+
+			Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+		}
+
+		String publicUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+				.path("/api/investmentDeclaration/viewTicketImageForm/").path(fileName).toUriString();
+
+		formVO.setFileName(fileName);
+
+		formVO.setFilePath(publicUrl);
+
+		formVO.setFileSize(file.getSize());
+
+		formVO.setContentType(file.getContentType());
+
+		formVO.setUploadOn(LocalDateTime.now());
+
+		formVO.setOrgId(orgId);
+
+		formVO.setBranch(branch);
+		formVO.setFinYear(finYear);
+
+		formVO.setBranchCode(branchCode);
+		formVO.setCreatedBy(createdBy);
+		formVO.setUpdatedBy(createdBy);
+		formVO.setEmployeeCode(employeeCode);
+		formVO.setEmployeeName(employeeName);
+
+		formRepo.save(formVO);
+
+		System.out.println("FILE SAVED : " + filePath.toAbsolutePath());
+
+		System.out.println("PUBLIC URL : " + publicUrl);
+
+		return formVO;
 	}
+
+	private void createDirectoryTicket(Path path) throws IOException {
+
+		if (!Files.exists(path)) {
+
+			Files.createDirectories(path);
+		}
+	}
+
+	@Override
+	public ResponseEntity<byte[]> viewTicketImageForm(HttpServletRequest request) throws IOException {
+
+		String uri = request.getRequestURI();
+
+		String apiPrefix = "/api/investmentDeclaration/viewTicketImageForm/";
+
+		String relativePath = uri.replace(apiPrefix, "");
+
+		relativePath = URLDecoder.decode(relativePath, StandardCharsets.UTF_8);
+
+		Path baseDir = Paths.get(uploadBasePaths).toAbsolutePath().normalize();
+
+		Path filePath = baseDir.resolve(relativePath).normalize();
+
+		System.out.println("BASE DIR : " + baseDir);
+
+		System.out.println("FILE PATH : " + filePath);
+
+		// SECURITY CHECK
+		if (!filePath.startsWith(baseDir)) {
+
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+
+		// FILE EXISTS
+		if (!Files.exists(filePath)) {
+
+			System.out.println("FILE NOT FOUND");
+
+			return ResponseEntity.notFound().build();
+		}
+
+		String contentType = Files.probeContentType(filePath);
+
+		if (contentType == null) {
+
+			contentType = "application/octet-stream";
+		}
+
+		byte[] data = Files.readAllBytes(filePath);
+
+		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "inline").body(data);
+	}
+
+	@Override
+	public List<Map<String, Object>> getSalaryHeadsTdsAmount(Long orgId, String branch, String employeeCode) {
+		Set<Object[]> chType = investmentDeclarationRepo.getSalaryHeadsTdsAmount(orgId, branch, employeeCode);
+		return getSalaryHeadsTdsAmount(chType);
+	}
+
+	private List<Map<String, Object>> getSalaryHeadsTdsAmount(Set<Object[]> chType) {
+		List<Map<String, Object>> List1 = new ArrayList<>();
+		for (Object[] ch : chType) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("tdsAmount", ch[3] != null ? new BigDecimal(ch[3].toString()) : BigDecimal.ZERO);
+//			map.put("yearlyTds", ch[3] != null ? new BigDecimal(ch[3].toString()) : BigDecimal.ZERO);
+			List1.add(map);
+		}
+		return List1;
+	}
+
+	@Override
+	public List<FormVO> getFormDetails(Long orgId, String branch, String employeeCode, Long finYear) {
+
+		return formRepo.getFormDetails(orgId, branch, employeeCode, finYear);
+	}
+
 }

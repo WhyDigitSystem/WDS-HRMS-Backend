@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.InvestmentDeclarationDTO;
+import com.efit.hrms.entity.FormVO;
 import com.efit.hrms.entity.InvestmentDeclarationVO;
 import com.efit.hrms.exception.ApplicationException;
 
@@ -40,10 +41,15 @@ public interface InvestmentDeclarationService {
 
 	List<Map<String, Object>> getTaxRegimeComparisonDetails(Long orgId, String branch, String employeeCode);
 
-	Resource viewInvestmentImage(Long detailId) throws IOException;
-
 	ResponseEntity<byte[]> viewFileInvestment(HttpServletRequest request) throws IOException;
 
-//	ResponseEntity<byte[]> viewFileInvestment(HttpServletRequest request);
- 
+	List<Map<String, Object>> getSalaryHeadsTdsAmount(Long orgId, String branch, String employeeCode);
+
+	List<FormVO> getFormDetails(Long orgId, String branch, String employeeCode, Long finYear);
+
+	ResponseEntity<byte[]> viewTicketImageForm(HttpServletRequest request) throws IOException;
+
+	FormVO uploadImageForm16(MultipartFile file, Long orgId, String branch, String branchCode, String employeeCode,
+			String employeeName, Long finYear, String createdBy) throws IOException;
+
 }

@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -14,10 +15,19 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContextException;
@@ -78,9 +88,9 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	@Autowired
 	DocumentTypeService documentTypeService;
-	
+
 	@Autowired
-	EmployeeRepo employeeRepo;	 
+	EmployeeRepo employeeRepo;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -584,10 +594,8 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	private void createUpdateExpenseClaimsVOByExpenseClaimsDTO(ExpenseClaimsVO expenseClaimsVO,
 			ExpenseClaimsDTO expenseClaimsDTO) {
-		
-		EmployeeVO employeeVO = employeeRepo.findByEmployeeCode(expenseClaimsDTO.getEmployeeCode());
-		
 
+		EmployeeVO employeeVO = employeeRepo.findByEmployeeCode(expenseClaimsDTO.getEmployeeCode());
 
 		expenseClaimsVO.setEmployeeName(expenseClaimsDTO.getEmployeeName());
 		expenseClaimsVO.setEmployeeCode(expenseClaimsDTO.getEmployeeCode());
@@ -600,8 +608,8 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		expenseClaimsVO.setReceiptAttached(expenseClaimsDTO.getReceiptAttached());
 		expenseClaimsVO.setDescription(expenseClaimsDTO.getDescription());
 		expenseClaimsVO.setReportingPerson(employeeVO.getReportingPerson());
-	    expenseClaimsVO.setReportingPersonCode(employeeVO.getReportingPersonCode());
-	    expenseClaimsVO.setReportingPersonEmail(employeeVO.getReportingPersonEmail());
+		expenseClaimsVO.setReportingPersonCode(employeeVO.getReportingPersonCode());
+		expenseClaimsVO.setReportingPersonEmail(employeeVO.getReportingPersonEmail());
 		expenseClaimsVO.setApproveStatus("PENDING");
 		expenseClaimsVO.setBranchCode(expenseClaimsDTO.getBranchCode());
 		expenseClaimsVO.setBranch(expenseClaimsDTO.getBranch());
@@ -653,7 +661,7 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	private void createUpdateTravelRequestsVOByTravelRequestsDTO(TravelRequestsVO travelRequestsVO,
 			TravelRequestsDTO travelRequestsDTO) {
-		
+
 		EmployeeVO employeeVO = employeeRepo.findByEmployeeCode(travelRequestsDTO.getEmployeeCode());
 
 		travelRequestsVO.setEmployeeName(travelRequestsDTO.getEmployeeName());
@@ -1200,6 +1208,325 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 		Path path = Paths.get(uploadDir + asset.getFileName());
 		return Files.probeContentType(path);
+	}
+
+	private int totalRows = 0;
+	private int successfulUploads = 0;
+
+	private final DataFormatter dataFormatter = new DataFormatter();
+
+	@Transactional
+	@Override
+	public void excelUploadForAssetMaster(MultipartFile file, Long orgId, String createdBy, String branch,
+			String branchCode, String finYear) throws ApplicationException {
+
+		totalRows = 0;
+		successfulUploads = 0;
+
+		if (file.isEmpty()) {
+
+			throw new ApplicationException("The supplied file '" + file.getOriginalFilename() + "' is empty.");
+		}
+
+		try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+
+			Sheet sheet = workbook.getSheetAt(0);
+
+			System.out.println("Processing file : " + file.getOriginalFilename());
+
+			// HEADER VALIDATION
+			Row headerRow = sheet.getRow(0);
+
+			if (!isAssetHeaderValid(headerRow)) {
+
+				throw new ApplicationException("Invalid Excel format. Expected headers : "
+						+ "Asset Name, Category, Brand, Model, " + "Serial Number, Purchase Date, "
+						+ "Purchase Cost, Warranty Expiry, " + "Location, Notes, Active");
+			}
+
+			// LOOP ROWS
+			for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+
+				Row row = sheet.getRow(i);
+
+				if (row == null || isRowEmpty(row)) {
+
+					continue;
+				}
+
+				totalRows++;
+
+				System.out.println("Processing row : " + (i + 1));
+
+				try {
+
+					AssetMasterVO assetMasterVO = new AssetMasterVO();
+
+					assetMasterVO.setAssetName(getStringCellValue(row.getCell(0)));
+
+					assetMasterVO.setCategory(getStringCellValue(row.getCell(1)));
+
+					assetMasterVO.setBrand(getStringCellValue(row.getCell(2)));
+
+					assetMasterVO.setModel(getStringCellValue(row.getCell(3)));
+
+					assetMasterVO.setSerialNumber(getStringCellValue(row.getCell(4)));
+
+					assetMasterVO.setPurchaseDate(parseDate(row.getCell(5)));
+
+					assetMasterVO.setPurchaseCost(getStringCellValue(row.getCell(6)));
+
+					assetMasterVO.setWarrantyExpiry(parseDate(row.getCell(7)));
+
+					assetMasterVO.setLocation(getStringCellValue(row.getCell(8)));
+
+					assetMasterVO.setNotes(getStringCellValue(row.getCell(9)));
+
+					assetMasterVO.setActive(getBooleanCellValue(row.getCell(10)));
+
+					// COMMON PARAMS
+					assetMasterVO.setOrgId(orgId);
+
+					assetMasterVO.setBranch(branch);
+
+					assetMasterVO.setBranchCode(branchCode);
+
+					assetMasterVO.setFinyear(finYear);
+
+					assetMasterVO.setCreatedBy(createdBy);
+
+					assetMasterVO.setUpdatedBy(createdBy);
+
+					// DOC ID
+					String screenCode = "AM";
+
+					String docId = documentTypeService.getDocid(branchCode, screenCode);
+
+					assetMasterVO.setAssetCode(docId);
+
+					assetMasterVO.setScreenCode(screenCode);
+
+					assetMasterVO.setScreenName("Asset Master");
+
+					// UPDATE LASTNO
+					DocTypeMappingDetailsVO docTypeMappingDetailsVO = docTypeMappingDetailsRepo
+							.findByBranchCodeAndScreenCode(branchCode, screenCode);
+
+					if (docTypeMappingDetailsVO != null) {
+
+						docTypeMappingDetailsVO.setLastNo(docTypeMappingDetailsVO.getLastNo() + 1);
+
+						docTypeMappingDetailsRepo.save(docTypeMappingDetailsVO);
+					}
+
+					// SAVE ASSET MASTER
+					assetMasterVO = assetMasterRepo.save(assetMasterVO);
+
+					// SAVE STOCK
+					AssetStockVO assetStockVO = new AssetStockVO();
+
+					assetStockVO.setAssetName(assetMasterVO.getAssetName());
+
+					assetStockVO.setAssetCode(assetMasterVO.getAssetCode());
+
+					assetStockVO.setCategory(assetMasterVO.getCategory());
+
+					assetStockVO.setBrand(assetMasterVO.getBrand());
+
+					assetStockVO.setModel(assetMasterVO.getModel());
+
+					assetStockVO.setSerialNumber(assetMasterVO.getSerialNumber());
+
+					assetStockVO.setLocation(assetMasterVO.getLocation());
+
+					assetStockVO.setBranch(assetMasterVO.getBranch());
+
+					assetStockVO.setBranchCode(assetMasterVO.getBranchCode());
+
+					assetStockVO.setFinyear(assetMasterVO.getFinyear());
+
+					assetStockVO.setSourceId(assetMasterVO.getId());
+
+					assetStockVO.setCreatedBy(assetMasterVO.getCreatedBy());
+
+					assetStockVO.setUpdatedBy(assetMasterVO.getUpdatedBy());
+
+					assetStockVO.setSourceScreen(assetMasterVO.getScreenName());
+
+					assetStockVO.setSourceScreenCode(assetMasterVO.getScreenCode());
+
+					assetStockVO.setOrgId(assetMasterVO.getOrgId());
+
+					assetStockVO.setAssetStatus("A");
+
+					assetStockVO.setQty(1);
+
+					assetStockRepo.save(assetStockVO);
+
+					successfulUploads++;
+
+				} catch (Exception e) {
+
+					System.err.println("Error at row " + (i + 1) + " : " + e.getMessage());
+				}
+			}
+
+		} catch (IOException e) {
+
+			throw new ApplicationException(
+					"Failed to process file : " + file.getOriginalFilename() + " - " + e.getMessage());
+		}
+
+		System.out.println("Total Rows : " + totalRows);
+
+		System.out.println("Successfully Uploaded : " + successfulUploads);
+	}
+
+	// ================= HELPER METHODS =================
+
+	private boolean isAssetHeaderValid(Row headerRow) {
+
+		if (headerRow == null) {
+
+			return false;
+		}
+
+		List<String> expectedHeaders = Arrays.asList("asset name", "category", "brand", "model", "serial number",
+				"purchase date", "purchase cost", "warranty expiry", "location", "notes", "active");
+
+		List<String> actualHeaders = new ArrayList<>();
+
+		for (Cell cell : headerRow) {
+
+			actualHeaders.add(getStringCellValue(cell).toLowerCase());
+		}
+
+		return expectedHeaders.equals(actualHeaders);
+	}
+
+	private String getStringCellValue(Cell cell) {
+
+		if (cell == null) {
+
+			return "";
+		}
+
+		return dataFormatter.formatCellValue(cell).trim();
+	}
+
+	private boolean isRowEmpty(Row row) {
+
+		for (Cell cell : row) {
+
+			if (cell != null && cell.getCellType() != CellType.BLANK && !getStringCellValue(cell).isEmpty()) {
+
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private LocalDate parseDate(Cell cell) {
+
+		if (cell == null) {
+
+			return null;
+		}
+
+		try {
+
+			if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+
+				return cell.getLocalDateTimeCellValue().toLocalDate();
+
+			} else if (cell.getCellType() == CellType.STRING) {
+
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+				return LocalDate.parse(cell.getStringCellValue(), formatter);
+			}
+
+		} catch (Exception e) {
+
+			System.err.println("Date parsing error : " + getStringCellValue(cell));
+		}
+
+		return null;
+	}
+
+	private Double getDoubleCellValue(Cell cell) {
+
+		if (cell == null) {
+
+			return null;
+		}
+
+		try {
+
+			if (cell.getCellType() == CellType.NUMERIC) {
+
+				return cell.getNumericCellValue();
+
+			} else if (cell.getCellType() == CellType.STRING && !cell.getStringCellValue().trim().isEmpty()) {
+
+				return Double.parseDouble(cell.getStringCellValue().trim());
+			}
+
+		} catch (Exception e) {
+
+			System.err.println("Double parsing error : " + getStringCellValue(cell));
+		}
+
+		return null;
+	}
+
+	private Boolean getBooleanCellValue(Cell cell) {
+
+		if (cell == null) {
+
+			return false;
+		}
+
+		try {
+
+			if (cell.getCellType() == CellType.BOOLEAN) {
+
+				return cell.getBooleanCellValue();
+
+			} else if (cell.getCellType() == CellType.STRING) {
+
+				return Boolean.parseBoolean(cell.getStringCellValue().trim());
+			}
+
+		} catch (Exception e) {
+
+			System.err.println("Boolean parsing error : " + getStringCellValue(cell));
+		}
+
+		return false;
+	}
+
+	public int getTotalRows() {
+
+		return totalRows;
+	}
+
+	public int getSuccessfulUploads() {
+
+		return successfulUploads;
+	}
+
+	@Override
+	public List<AssetMasterVO> getAssetMasterReportDetails(Long orgId, String category, String branchCode,
+			String fromDate, String toDate) {
+		return assetMasterRepo.getAssetMasterReportDetails(orgId, category, branchCode, fromDate, toDate);
+	}
+
+	@Override
+	public List<AssetAllocationVO> getAssetAllocationReportDetails(Long orgId, String employeeCode, String branchCode,
+			String fromDate, String toDate) {
+		return assetAllocationRepo.getAssetAllocationReportDetails(orgId, employeeCode, branchCode, fromDate, toDate);
 	}
 
 }

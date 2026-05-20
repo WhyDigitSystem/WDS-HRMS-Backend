@@ -35,6 +35,7 @@ import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.InvestmentDeclarationDTO;
 import com.efit.hrms.dto.ResponseDTO;
+import com.efit.hrms.entity.FormVO;
 import com.efit.hrms.entity.InvestmentDeclarationDetailsVO;
 import com.efit.hrms.entity.InvestmentDeclarationVO;
 import com.efit.hrms.repo.InvestmentDeclarationDetailsRepo;
@@ -293,27 +294,6 @@ public class InvestmentDeclarationController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 	}
 
-	@GetMapping("/viewInvestmentImage/{detailId}")
-	public ResponseEntity<Resource> viewInvestmentImage(@PathVariable Long detailId) throws IOException {
-
-		InvestmentDeclarationDetailsVO detail = investmentDeclarationDetailsRepo.findById(detailId)
-				.orElseThrow(() -> new RuntimeException("Image not found"));
-
-		Resource resource = investmentDeclarationService.viewInvestmentImage(detailId);
-
-		Path path = Paths.get(detail.getFilePath());
-
-		String contentType = Files.probeContentType(path);
-
-		if (contentType == null) {
-			contentType = "image/jpeg";
-		}
-
-		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(resource);
-	}
-
-
-
 	@PostMapping("/uploadImageInvestmentDeclarationDetails")
 	public ResponseEntity<ResponseDTO> uploadImageInvestmentDeclarationDetails(
 
@@ -359,4 +339,108 @@ public class InvestmentDeclarationController extends BaseController {
 		return investmentDeclarationService.viewFileInvestment(request);
 	}
 
+	@PostMapping("/uploadImageForm16")
+	public ResponseEntity<ResponseDTO> uploadImageForm16(
+
+			@RequestParam MultipartFile file,
+
+			@RequestParam Long orgId,
+
+			@RequestParam String branch,
+
+			@RequestParam String branchCode,
+
+			@RequestParam String employeeCode,
+
+			@RequestParam String employeeName, @RequestParam Long finYear, @RequestParam String createdBy) {
+
+		String methodName = "uploadImageForm16()";
+
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+
+		ResponseDTO responseDTO;
+
+		try {
+
+			FormVO response = investmentDeclarationService.uploadImageForm16(file, orgId, branch, branchCode,
+					employeeCode, employeeName, finYear, createdBy);
+
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Form16 Uploaded Successfully");
+
+			responseObjectsMap.put("response", response);
+
+			responseDTO = createServiceResponse(responseObjectsMap);
+
+		} catch (Exception e) {
+
+			responseDTO = createServiceResponseError(responseObjectsMap, "Form16 Upload Failed", e.getMessage());
+		}
+
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("/viewTicketImageForm/**")
+	public ResponseEntity<byte[]> viewTicketImageForm(HttpServletRequest request) throws IOException {
+
+		return investmentDeclarationService.viewTicketImageForm(request);
+	}
+
+	@GetMapping("/getSalaryHeadsTdsAmount")
+	public ResponseEntity<ResponseDTO> getSalaryHeadsTdsAmount(@RequestParam Long orgId, @RequestParam String branch,
+			@RequestParam String employeeCode) {
+		String methodName = "getSalaryHeadsTdsAmount()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<Map<String, Object>> dashBoardDetails = new ArrayList<>();
+		try {
+			dashBoardDetails = investmentDeclarationService.getSalaryHeadsTdsAmount(orgId, branch, employeeCode);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "TdsSummary information get successfully");
+			responseObjectsMap.put("dashBoardDetails", dashBoardDetails);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "TdsSummary information receive failed",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
+
+	@GetMapping("/getFormDetails")
+	public ResponseEntity<ResponseDTO> getFormDetails(@RequestParam Long orgId, @RequestParam String branch,
+			@RequestParam String employeeCode, @RequestParam Long finYear) {
+		String methodName = "getFormDetails()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<FormVO> formVO = new ArrayList<>();
+		try {
+			formVO = investmentDeclarationService.getFormDetails(orgId, branch, employeeCode, finYear);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Form information get successfully ByOrgId");
+			responseObjectsMap.put("formVO", formVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "Form information receive failedByOrgId",
+					errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+
+	}
 }

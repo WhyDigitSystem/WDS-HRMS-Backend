@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class InvestmentDeclarationDetailsDTO {
+	
+	private Long id;
 	private String section;
 	private String investmentType;
 	private BigDecimal declared;
