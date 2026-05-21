@@ -3298,4 +3298,153 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 			         Long orgId,
 			         String employeecode
 			 );
+
+	 @Query(value = "SELECT " +
+		        "    'LEAVE REQUEST' AS type, " +
+		        "    lr.leaverequestid AS id, " +
+		        "    lr.employeecode, " +
+		        "    lr.employeename, " +
+		        "    lr.fromdate AS requestdate, " +
+		        "    lr.approvestatus, " +
+		        "    CAST(NULL AS CHAR) AS intime, " +
+		        "    CAST(NULL AS CHAR) AS outtime, " +
+		        "    lr.notes AS reason, " +
+		        "    lr.createdon " +
+
+		        "FROM leaverequest lr " +
+
+		        "WHERE lr.approvestatus = 'REJECTED' " +
+		        "AND lr.leavecode <> 'COMP-OFF' " +
+		        "AND lr.orgid = ?1 " +
+		        "AND lr.fromdate BETWEEN ?2 AND ?3 " +
+		        "AND (?4 = 'ALL' OR lr.employeecode = ?4) " +
+		        "AND (?5 = 'ALL' OR ?5 = 'LEAVEREQUEST') " +
+
+		        "UNION ALL " +
+
+		        "SELECT " +
+		        "    'COMPENSATORY OFF' AS type, " +
+		        "    lr.leaverequestid AS id, " +
+		        "    lr.employeecode, " +
+		        "    lr.employeename, " +
+		        "    lr.fromdate AS requestdate, " +
+		        "    lr.approvestatus, " +
+		        "    CAST(NULL AS CHAR) AS intime, " +
+		        "    CAST(NULL AS CHAR) AS outtime, " +
+		        "    lr.notes AS reason, " +
+		        "    lr.createdon " +
+
+		        "FROM leaverequest lr " +
+
+		        "WHERE lr.approvestatus = 'REJECTED' " +
+		        "AND lr.leavecode = 'COMP-OFF' " +
+		        "AND lr.orgid = ?1 " +
+		        "AND lr.fromdate BETWEEN ?2 AND ?3 " +
+		        "AND (?4 = 'ALL' OR lr.employeecode = ?4) " +
+		        "AND (?5 = 'ALL' OR ?5 = 'COMPENSATORYOFF') " +
+
+		        "UNION ALL " +
+
+		        "SELECT " +
+		        "    'PERMISSION REQUEST' AS type, " +
+		        "    pr.permissionrequestid AS id, " +
+		        "    pr.employeecode, " +
+		        "    pr.employeename, " +
+		        "    pr.date AS requestdate, " +
+		        "    pr.approvestatus, " +
+		        "    pr.fromtime AS intime, " +
+		        "    pr.totime AS outtime, " +
+		        "    pr.notes AS reason, " +
+		        "    pr.createdon " +
+
+		        "FROM permissionrequest pr " +
+
+		        "WHERE pr.approvestatus = 'REJECTED' " +
+		        "AND pr.orgid = ?1 " +
+		        "AND pr.date BETWEEN ?2 AND ?3 " +
+		        "AND (?4 = 'ALL' OR pr.employeecode = ?4) " +
+		        "AND (?5 = 'ALL' OR ?5 = 'PERMISSIONREQUEST') " +
+
+		        "UNION ALL " +
+
+		        "SELECT " +
+		        "    'WORK FROM HOME' AS type, " +
+		        "    wfh.workfromhomeid AS id, " +
+		        "    wfh.employeecode, " +
+		        "    wfh.employeename, " +
+		        "    wfh.wfhdate AS requestdate, " +
+		        "    wfh.approvestatus, " +
+		        "    CAST(NULL AS CHAR) AS intime, " +
+		        "    CAST(NULL AS CHAR) AS outtime, " +
+		        "    wfh.reason, " +
+		        "    wfh.createdon " +
+
+		        "FROM workfromhome wfh " +
+
+		        "WHERE wfh.approvestatus = 'REJECTED' " +
+		        "AND wfh.orgid = ?1 " +
+		        "AND wfh.wfhdate BETWEEN ?2 AND ?3 " +
+		        "AND (?4 = 'ALL' OR wfh.employeecode = ?4) " +
+		        "AND (?5 = 'ALL' OR ?5 = 'WORKFROMHOME') " +
+
+		        "UNION ALL " +
+
+		        "SELECT " +
+		        "    'TRAVEL REQUEST' AS type, " +
+		        "    tr.travelrequestid AS id, " +
+		        "    tr.employeecode, " +
+		        "    tr.employeename, " +
+		        "    tr.fromdate AS requestdate, " +
+		        "    tr.approvestatus, " +
+		        "    CAST(NULL AS CHAR) AS intime, " +
+		        "    CAST(NULL AS CHAR) AS outtime, " +
+		        "    tr.travelreason AS reason, " +
+		        "    tr.createdon " +
+
+		        "FROM travelrequest tr " +
+
+		        "WHERE tr.approvestatus = 'REJECTED' " +
+		        "AND tr.orgid = ?1 " +
+		        "AND tr.fromdate BETWEEN ?2 AND ?3 " +
+		        "AND (?4 = 'ALL' OR tr.employeecode = ?4) " +
+		        "AND (?5 = 'ALL' OR ?5 = 'TRAVELREQUEST') " +
+
+		        "UNION ALL " +
+
+		        "SELECT " +
+		        "    'CHECKINOUT ADJUSTMENT' AS type, " +
+		        "    MIN(coa.checkinoutadjustmentid) AS id, " +
+		        "    coa.empcode AS employeecode, " +
+		        "    coa.empname AS employeename, " +
+		        "    coa.checkindate AS requestdate, " +
+		        "    coa.approvalstatus AS approvestatus, " +
+		        "    MIN(CASE WHEN coa.status = 'IN' THEN coa.entrytime END) AS intime, " +
+		        "    MAX(CASE WHEN coa.status = 'OUT' THEN coa.entrytime END) AS outtime, " +
+		        "    MAX(coa.requestreason) AS reason, " +
+		        "    MIN(coa.createdon) AS createdon " +
+
+		        "FROM checkinoutadjustment coa " +
+
+		        "WHERE coa.approvalstatus = 'REJECTED' " +
+		        "AND coa.orgid = ?1 " +
+		        "AND coa.checkindate BETWEEN ?2 AND ?3 " +
+		        "AND (?4 = 'ALL' OR coa.empcode = ?4) " +
+		        "AND (?5 = 'ALL' OR ?5 = 'CHECKINOUTADJUSTMENT') " +
+
+		        "GROUP BY " +
+		        "    coa.empcode, " +
+		        "    coa.empname, " +
+		        "    coa.checkindate, " +
+		        "    coa.approvalstatus " +
+
+		        "ORDER BY 5 DESC",
+		        nativeQuery = true)
+
+		List<Map<String, Object>> getRejectedRequests(
+		        Long orgid,
+		        String fromDate,
+		        String toDate,
+		        String employeecode,
+		        String type);
+	 
 }

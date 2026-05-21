@@ -309,4 +309,85 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	     return orderedList;
 	 }
 	 
+	 
+	 @Override
+	 public List<Map<String, Object>> getRejectedRequests(
+	         Long orgid,
+	         String fromDate,
+	         String toDate,
+	         String employeecode,
+	         String type) {
+
+	     List<Map<String, Object>> rawList =
+	    		 attendanceProcessRepo.getRejectedRequests(
+	                     orgid,
+	                     fromDate,
+	                     toDate,
+	                     employeecode,
+	                     type);
+
+	     List<Map<String, Object>> orderedList =
+	             new ArrayList<>();
+
+	     for (Map<String, Object> row : rawList) {
+
+	         Map<String, Object> orderedMap =
+	                 new LinkedHashMap<>();
+
+	         orderedMap.put(
+	                 "type",
+	                 row.get("type")
+	         );
+
+	         orderedMap.put(
+	                 "id",
+	                 row.get("id")
+	         );
+
+	         orderedMap.put(
+	                 "employeecode",
+	                 row.get("employeecode")
+	         );
+
+	         orderedMap.put(
+	                 "employeename",
+	                 row.get("employeename")
+	         );
+
+	         orderedMap.put(
+	                 "requestdate",
+	                 row.get("requestdate")
+	         );
+
+	         orderedMap.put(
+	                 "approvestatus",
+	                 row.get("approvestatus")
+	         );
+
+	         orderedMap.put(
+	                 "intime",
+	                 row.get("intime")
+	         );
+
+	         orderedMap.put(
+	                 "outtime",
+	                 row.get("outtime")
+	         );
+
+	         orderedMap.put(
+	                 "reason",
+	                 row.get("reason")
+	         );
+
+	         orderedMap.put(
+	                 "createdon",
+	                 row.get("createdon")
+	         );
+
+	         orderedList.add(orderedMap);
+	     }
+
+	     return orderedList;
+	 }
+	 
 }
