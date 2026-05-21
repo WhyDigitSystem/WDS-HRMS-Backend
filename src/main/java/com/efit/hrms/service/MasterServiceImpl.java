@@ -268,7 +268,7 @@ public class MasterServiceImpl implements MasterService {
 	    String message;
 
 	    if (ObjectUtils.isEmpty(employeeDTO.getEmployeeCode())) {
-	    	employeeDTO.setEmployeeCode(generateEmployeeCode(employeeDTO.getOrgId()));
+	    	employeeDTO.setEmployeeCode(generateEmployeeCode(employeeDTO.getOrgId(), employeeDTO.getEmployeeType()));
 	    	
 	        // CREATE
 	        if (employeeRepo.existsByEmployeeCodeAndOrgId(employeeDTO.getEmployeeCode(), employeeDTO.getOrgId())) {
@@ -318,46 +318,63 @@ public class MasterServiceImpl implements MasterService {
 	
 	//auto generated code 
 	
-    private String generateEmployeeCode(Long orgId) throws ApplicationException {
+	private String generateEmployeeCode(
+	        Long orgId,
+	        String employeeType) throws ApplicationException {
 
-        CompanyVO company = companyRepo.findById(orgId)
-                .orElseThrow(() -> new ApplicationException("Company not found for orgId: " + orgId));
+	    CompanyVO company = companyRepo.findById(orgId)
+	            .orElseThrow(() ->
+	                    new ApplicationException(
+	                            "Company not found for orgId: " + orgId));
 
-        String prefix = company.getCompanyCode();
+	    String companyCode = company.getCompanyCode();
 
-        if (prefix == null || prefix.trim().isEmpty()) {
-            prefix = company.getCompanyName()
-                    .substring(0, Math.min(3, company.getCompanyName().length()))
-                    .toUpperCase();
-        }
+	    if (companyCode == null || companyCode.trim().isEmpty()) {
+	        throw new ApplicationException("Company Code is Empty");
+	    }
 
-        String codePrefix = prefix + "-EMP-";
+	    Integer lastNum;
+	    String employeeCode;
 
-        Optional<EmployeeVO> lastEmployeeOpt =
-                employeeRepo.findTopByOrgIdAndEmployeeCodeStartingWithOrderByIdDesc(orgId, codePrefix);
+	    // EMPLOYEE
+	    if ("Employee".equalsIgnoreCase(employeeType)) {
 
-        int nextNumber = 1;
+	        lastNum = company.getELastNum();
 
-        if (lastEmployeeOpt.isPresent()) {
+	        if (lastNum == null || lastNum == 0) {
+	            lastNum = 1;
+	        }
 
-            String lastCode = lastEmployeeOpt.get().getEmployeeCode();
+	        employeeCode =
+	                companyCode + String.format("%03d", lastNum);
 
-            String numberPart = lastCode.substring(codePrefix.length());
+	        company.setELastNum(lastNum + 1);
+	    }
 
-            try {
-                nextNumber = Integer.parseInt(numberPart) + 1;
-            } catch (NumberFormatException e) {
-                nextNumber = 1;
-            }
-        }
+	    // CONTRACTOR
+	    else if ("Contractor".equalsIgnoreCase(employeeType)) {
 
-        return codePrefix + String.format("%04d", nextNumber);
-    }
+	        lastNum = company.getCLastNum();
 
-    
+	        if (lastNum == null || lastNum == 0) {
+	            lastNum = 1;
+	        }
 
-   
+	        employeeCode =
+	                companyCode + "C" +
+	                String.format("%03d", lastNum);
 
+	        company.setCLastNum(lastNum + 1);
+	    }
+
+	    else {
+	        throw new ApplicationException("Invalid Employee Type");
+	    }
+
+	    companyRepo.save(company);
+
+	    return employeeCode;
+	}
 
 	/** Maps ONLY simple fields. NO save calls, NO child handling here. */
 	private void mapEmployeeBasics(EmployeeVO employeeVO, EmployeeDTO employeeDTO) throws ApplicationException {
@@ -1674,5 +1691,49 @@ public class MasterServiceImpl implements MasterService {
 			}
 			return List1;
 		}
+		
+		@Override
+		public String previewEmployeeCode(
+		        Long orgId,
+		        String employeeType)
+		        throws ApplicationException {
 
+		    CompanyVO company = companyRepo.findById(orgId)
+		            .orElseThrow(() ->
+		                    new ApplicationException("Company not found"));
+
+		    String companyCode = company.getCompanyCode();
+
+		    Integer lastNum;
+
+		    // Employee
+		    if ("Employee".equalsIgnoreCase(employeeType)) {
+
+		        lastNum = company.getELastNum();
+
+		        if (lastNum == null || lastNum <= 0) {
+		            lastNum = 1;
+		        }
+
+		        return companyCode +
+		                String.format("%03d", lastNum);
+		    }
+
+		    // Contractor
+		    else if ("Contractor".equalsIgnoreCase(employeeType)) {
+
+		        lastNum = company.getCLastNum();
+
+		        if (lastNum == null || lastNum <= 0) {
+		            lastNum = 1;
+		        }
+
+		        return companyCode + "C" +
+		                String.format("%03d", lastNum);
+		    }
+
+		    else {
+		        throw new ApplicationException("Invalid Employee Type");
+		    }
+		}
 }

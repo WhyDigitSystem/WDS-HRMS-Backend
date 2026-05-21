@@ -1397,6 +1397,13 @@ public class CheckInOutServiceImpl implements CheckInOutService {
 							String branchCode = employeeVO.getBranchCode();
 
 							LocalDate checkInDate = getDateCell(row, 2, formatter);
+							LocalDate joiningDate = employeeVO.getJoiningDate();
+
+							if (joiningDate != null && checkInDate.isBefore(joiningDate)) {
+							    throw new IllegalArgumentException(
+							        "Check-in date is before employee joining date : " + joiningDate
+							    );
+							}
 							LocalTime inTime = getTimeCell(row, 4, formatter);
 							LocalTime outTime = getTimeCell(row, 5, formatter);
 

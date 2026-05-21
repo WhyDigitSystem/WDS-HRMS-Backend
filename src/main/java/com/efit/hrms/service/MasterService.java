@@ -90,6 +90,8 @@ public interface MasterService {
 
 		ListOfValuesVO getAllListOfValuesById(Long id);
 
+		String previewEmployeeCode(Long orgId, String employeeType) throws ApplicationException;
+
 
 
 

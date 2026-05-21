@@ -38,6 +38,7 @@ import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.ListOfValuesVO;
 import com.efit.hrms.entity.ProjectMasterVO;
 import com.efit.hrms.exception.ApplicationException;
+import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.service.MasterService;
 
 @CrossOrigin
@@ -609,6 +610,59 @@ public class MasterController extends BaseController {
 			}
 		 
 		 
+			
+			@GetMapping("/generateEmployeeCode")
+			public ResponseEntity<ResponseDTO> generateEmployeeCode(
+			        @RequestParam Long orgId,
+			        @RequestParam String employeeType) {
+
+			    String methodName = "generateEmployeeCode()";
+
+			    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+			    String errorMsg = null;
+
+			    Map<String, Object> responseObjectsMap = new HashMap<>();
+
+			    ResponseDTO responseDTO = null;
+
+			    String employeeCode = null;
+
+			    try {
+
+			        employeeCode = masterService.previewEmployeeCode(orgId,employeeType);
+
+			    } catch (Exception e) {
+
+			        errorMsg = e.getMessage();
+
+			        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME,
+			                methodName,
+			                errorMsg);
+			    }
+
+			    if (StringUtils.isBlank(errorMsg)) {
+
+			        responseObjectsMap.put(
+			                CommonConstant.STRING_MESSAGE,
+			                "Employee code generated successfully");
+
+			        responseObjectsMap.put("employeeCode", employeeCode);
+
+			        responseDTO = createServiceResponse(responseObjectsMap);
+
+			    } else {
+
+			        responseDTO = createServiceResponseError(
+			                responseObjectsMap,
+			                "Employee code generation failed",
+			                errorMsg);
+			    }
+
+			    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+			    return ResponseEntity.ok().body(responseDTO);
+			}
 		 }
 
 

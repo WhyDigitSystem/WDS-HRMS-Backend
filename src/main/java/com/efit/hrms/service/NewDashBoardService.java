@@ -19,4 +19,7 @@ public interface NewDashBoardService {
 
 	List<Map<String, Object>> getAttendanceDashboard(Long orgId, String employeecode);
 
+	List<Map<String, Object>> getRejectedRequests(Long orgid, String fromDate, String toDate, String employeecode,
+			String type);
+
 }
