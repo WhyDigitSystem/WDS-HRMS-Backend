@@ -1,6 +1,7 @@
 package com.efit.hrms.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -39,6 +40,21 @@ public class InvestmentDeclarationDetailsVO {
 	private String section;
 	@Column(name = "investmenttype")
 	private String investmentType;
+	
+	@Column(name = "filesize")
+	private Long fileSize;
+
+	@Column(name = "contenttype")
+	private String contentType;
+
+	@Column(name = "uploadon")
+	private LocalDateTime uploadOn;
+	
+	@Column(name = "filename")
+	private String fileName;
+
+	@Column(name = "filepath")
+	private String filePath;
 
 	@Column(name = "declared", precision = 10, scale = 2)
 	private BigDecimal declared;
