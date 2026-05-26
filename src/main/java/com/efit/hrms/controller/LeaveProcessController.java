@@ -1,6 +1,8 @@
 package com.efit.hrms.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
@@ -40,6 +44,7 @@ import com.efit.hrms.entity.LeaveTypeVO;
 import com.efit.hrms.entity.TravelRequestVO;
 import com.efit.hrms.entity.WorkFromHomeVO;
 import com.efit.hrms.exception.ApplicationException;
+import com.efit.hrms.repo.LeaveRequestRepo;
 import com.efit.hrms.service.LeaveProcessService;
 
 @CrossOrigin
@@ -49,6 +54,12 @@ public class LeaveProcessController extends BaseController {
 
 	@Autowired
 	LeaveProcessService leaveProcessService;
+	
+	@Autowired
+	LeaveRequestRepo leaveRequestRepo;
+	
+	@Autowired
+	private TemplateEngine templateEngine;
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(LeaveProcessController.class);
 
@@ -259,34 +270,222 @@ public class LeaveProcessController extends BaseController {
 //		return ResponseEntity.ok().body(responseDTO);
 //	}
 
-	// ApprovalLeave
+	//trigger approval api
+	
+	@GetMapping("/mailLeaveAction")
+	public ResponseEntity<String> mailLeaveAction(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam String notifyCode,
+	        @RequestParam String notify,
+	        @RequestParam String screenName,
+	        @RequestParam String email,
+	        @RequestParam(required = false) String reason) {
 
-	@PutMapping("/createApprovalLeave")
-	public ResponseEntity<ResponseDTO> createApprovalLeave(@RequestParam Long orgId, @RequestParam Long id,
-			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
-			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam String email,@RequestParam (required=false) String reason) {
-		String methodName = "createApprovalLeave()";
-		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
-		String errorMsg = null;
-		Map<String, Object> responseObjectsMap = new HashMap<>();
-		ResponseDTO responseDTO = null;
-		try {
-			Map<String, Object> result = leaveProcessService.createApprovalLeave(orgId, id, employeeCode, action,
-					actionBy, notifyCode, notify,screenName,email,reason);
+	    Context context = new Context();
 
-			// ✅ Correct keys from the returned map
-			responseObjectsMap.put("leaveRequestVO", result.get("leaveRequestVO"));
-			responseObjectsMap.put("message", result.get("message"));
+	    try {
+	        Map<String, Object> details = leaveProcessService.createApprovalLeave(
+	                orgId, id, employeeCode, action, actionBy,
+	                notifyCode, notify, screenName, email, reason);
 
-			responseDTO = createServiceResponse(responseObjectsMap);
-		} catch (Exception e) {
-			errorMsg = e.getMessage();
-			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-		}
-		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-		return ResponseEntity.ok().body(responseDTO);
+	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
+
+	        context.setVariable("stateClass",   isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",    isApproved ? "Approved"       : "Rejected");
+	        context.setVariable("title",        isApproved ? "Leave Approved Successfully"
+	                                                       : "Leave Rejected Successfully");
+	        context.setVariable("message",      isApproved
+	                ? "The leave request has been approved and the team has been notified."
+	                : "The leave request has been rejected and the employee has been notified.");
+
+	        LeaveRequestVO leaveRequestVO =
+	                (LeaveRequestVO) details.get("leaveRequestVO");
+	        
+	        context.setVariable(
+	                "employeeName",
+	                leaveRequestVO.getEmployeeName());
+
+	        context.setVariable(
+	                "leaveType",
+	                leaveRequestVO.getLeaveType());
+
+	        context.setVariable(
+	                "fromDate",
+	                leaveRequestVO.getFromDate());
+
+	        context.setVariable(
+	                "toDate",
+	                leaveRequestVO.getToDate());
+	        context.setVariable("approvedBy",   actionBy);
+	        context.setVariable("actionTime",   LocalDateTime.now()
+	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+	        context.setVariable("reason",       reason); // shown only on rejected
+
+	    } catch (Exception e) {
+	        context.setVariable("stateClass", "state-error");
+	        context.setVariable("pillLabel",  "Failed");
+//	        context.setVariable("title",      "Action Failed");
+//	        context.setVariable("message",    "Something went wrong while processing this request.");
+	        context.setVariable("reason",     e.getMessage());
+	    }
+
+	    String html = templateEngine.process("leave-status", context);
+	    return ResponseEntity.ok(html);
 	}
+	
+	@GetMapping("/reject-page")
+	public ResponseEntity<String> rejectPage(
+
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+
+	        @RequestParam(required = false, defaultValue = "")
+	        String notifyCode,
+
+	        @RequestParam(required = false, defaultValue = "")
+	        String notify,
+
+	        @RequestParam(required = false, defaultValue = "")
+	        String screenName,
+
+	        @RequestParam(required = false, defaultValue = "")
+	        String email,
+
+	        @RequestParam(required = false, defaultValue = "")
+	        String reason) {
+
+	    try {
+
+	        // GET LEAVE REQUEST
+	        LeaveRequestVO leaveRequestVO =
+	                leaveRequestRepo
+	                .findByOrgIdAndIdAndEmployeeCode(
+	                        orgId,
+	                        id,
+	                        employeeCode);
+
+	        // =====================================
+	        // ALREADY APPROVED / REJECTED
+	        // =====================================
+
+	        if (leaveRequestVO.getApproveStatus() != null) {
+
+	            String status =
+	                    leaveRequestVO.getApproveStatus();
+
+	            // IF ALREADY ACTION TAKEN
+	            if ("Approved".equalsIgnoreCase(status)
+	                    || "Rejected".equalsIgnoreCase(status)) {
+
+	                // DIRECTLY CALL STATUS PAGE
+	                return mailLeaveAction(
+	                        orgId,
+	                        id,
+	                        employeeCode,
+	                        status,
+	                        actionBy,
+	                        notifyCode,
+	                        notify,
+	                        screenName,
+	                        email,
+	                        reason
+	                );
+	            }
+	        }
+
+	        // =====================================
+	        // OPEN REJECT REASON PAGE
+	        // =====================================
+
+	        Context context = new Context();
+
+	        context.setVariable("orgId", orgId);
+	        context.setVariable("id", id);
+	        context.setVariable("employeeCode", employeeCode);
+	        context.setVariable("action", action);
+	        context.setVariable("actionBy", actionBy);
+	        context.setVariable("notifyCode", notifyCode);
+	        context.setVariable("notify", notify);
+	        context.setVariable("screenName", screenName);
+	        context.setVariable("email", email);
+
+	        String html =
+	                templateEngine.process(
+	                        "reject-reason",
+	                        context);
+
+	        return ResponseEntity.ok(html);
+
+	    }
+
+	    catch (Exception e) {
+
+	        Context context = new Context();
+
+	        context.setVariable(
+	                "stateClass",
+	                "state-error");
+
+	        context.setVariable(
+	                "pillLabel",
+	                "Failed");
+
+	        context.setVariable(
+	                "title",
+	                "Action Failed");
+
+	        context.setVariable(
+	                "message",
+	                e.getMessage());
+
+	        context.setVariable(
+	                "hideDetails",
+	                true);
+
+	        String html =
+	                templateEngine.process(
+	                        "leave-status",
+	                        context);
+
+	        return ResponseEntity.ok(html);
+	    }
+	}
+	
+	// ApprovalLeave
+  // change backend mail send so cmd
+//	@PutMapping("/createApprovalLeave")
+//	public ResponseEntity<ResponseDTO> createApprovalLeave(@RequestParam Long orgId, @RequestParam Long id,
+//			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
+//			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam String email,@RequestParam (required=false) String reason) {
+//		String methodName = "createApprovalLeave()";
+//		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+//		String errorMsg = null;
+//		Map<String, Object> responseObjectsMap = new HashMap<>();
+//		ResponseDTO responseDTO = null;
+//		try {
+//			Map<String, Object> result = leaveProcessService.createApprovalLeave(orgId, id, employeeCode, action,
+//					actionBy, notifyCode, notify,screenName,email,reason);
+//
+//			// ✅ Correct keys from the returned map
+//			responseObjectsMap.put("leaveRequestVO", result.get("leaveRequestVO"));
+//			responseObjectsMap.put("message", result.get("message"));
+//
+//			responseDTO = createServiceResponse(responseObjectsMap);
+//		} catch (Exception e) {
+//			errorMsg = e.getMessage();
+//			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+//			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+//		}
+//		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+//		return ResponseEntity.ok().body(responseDTO);
+//	}
 
 	@GetMapping("/calculateLeavedays")
 	public ResponseEntity<?> calculateLeavedays(@RequestParam Long orgId,

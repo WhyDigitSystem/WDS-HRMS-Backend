@@ -3,21 +3,34 @@ package com.efit.hrms.service;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import javax.mail.internet.MimeMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
+import com.efit.hrms.entity.CompanyVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.repo.AttendanceProcessRepo;
+import com.efit.hrms.repo.CompanyRepo;
+import com.efit.hrms.repo.EmployeeRepo;
 
 @Service
 public class NewDashBoardServiceImpl implements NewDashBoardService{
@@ -26,6 +39,15 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	
 	@Autowired
 	AttendanceProcessRepo attendanceProcessRepo;
+	
+	@Autowired
+	EmployeeRepo employeeRepo;
+	
+	@Autowired
+	CompanyRepo companyRepo;
+	
+	 @Autowired
+	 private JavaMailSender mailSender;
 	
 	@Override
 	public List<Map<String, Object>> getMonthlyAttendanceForDashBoard(String employeeCode, Long orgId,
@@ -390,4 +412,639 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	     return orderedList;
 	 }
 	 
-}
+	 
+	 //monthlyAttendanceMailSend
+	 
+//	 @Scheduled(cron = "0 0 8 1 * ?")
+//	 @Scheduled(cron = "*/30 * * * * ?")
+	 public void sendMonthlyAttendanceMail() {
+         CompanyVO mailCompany = null;
+
+	     try {
+
+	         // ADMIN EMPLOYEE
+	         EmployeeVO adminEmployee =
+	                 employeeRepo.findByEmployeeCode(
+	                         "WDS038"
+	                 );
+
+	         if (adminEmployee == null
+	                 || adminEmployee.getEmail() == null
+	                 || adminEmployee.getEmail().trim().isEmpty()) {
+
+	             return;
+	         }
+
+	         // GET ACTIVE EMPLOYEES
+	         List<EmployeeVO> employees =
+	                 employeeRepo.findByActiveTrue();
+
+	         employees.sort(
+
+	        	        Comparator.comparing(
+	        	                EmployeeVO::getEmployeeName,
+	        	                String.CASE_INSENSITIVE_ORDER
+	        	        )
+	        	);
+	         
+	         // EXCLUDED EMPLOYEES
+	         List<String> excludedEmployees =
+	                 Arrays.asList(
+	                         "WDS025",
+	                         "WDS008",
+	                         "WDS001",
+	                         "WDS0010",
+	                         "WDS0008"
+	                 );
+
+	         StringBuilder tableRows =
+	                 new StringBuilder();
+
+	         int index = 0;
+
+	         for (EmployeeVO emp : employees) {
+
+	             try {
+
+	                 // SKIP EXCLUDED EMPLOYEES
+	                 if (excludedEmployees.contains(
+	                         emp.getEmployeeCode()
+	                 )) {
+
+	                     continue;
+	                 }
+
+	                 // GET COMPANY
+	                 Optional<CompanyVO> optionalCompany =
+	                         companyRepo.findById(
+	                                 emp.getOrgId()
+	                         );
+
+	                 if (!optionalCompany.isPresent()) {
+
+	                     continue;
+	                 }
+	                 
+	                 CompanyVO companyVO =
+	                         optionalCompany.get();
+
+	                 mailCompany = companyVO;
+	                 // IMPORTANT CONDITION
+	                 // ONLY TRUE COMPANY SEND
+	                 if (!companyVO.isMonthlAttendanceMail()) {
+
+	                     continue;
+	                 }
+
+	                 // GET ATTENDANCE DATA
+	                 List<Map<String, Object>> list =
+	                         attendanceProcessRepo
+	                                 .getAttendanceDashboard(
+	                                         emp.getOrgId(),
+	                                         emp.getEmployeeCode()
+	                                 );
+
+	                 if (list == null
+	                         || list.isEmpty()) {
+
+	                     continue;
+	                 }
+
+	                 Map<String, Object> row =
+	                         list.get(0);
+
+	                 String expectedHours =
+	                         String.valueOf(
+	                                 row.get(
+	                                         "expected_working_hours"
+	                                 )
+	                         );
+
+	                 String actualHours =
+	                         String.valueOf(
+	                                 row.get(
+	                                         "actual_worked_hours"
+	                                 )
+	                         );
+
+	                 long expectedSeconds =
+	                         convertToSeconds(
+	                                 expectedHours
+	                         );
+
+	                 long actualSeconds =
+	                         convertToSeconds(
+	                                 actualHours
+	                         );
+
+	                 String actualHourColor =
+	                         actualSeconds < expectedSeconds
+	                         ? "red"
+	                         : "green";
+
+	                 String rowColor =
+	                         index % 2 == 0
+	                         ? "#ffffff"
+	                         : "#f8fbff";
+
+	                 long deficitSeconds =
+	                	        expectedSeconds - actualSeconds;
+	                 
+	                 String deficitHours =
+	                	        deficitSeconds > 0
+	                	        ? formatSeconds(deficitSeconds)
+	                	        : "00 Hr 00 Min";
+	                 tableRows.append(
+
+	                         "<tr style='background:"
+	                         + rowColor
+	                         + ";'>"
+
+	                         + "<td style='padding:16px 22px;"
+	                         + "border-bottom:1px solid #edf2f7;"
+	                         + "font-size:14px;"
+	                         + "font-weight:500;'>"
+
+	                         + row.get("employeecode")
+
+	                         + "</td>"
+
+	                         + "<td style='padding:16px 22px;"
+	                         + "border-bottom:1px solid #edf2f7;"
+	                         + "font-size:14px;"
+	                         + "font-weight:500;'>"
+
+	                         + row.get("employee")
+
+	                         + "</td>"
+
+	                         + "<td style='padding:16px 22px;"
+	                         + "border-bottom:1px solid #edf2f7;"
+	                         + "font-size:14px;'>"
+
+	                         + formatHours(expectedHours)
+
+	                         + "</td>"
+
+	                         + "<td style='padding:16px 22px;"
+	                         + "border-bottom:1px solid #edf2f7;"
+	                         + "font-size:14px;"
+	                         + "font-weight:700;"
+	                         + "color:"
+	                         + actualHourColor
+	                         + ";'>"
+
+	                         + formatHours(actualHours)
+
+	                         + "</td>"
+	                         + "<td style='padding:16px 22px;"
+							+ "border-bottom:1px solid #edf2f7;"
+							+ "font-size:14px;"
+							+ "font-weight:700;"
+							+ "color:red;'>"
+							
+							+ deficitHours
+							
+							+ "</td>"
+
+	                         + "</tr>"
+	                 );
+
+	                 index++;
+
+	             } catch (Exception e) {
+
+	                 e.printStackTrace();
+	             }
+	         }
+
+	         // LOAD HTML TEMPLATE
+	         String html =
+	                 AttendanceMailTemplate
+	                         .loadMonthlySummaryTemplate();
+
+	         // PREVIOUS MONTH NAME
+	         String monthName =
+	                 java.time.LocalDate.now()
+	                         .minusMonths(1)
+	                         .getMonth()
+	                         .getDisplayName(
+	                                 java.time.format.TextStyle.FULL,
+	                                 java.util.Locale.ENGLISH
+	                         );
+
+	         html = html.replace(
+	                 "{{month_name}}",
+	                 monthName
+	         );
+
+	         // REPLACE TABLE ROWS
+	         html = html.replace(
+	                 "{{table_rows}}",
+	                 tableRows.toString()
+	         );
+
+	         // CREATE MAIL
+	         MimeMessage mimeMessage =
+	                 mailSender.createMimeMessage();
+
+	         MimeMessageHelper helper =
+	                 new MimeMessageHelper(
+	                         mimeMessage,
+	                         true,
+	                         "UTF-8"
+	                 );
+
+	         helper.setTo(
+	                 adminEmployee.getEmail()
+	         );
+
+	         helper.setSubject(
+	                 "All Employee Attendance Summary"
+	         );
+
+	         helper.setText(
+	                 html,
+	                 true
+	         );
+
+	         
+	         if (mailCompany != null
+	        	        && mailCompany.getCompanyLogo() != null) {
+
+	        	    ByteArrayResource image =
+	        	            new ByteArrayResource(
+	        	                    mailCompany.getCompanyLogo()
+	        	            );
+
+	        	    helper.addInline(
+	        	            "companyLogo",
+	        	            image,
+	        	            "image/png"
+	        	    );
+	        	}
+	         // SEND MAIL
+	         mailSender.send(mimeMessage);
+
+	         System.out.println(
+	                 "Attendance Mail Sent Successfully"
+	         );
+
+	     } catch (Exception e) {
+
+	         e.printStackTrace();
+	     }
+	 }
+
+	 private long convertToSeconds(
+	         String time
+	 ) {
+
+	     try {
+
+	         String[] parts =
+	                 time.split(":");
+
+	         long hours =
+	                 Long.parseLong(parts[0]);
+
+	         long minutes =
+	                 Long.parseLong(parts[1]);
+
+	         long seconds =
+	                 Long.parseLong(parts[2]);
+
+	         return
+	                 (hours * 3600)
+	                 + (minutes * 60)
+	                 + seconds;
+
+	     } catch (Exception e) {
+
+	         return 0;
+	     }
+	 }
+
+	 private String formatHours(
+	         String time
+	 ) {
+
+	     try {
+
+	         String[] parts =
+	                 time.split(":");
+
+	         return
+	                 parts[0]
+	                 + " Hr "
+	                 + parts[1]
+	                 + " Min";
+
+	     } catch (Exception e) {
+
+	         return time;
+	     }
+	 }
+	 
+	 private String formatSeconds(
+		        long totalSeconds
+		) {
+
+		    long hours =
+		            totalSeconds / 3600;
+
+		    long minutes =
+		            (totalSeconds % 3600) / 60;
+
+		    return
+		            String.format(
+		                    "%02d Hr %02d Min",
+		                    hours,
+		                    minutes
+		            );
+		}
+	 
+	 //send mail separateemployee
+	 
+//	 @Scheduled(cron = "0 0 8 1 * ?")
+//	 @Scheduled(cron = "*/30 * * * * ?")
+	 public void sendEmployeeAttendanceMail() {
+
+	     try {
+
+	         List<EmployeeVO> employees =
+	                 employeeRepo.findByActiveTrue();
+	        
+
+	         List<String> excludedEmployees =
+	                 Arrays.asList(
+	                         "WDS025",
+	                         "WDS008",
+	                         "WDS001",
+	                         "WDS0010",
+	                         "WDS0008"
+	                 );
+
+	         String monthName =
+	                 LocalDate.now()
+	                         .minusMonths(1)
+	                         .getMonth()
+	                         .getDisplayName(
+	                                 TextStyle.FULL,
+	                                 Locale.ENGLISH
+	                         );
+
+	         for (EmployeeVO emp : employees) {
+
+	             try {
+
+	                 // EXCLUDED EMPLOYEE
+	                 if (excludedEmployees.contains(
+	                         emp.getEmployeeCode()
+	                 )) {	
+
+	                     continue;
+	                 }
+
+	                 // EMPTY EMAIL
+	                 if (emp.getEmail() == null
+	                         || emp.getEmail().trim().isEmpty()) {
+
+	                     continue;
+	                 }
+
+	                 // COMPANY CHECK
+	                 Optional<CompanyVO> optionalCompany =
+	                         companyRepo.findById(
+	                                 emp.getOrgId()
+	                         );
+
+	                 if (!optionalCompany.isPresent()) {
+	                     continue;
+	                 }
+
+	                 CompanyVO companyVO =
+	                         optionalCompany.get();
+	                 
+	                 if (!companyVO.isMonthlAttendanceMail()) {
+	                     continue;
+	                 }
+
+	                 // ATTENDANCE
+	                 List<Map<String, Object>> list =
+	                         attendanceProcessRepo
+	                                 .getAttendanceDashboard(
+	                                         emp.getOrgId(),
+	                                         emp.getEmployeeCode()
+	                                 );
+
+	                 if (list == null || list.isEmpty()) {
+	                     continue;
+	                 }
+
+	                 Map<String, Object> row =
+	                         list.get(0);
+
+	                 String expectedHours =
+	                         String.valueOf(
+	                                 row.get(
+	                                         "expected_working_hours"
+	                                 )
+	                         );
+
+	                 String actualHours =
+	                         String.valueOf(
+	                                 row.get(
+	                                         "actual_worked_hours"
+	                                 )
+	                         );
+
+	                 long expectedSeconds =
+	                         convertToSeconds(
+	                                 expectedHours
+	                         );
+
+	                 long actualSeconds =
+	                         convertToSeconds(
+	                                 actualHours
+	                         );
+	                 
+	                 long deficitSeconds =
+	                	        expectedSeconds - actualSeconds;
+
+	                	String deficitHours =
+	                	        deficitSeconds > 0
+	                	        ? formatSeconds(deficitSeconds)
+	                	        : "00 Hr 00 Min";
+
+	                 String actualColor =
+	                         actualSeconds < expectedSeconds
+	                         ? "red"
+	                         : "green";
+
+	                 // LOAD TEMPLATE
+	                 String html =
+	                         AttendanceMailTemplate
+	                                 .loadEmployeeTemplate();
+
+	                 html = html.replace(
+	                         "{{month_name}}",
+	                         monthName
+	                 );
+
+	                 html = html.replace(
+	                         "{{employeecode}}",
+	                         String.valueOf(
+	                                 row.get("employeecode")
+	                         )
+	                 );
+
+	                 html = html.replace(
+	                         "{{employee}}",
+	                         String.valueOf(
+	                                 row.get("employee")
+	                         )
+	                 );
+
+	                 html = html.replace(
+	                         "{{expected_working_hours}}",
+	                         formatHours(expectedHours)
+	                 );
+
+	                 html = html.replace(
+	                         "{{actual_worked_hours}}",
+	                         formatHours(actualHours)
+	                 );
+
+	                 html = html.replace(
+	                	        "{{deficit_hours}}",
+	                	        deficitHours
+	                	);
+	                 
+	                 String deficitColor =
+	                	        deficitSeconds > 0
+	                	        ? "red"
+	                	        : "green";
+	                	        
+	                 String actualHoursCell;
+
+	                 if (actualSeconds < expectedSeconds) {
+
+	                     actualHoursCell =
+
+	                             "<td style='color:red;"
+	                             + "font-weight:bold;'>"
+
+	                             + formatHours(actualHours)
+
+	                             + "</td>";
+
+	                 } else {
+
+	                     actualHoursCell =
+
+	                             "<td style='color:green;"
+	                             + "font-weight:bold;'>"
+
+	                             + formatHours(actualHours)
+
+	                             + "</td>";
+	                 }
+
+	                 html = html.replace(
+	                         "##ACTUAL_HOURS_CELL##",
+	                         actualHoursCell
+	                 );
+	                 
+	                 String deficitHoursCell;
+
+	                 if (deficitSeconds > 0) {
+
+	                     deficitHoursCell =
+
+	                             "<td style='padding:16px;"
+	                             + "color:red;"
+	                             + "font-weight:bold;"
+	                             + "vertical-align:middle;'>"
+
+	                             + deficitHours
+
+	                             + "</td>";
+
+	                 } else {
+
+	                     deficitHoursCell =
+
+	                             "<td style='padding:16px;"
+	                             + "color:green;"
+	                             + "font-weight:bold;"
+	                             + "vertical-align:middle;'>"
+
+	                             + deficitHours
+
+	                             + "</td>";
+	                 }
+
+	                 html = html.replace(
+	                         "##DEFICIT_HOURS_CELL##",
+	                         deficitHoursCell
+	                 );
+	                 // SEND MAIL
+	                 MimeMessage mimeMessage =
+	                         mailSender.createMimeMessage();
+
+	                 MimeMessageHelper helper =
+	                         new MimeMessageHelper(
+	                                 mimeMessage,
+	                                 true,
+	                                 "UTF-8"
+	                         );
+
+	                 helper.setTo(
+	                         emp.getEmail()
+	                 );
+
+	                 helper.setSubject(
+	                         "Previous Month Attendance Summary - "
+	                         + monthName
+	                 );
+
+	                 helper.setText(
+	                         html,
+	                         true
+	                 );
+	                 
+	                 if (companyVO.getCompanyLogo() != null) {
+
+	                	    ByteArrayResource image =
+	                	            new ByteArrayResource(
+	                	                    companyVO.getCompanyLogo()
+	                	            );
+
+	                	    helper.addInline(
+	                	            "companyLogo",
+	                	            image,
+	                	            "image/png"
+	                	    );
+	                	}
+
+	                 mailSender.send(mimeMessage);
+
+	                 System.out.println(
+	                         "Mail Sent : "
+	                         + emp.getEmployeeCode()
+	                 );
+
+	             } catch (Exception e) {
+
+	                 e.printStackTrace();
+	             }
+	         }
+
+	     } catch (Exception e) {
+
+	         e.printStackTrace();
+	     }
+	 }
+	 
+	}

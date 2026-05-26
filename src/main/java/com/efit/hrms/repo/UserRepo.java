@@ -30,7 +30,9 @@ public interface UserRepo extends JpaRepository<UserVO, Long> {
 
 	boolean existsByUserName(String userName);
 
-	UserVO findByEmployeeName(String userName);
+//	UserVO findByEmployeeName(String userName);
+
+	UserVO findByEmail(String userName);
 
 
 

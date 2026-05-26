@@ -1,11 +1,11 @@
 package com.efit.hrms.repo;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.efit.hrms.entity.LeaveRequestVO;
 
@@ -95,8 +95,18 @@ public interface LeaveRequestRepo extends JpaRepository<LeaveRequestVO, Long> {
 	Set<Object[]> getAllLeaveTypeFromLeaveMaster(Long orgId,String employeeCode);
 
 
-	LeaveRequestVO findByOrgIdAndIdAndEmployeeCode(Long orgId, Long id, String employeeCode);
+//	LeaveRequestVO findByOrgIdAndIdAndEmployeeCode(Long orgId, Long id, String employeeCode);
 
+	@Query(
+		    value = "select * from leaverequest where orgid=?1 and leaverequestid=?2 and employeecode=?3",
+		    nativeQuery = true
+		)
+	LeaveRequestVO findByOrgIdAndIdAndEmployeeCode(
+	        Long orgId,
+	        Long id,
+	        String employeeCode
+	);
+	
 	@Query(nativeQuery = true, value = "select a.employeename,a.employeecode,a.leavetype,a.fromdate,a.todate,a.totaldays,a.notes,a.leaverequestid,b.email,a.screenname from leaveRequest a INNER JOIN \r\n"
 			+ "    employee b ON a.employeecode = b.employeecode where a.orgid=?1 and a.notifycode=?2 and a.branchcode=?3 and approvestatus='PENDING'")
 	Set<Object[]> getLeaveRequestForDashBoard(Long orgId, String reportingPersonCode, String branchCode);
