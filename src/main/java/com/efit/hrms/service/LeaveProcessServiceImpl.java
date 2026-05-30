@@ -1490,9 +1490,46 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		}
 
 		compensatoryOffRepo.saveAll(compensatoryOffVOList); // Save all records
+		
+		
 
 		for (CompensatoryOffVO vo : compensatoryOffVOList) {
 
+			emailService.sendCompOffRequestMail(
+		            vo.getNotifyEmail(),
+		            vo.getOrgId(),
+		            vo.getId(),
+		            vo.getEmployeeCode(),
+		            vo.getEmployeeName(),
+		            vo.getLeaveType(),
+		            vo.getCompOffDate(),
+		            vo.getTotalDays(),
+		            vo.getNotes(),
+		            vo.getNotifyCode(),
+		            true);
+
+		    // ✅ Send mail to CC approvers
+		    if (vo.getCompoffNotifyVO() != null) {
+		        for (CompoffNotifyVO notifyVO : vo.getCompoffNotifyVO()) {
+		            if (notifyVO.getNotify2Email() == null
+		                    || notifyVO.getNotify2Email().trim().isEmpty()) continue;
+
+		            emailService.sendCompOffRequestMail(
+		                    notifyVO.getNotify2Email(),
+		                    vo.getOrgId(),
+		                    vo.getId(),
+		                    vo.getEmployeeCode(),
+		                    vo.getEmployeeName(),
+		                    vo.getLeaveType(),
+		                    vo.getCompOffDate(),
+		                    vo.getTotalDays(),
+		                    vo.getNotes(),
+		                    notifyVO.getNotify2Code(),
+		                    false);
+		        }
+		    }
+
+		    
 			// 🔔 Message
 			String notifyMessage;
 			if (vo.getId() == null) {

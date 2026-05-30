@@ -38,13 +38,17 @@ import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.dto.TravelRequestDTO;
 import com.efit.hrms.dto.WorkFromHomeDTO;
 import com.efit.hrms.entity.CompensatoryOffVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.LeaveProcessVO;
 import com.efit.hrms.entity.LeaveRequestVO;
 import com.efit.hrms.entity.LeaveTypeVO;
 import com.efit.hrms.entity.TravelRequestVO;
 import com.efit.hrms.entity.WorkFromHomeVO;
 import com.efit.hrms.exception.ApplicationException;
+import com.efit.hrms.repo.CompensatoryOffRepo;
+import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.LeaveRequestRepo;
+import com.efit.hrms.service.EmailService;
 import com.efit.hrms.service.LeaveProcessService;
 
 @CrossOrigin
@@ -60,6 +64,15 @@ public class LeaveProcessController extends BaseController {
 	
 	@Autowired
 	private TemplateEngine templateEngine;
+	
+	@Autowired
+	CompensatoryOffRepo compensatoryOffRepo;
+	
+	@Autowired
+	EmployeeRepo employeeRepo;
+	
+	@Autowired
+	EmailService emailService;
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(LeaveProcessController.class);
 
@@ -819,6 +832,124 @@ public class LeaveProcessController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 	}
 
+	
+	@GetMapping("/mailCompOffAction")
+	public ResponseEntity<String> mailCompOffAction(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam String notifyCode,
+	        @RequestParam String notify,
+	        @RequestParam String screenName,
+	        @RequestParam String email,
+	        @RequestParam(required = false) String reason) {
+
+	    Context context = new Context();
+	    CompensatoryOffVO vo = null; // ← declare outside try
+
+	    try {
+	        Map<String, Object> details = leaveProcessService.createApprovalCompOff(
+	                orgId, id, employeeCode, action, actionBy,
+	                notifyCode, notify, screenName, reason);
+
+	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
+
+	        vo = (CompensatoryOffVO) details.get("compensatoryOffVO"); // ← assign here
+
+	        context.setVariable("stateClass", isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",  isApproved ? "Approved" : "Rejected");
+	        context.setVariable("title",      isApproved ? "Comp-Off Approved Successfully" : "Comp-Off Rejected Successfully");
+	        context.setVariable("message",    isApproved
+	                ? "The comp-off request has been approved and the team has been notified."
+	                : "The comp-off request has been rejected and the employee has been notified.");
+
+	        context.setVariable("employeeName", vo.getEmployeeName());
+	        context.setVariable("leaveType",    vo.getLeaveType());
+	        context.setVariable("fromDate",     vo.getCompOffDate());
+	        context.setVariable("toDate",       vo.getCompOffDate());
+	        context.setVariable("approvedBy",   actionBy);
+	        context.setVariable("actionTime",   LocalDateTime.now()
+	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+	        context.setVariable("reason",       reason);
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        context.setVariable("stateClass", "state-error");
+	        context.setVariable("pillLabel",  "Failed");
+	        context.setVariable("title",      "Action Failed");
+	        context.setVariable("message",    "Something went wrong.");
+	        context.setVariable("reason",     e.getMessage());
+	    }
+
+	    String html = templateEngine.process("leave-status", context);
+
+	    // ← send mail only if vo is not null (no error occurred)
+	    if (vo != null) {
+	        emailService.sendCompOffStatusMail(
+	                vo.getEmployeeCode(),  // ← just pass employeeCode
+	                vo.getEmployeeName(),
+	                action,
+	                reason,
+	                vo.getCompOffDate(),
+	                vo.getLeaveType(),
+	                actionBy);
+	    }
+
+	    return ResponseEntity.ok(html);
+	}
+
+	@GetMapping("/compoff-reject-page")
+	public ResponseEntity<String> compOffRejectPage(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam(required = false, defaultValue = "") String notifyCode,
+	        @RequestParam(required = false, defaultValue = "") String notify,
+	        @RequestParam(required = false, defaultValue = "") String screenName,
+	        @RequestParam(required = false, defaultValue = "") String email,
+	        @RequestParam(required = false, defaultValue = "") String reason) {
+
+	    try {
+	        CompensatoryOffVO vo = compensatoryOffRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
+
+	        if (vo.getApprovalStatus() != null &&
+	            ("APPROVED".equalsIgnoreCase(vo.getApprovalStatus()) ||
+	             "REJECTED".equalsIgnoreCase(vo.getApprovalStatus()))) {
+	            return mailCompOffAction(orgId, id, employeeCode,
+	                    vo.getApprovalStatus(), actionBy, notifyCode,
+	                    notify, screenName, email, reason);
+	        }
+
+	        Context context = new Context();
+	        context.setVariable("orgId",        orgId);
+	        context.setVariable("id",           id);
+	        context.setVariable("employeeCode", employeeCode);
+	        context.setVariable("action",       action);
+	        context.setVariable("actionBy",     actionBy);
+	        context.setVariable("notifyCode",   notifyCode);
+	        context.setVariable("notify",       notify);
+	        context.setVariable("screenName",   screenName);
+	        context.setVariable("email",        email);
+
+	        String html = templateEngine.process("compoff-reject-reason", context);
+	        return ResponseEntity.ok(html);
+
+	    } catch (Exception e) {
+	        Context context = new Context();
+	        context.setVariable("stateClass", "state-error");
+	        context.setVariable("pillLabel",  "Failed");
+	        context.setVariable("title",      "Action Failed");
+	        context.setVariable("message",    e.getMessage());
+	        String html = templateEngine.process("leave-status", context);
+	        return ResponseEntity.ok(html);
+	    }
+	}
+	
+	
 	// checkin upload
 
 	@PostMapping("/uploadcheckin")

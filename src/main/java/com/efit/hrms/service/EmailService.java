@@ -33,4 +33,20 @@ public interface EmailService {
 
 
 
+	public void sendCompOffRequestMail(String notify2Email, Long orgId, Long id, String employeeCode,
+			String employeeName, String leaveType, LocalDate compOffDate, BigDecimal totalDays, String notes,
+			String notify2Code, boolean b);
+
+
+
+	public void sendCompOffStatusMail(String employeeCode,    
+	        String employeeName,
+	        String action,
+	        String reason,
+	        LocalDate compOffDate,
+	        String leaveType,
+	        String approvedBy);
+
+
+
 }

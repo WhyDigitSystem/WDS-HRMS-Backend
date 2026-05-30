@@ -1,5 +1,6 @@
 package com.efit.hrms.service;
 
+
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -289,6 +290,111 @@ public class EmailServiceImpl implements EmailService {
 
 		    catch (Exception e) {
 		    	System.out.println("MAIL ERROR");
+		        e.printStackTrace();
+		    }
+		}
+	 
+	 public void sendCompOffRequestMail(
+		        String toEmail,
+		        Long orgId,
+		        Long compOffId,
+		        String employeeCode,
+		        String employeeName,
+		        String leaveType,
+		        LocalDate compOffDate,
+		        BigDecimal totalDays,
+		        String notes,
+		        String notifyCode,
+		        boolean showButtons) {
+
+		    try {
+		        Context context = new Context();
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+		        context.setVariable("employeeName", employeeName);
+		        context.setVariable("leaveType",    leaveType);
+		        context.setVariable("compOffDate",  compOffDate.format(formatter));
+		        context.setVariable("totalDays",    totalDays.toPlainString());
+		        context.setVariable("notes",        notes);
+		        context.setVariable("showButtons",  showButtons);
+
+		        context.setVariable("approveUrl",
+		                "http://localhost:8047/api/leaveprocess/mailCompOffAction"
+		                + "?orgId=" + orgId
+		                + "&id=" + compOffId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=APPROVED"
+		                + "&actionBy=" + notifyCode
+		                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
+
+		        context.setVariable("rejectPageUrl",
+		                "http://localhost:8047/api/leaveprocess/compoff-reject-page"
+		                + "?orgId=" + orgId
+		                + "&id=" + compOffId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=REJECTED"
+		                + "&actionBy=" + notifyCode
+		                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
+
+		        String html = templateEngine.process("compoff-request", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+		        helper.setSubject("Compensatory Off Request - " + employeeName);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+	 
+	 public void sendCompOffStatusMail(
+		        String employeeCode,    // ← pass employeeCode instead of email
+		        String employeeName,
+		        String action,
+		        String reason,
+		        LocalDate compOffDate,
+		        String leaveType,
+		        String approvedBy) {
+
+		    try {
+		        // ✅ repo call inside service — correct place
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        if (employee == null || employee.getEmail() == null) {
+//		            log.error("Employee not found or email missing: {}", employeeCode);
+		            return;
+		        }
+		        String toEmail = employee.getEmail();
+
+		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
+		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
+
+		        Context context = new Context();
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+		        context.setVariable("employeeName", employeeName);
+		        context.setVariable("action",       action);
+		        context.setVariable("reason",       reason);
+		        context.setVariable("compOffDate",  compOffDate.format(formatter));
+		        context.setVariable("leaveType",    leaveType);
+		        context.setVariable("approvedBy",   approvedByName);
+
+		        String html = templateEngine.process("compoff-reply", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+
+		        String subject = "APPROVED".equalsIgnoreCase(action)
+		                ? "Your Comp-Off Request Has Been Approved"
+		                : "Your Comp-Off Request Has Been Rejected";
+		        helper.setSubject(subject);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
 		        e.printStackTrace();
 		    }
 		}
