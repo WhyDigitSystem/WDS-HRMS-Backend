@@ -269,23 +269,8 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	         );
 
 	         orderedMap.put(
-	                 "weekoff_days",
-	                 row.get("weekoff_days")
-	         );
-
-	         orderedMap.put(
 	                 "permission_hours",
 	                 row.get("permission_hours")
-	         );
-
-	         orderedMap.put(
-	                 "late_checkin_count",
-	                 row.get("late_checkin_count")
-	         );
-
-	         orderedMap.put(
-	                 "late_dates",
-	                 row.get("late_dates")
 	         );
 
 	         orderedMap.put(
@@ -306,6 +291,97 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	         orderedMap.put(
 	                 "extra_hours",
 	                 row.get("extra_hours")
+	         );
+
+	         orderedMap.put(
+	                 "current_month_extra_hours",
+	                 row.get("current_month_extra_hours")
+	         );
+
+	         orderedMap.put(
+	                 "final_balance_hours",
+	                 row.get("final_balance_hours")
+	         );
+
+	         orderedList.add(orderedMap);
+	     }
+
+	     return orderedList;
+	 }
+	 
+	 
+	 @Override
+	 public List<Map<String, Object>> getRejectedRequests(
+	         Long orgid,
+	         String fromDate,
+	         String toDate,
+	         String employeecode,
+	         String type) {
+
+	     List<Map<String, Object>> rawList =
+	    		 attendanceProcessRepo.getRejectedRequests(
+	                     orgid,
+	                     fromDate,
+	                     toDate,
+	                     employeecode,
+	                     type);
+
+	     List<Map<String, Object>> orderedList =
+	             new ArrayList<>();
+
+	     for (Map<String, Object> row : rawList) {
+
+	         Map<String, Object> orderedMap =
+	                 new LinkedHashMap<>();
+
+	         orderedMap.put(
+	                 "type",
+	                 row.get("type")
+	         );
+
+	         orderedMap.put(
+	                 "id",
+	                 row.get("id")
+	         );
+
+	         orderedMap.put(
+	                 "employeecode",
+	                 row.get("employeecode")
+	         );
+
+	         orderedMap.put(
+	                 "employeename",
+	                 row.get("employeename")
+	         );
+
+	         orderedMap.put(
+	                 "requestdate",
+	                 row.get("requestdate")
+	         );
+
+	         orderedMap.put(
+	                 "approvestatus",
+	                 row.get("approvestatus")
+	         );
+
+	         orderedMap.put(
+	                 "intime",
+	                 row.get("intime")
+	         );
+
+	         orderedMap.put(
+	                 "outtime",
+	                 row.get("outtime")
+	         );
+
+	         orderedMap.put(
+	                 "reason",
+	                 row.get("reason")
+	         );
+
+	         orderedMap.put(
+	                 "createdon",
+	                 row.get("createdon")
 	         );
 
 	         orderedList.add(orderedMap);

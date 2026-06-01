@@ -1368,7 +1368,8 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 			map.put("status", ch[6] != null ? ch[6].toString() : "");
 			map.put("latestIn", ch[7] != null ? ch[7].toString() : "");
 			map.put("latestOut", ch[8] != null ? ch[8].toString() : "");
-
+			map.put("firstCheckIn", ch[9] != null ? ch[9].toString() : "");
+			
 			mappedList.add(map);
 		}
 		return mappedList;
