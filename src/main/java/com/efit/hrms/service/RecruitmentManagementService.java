@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.CandidatesDTO;
 import com.efit.hrms.dto.CreateOfferDTO;
@@ -32,7 +33,6 @@ public interface RecruitmentManagementService {
 
 	List<CandidatesVO> getSchedulerCandidatesByOrgId(Long orgId, String branchCode);
 
-
 	Map<String, Object> createUpdateOfferLetter(OfferLetterDTO offerLetterDTO) throws ApplicationException;
 
 	OfferLetterVO getOfferLetterById(Long id);
@@ -50,7 +50,6 @@ public interface RecruitmentManagementService {
 
 	List<CreateOfferVO> getPendingCreateOfferByOrgId(Long orgId, String branchCode);
 
-
 //	List<Map<String, Object>> getApprovedCreateOfferByCompany(Long orgId, String branchCode);
 
 	List<Map<String, Object>> getApprovedCreateOfferByCompany(Long orgId, String branchCode, String candidateName);
@@ -62,8 +61,14 @@ public interface RecruitmentManagementService {
 
 	List<CandidatesVO> getSelectedCandidates(Long orgId, String branchCode);
 
+	void excelUploadForJobPostings(MultipartFile files, Long orgId, String createdBy, String branch, String branchCode)
+			throws ApplicationException;
 
+	int getTotalRows();
 
-	
-	
+	int getSuccessfulUploads();
+
+	List<JobPostingsVO> getJobPostingDetails(Long orgId, String department, String branchCode, String fromDate,
+			String toDate);
+
 }

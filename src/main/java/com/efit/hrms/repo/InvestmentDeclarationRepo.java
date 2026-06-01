@@ -12,8 +12,8 @@ import com.efit.hrms.entity.InvestmentDeclarationVO;
 @Repository
 public interface InvestmentDeclarationRepo extends JpaRepository<InvestmentDeclarationVO, Long> {
 
-	@Query(nativeQuery = true, value = "select * from investmentdeclaration where orgid=?1 and branch=?2 and employeecode=?3")
-	List<InvestmentDeclarationVO> getInvestmentDeclarationDetails(Long orgId, String branch, String employeeCode);
+	@Query(nativeQuery = true, value = "select * from investmentdeclaration where orgid=?1 and branch=?2 and employeecode=?3  and  finyear=?4")
+	List<InvestmentDeclarationVO> getInvestmentDeclarationDetails(Long orgId, String branch, String employeeCode,Long finYear);
 
 	@Query(nativeQuery = true, value = "select * from investmentdeclaration where investmentdeclarationid=?1")
 	InvestmentDeclarationVO getInvestmentDeclarationById(Long id);

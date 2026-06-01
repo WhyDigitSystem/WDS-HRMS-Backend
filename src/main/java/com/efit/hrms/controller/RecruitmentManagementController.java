@@ -1,5 +1,6 @@
 package com.efit.hrms.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,14 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
@@ -35,14 +39,13 @@ import com.efit.hrms.service.RecruitmentManagementService;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/recruitmentmanagement")
-public class RecruitmentManagementController extends BaseController{
+public class RecruitmentManagementController extends BaseController {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(CheckInOutController.class);
 
-	
 	@Autowired
 	RecruitmentManagementService recruitmentManagementService;
-	
+
 	@PutMapping("/createUpdateJobPostings")
 	public ResponseEntity<ResponseDTO> createUpdateJobPostings(@RequestBody JobPostingsDTO jobPostingsDTO) {
 		String methodName = "createUpdateJobPostings()";
@@ -63,10 +66,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getJobPostingsByOrgId")
-	public ResponseEntity<ResponseDTO> getJobPostingsByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getJobPostingsByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getJobPostingsByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -74,7 +77,7 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<JobPostingsVO> jobPostingsVO = null;
 		try {
-			jobPostingsVO = recruitmentManagementService.getJobPostingsByOrgId(orgId,branchCode);
+			jobPostingsVO = recruitmentManagementService.getJobPostingsByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -90,8 +93,7 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getJobPostingsById")
 	public ResponseEntity<ResponseDTO> getJobPostingsById(@RequestParam Long id) {
 		String methodName = "getJobPostingsById()";
@@ -117,9 +119,9 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//Candidates
-	
+
+	// Candidates
+
 	@PutMapping("/createUpdateCandidates")
 	public ResponseEntity<ResponseDTO> createUpdateCandidates(@RequestBody CandidatesDTO candidatesDTO) {
 		String methodName = "createUpdateCandidates()";
@@ -140,10 +142,9 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getCandidatesByOrgId")
-	public ResponseEntity<ResponseDTO> getCandidatesByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getCandidatesByOrgId(@RequestParam Long orgId, @RequestParam String branchCode) {
 		String methodName = "getCandidatesByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -151,7 +152,7 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<CandidatesVO> candidatesVO = null;
 		try {
-			candidatesVO = recruitmentManagementService.getCandidatesByOrgId(orgId,branchCode);
+			candidatesVO = recruitmentManagementService.getCandidatesByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -167,8 +168,7 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getCandidatesById")
 	public ResponseEntity<ResponseDTO> getCandidatesById(@RequestParam Long id) {
 		String methodName = "getCandidatesById()";
@@ -194,10 +194,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getSchedulerCandidatesByOrgId")
-	public ResponseEntity<ResponseDTO> getSchedulerCandidatesByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getSchedulerCandidatesByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getSchedulerCandidatesByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -205,7 +205,7 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<CandidatesVO> candidatesVO = null;
 		try {
-			candidatesVO = recruitmentManagementService.getSchedulerCandidatesByOrgId(orgId,branchCode);
+			candidatesVO = recruitmentManagementService.getSchedulerCandidatesByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -221,8 +221,7 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@PutMapping("/createUpdateOfferLetter")
 	public ResponseEntity<ResponseDTO> createUpdateOfferLetter(@RequestBody OfferLetterDTO offerLetterDTO) {
 		String methodName = "createUpdateOfferLetter()";
@@ -243,9 +242,7 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
-	
+
 	@GetMapping("getOfferLetterById")
 	public ResponseEntity<ResponseDTO> getOfferLetterById(@RequestParam Long id) {
 		String methodName = "getOfferLetterById()";
@@ -271,10 +268,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getOfferLetterByOrgId")
-	public ResponseEntity<ResponseDTO> getOfferLetterByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getOfferLetterByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getOfferLetterByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -282,7 +279,7 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<OfferLetterVO> offerLetterVO = null;
 		try {
-			offerLetterVO = recruitmentManagementService.getOfferLetterByOrgId(orgId,branchCode);
+			offerLetterVO = recruitmentManagementService.getOfferLetterByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -298,43 +295,40 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
-	
+
 	@PutMapping("/createUpdateCreateOffer")
-	public ResponseEntity<ResponseDTO> createUpdateCreateOffer(@RequestBody CreateOfferDTO createOfferDTO) throws ApplicationException {
-	    String methodName = "createUpdateCreateOffer()";
-	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+	public ResponseEntity<ResponseDTO> createUpdateCreateOffer(@RequestBody CreateOfferDTO createOfferDTO)
+			throws ApplicationException {
+		String methodName = "createUpdateCreateOffer()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 
-	    Map<String, Object> responseObjectsMap = new HashMap<>();
-	    ResponseDTO responseDTO;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO;
 
-	    try {
-	        // Call service method
-	        Map<String, Object> createOfferVO = recruitmentManagementService.createUpdateCreateOffer(createOfferDTO);
+		try {
+			// Call service method
+			Map<String, Object> createOfferVO = recruitmentManagementService.createUpdateCreateOffer(createOfferDTO);
 
-	        // Extract message and data
-	        Object salaryStructureVO = createOfferVO.get("paramObjectsMap");
-	        String message = (String) createOfferVO.getOrDefault("message", "createOffer completed successfully.");
+			// Extract message and data
+			Object salaryStructureVO = createOfferVO.get("paramObjectsMap");
+			String message = (String) createOfferVO.getOrDefault("message", "createOffer completed successfully.");
 
-	        // Populate response map
-	        responseObjectsMap.put("createOfferVO", createOfferVO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, message);
+			// Populate response map
+			responseObjectsMap.put("createOfferVO", createOfferVO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, message);
 
+			// Create structured response
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			LOGGER.error("{} - Unexpected Error: {}", methodName, e.getMessage(), e);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Unexpected Error", "Something went wrong.");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDTO);
+		}
 
-	        // Create structured response
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        LOGGER.error("{} - Unexpected Error: {}", methodName, e.getMessage(), e);
-	        responseDTO = createServiceResponseError(responseObjectsMap, "Unexpected Error", "Something went wrong.");
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDTO);
-	    }
-
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok(responseDTO);
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getCreateOfferById")
 	public ResponseEntity<ResponseDTO> getCreateOfferById(@RequestParam Long id) {
 		String methodName = "getCreateOfferById()";
@@ -360,9 +354,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("getCreateOfferByOrgId")
-	public ResponseEntity<ResponseDTO> getCreateOfferByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getCreateOfferByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getCreateOfferByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -370,7 +365,7 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<CreateOfferVO> createOfferVO = null;
 		try {
-			createOfferVO = recruitmentManagementService.getCreateOfferByOrgId(orgId,branchCode);
+			createOfferVO = recruitmentManagementService.getCreateOfferByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -386,9 +381,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("getApprovedCreateOfferByCompany")
-	public ResponseEntity<ResponseDTO> getApprovedCreateOfferByCompany(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String candidateName) {
+	public ResponseEntity<ResponseDTO> getApprovedCreateOfferByCompany(@RequestParam Long orgId,
+			@RequestParam String branchCode, @RequestParam String candidateName) {
 		String methodName = "getCreateOfferByStatusAndDepartment()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -396,7 +392,8 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> createOfferVO = null;
 		try {
-			createOfferVO = recruitmentManagementService.getApprovedCreateOfferByCompany(orgId,branchCode,candidateName);
+			createOfferVO = recruitmentManagementService.getApprovedCreateOfferByCompany(orgId, branchCode,
+					candidateName);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -412,10 +409,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getCreateOfferByOrgIdAndDepartment")
-	public ResponseEntity<ResponseDTO> getCreateOfferByOrgIdAndDepartment(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String status ,@RequestParam String department) {
+	public ResponseEntity<ResponseDTO> getCreateOfferByOrgIdAndDepartment(@RequestParam Long orgId,
+			@RequestParam String branchCode, @RequestParam String status, @RequestParam String department) {
 		String methodName = "getCreateOfferByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -423,7 +420,8 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<CreateOfferVO> createOfferVO = null;
 		try {
-			createOfferVO = recruitmentManagementService.getCreateOfferByOrgIdAndDepartment(orgId,branchCode,status,department);
+			createOfferVO = recruitmentManagementService.getCreateOfferByOrgIdAndDepartment(orgId, branchCode, status,
+					department);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -439,9 +437,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("getPendingCreateOfferByOrgId")
-	public ResponseEntity<ResponseDTO> getPendingCreateOfferByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getPendingCreateOfferByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getPendingCreateOfferByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -449,7 +448,7 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<CreateOfferVO> createOfferVO = null;
 		try {
-			createOfferVO = recruitmentManagementService.getPendingCreateOfferByOrgId(orgId,branchCode);
+			createOfferVO = recruitmentManagementService.getPendingCreateOfferByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -465,21 +464,20 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
 
 	@PutMapping("/createApprovalCreateOffer")
 	public ResponseEntity<ResponseDTO> createApprovalCreateOffer(@RequestParam Long orgId, @RequestParam Long id,
 			@RequestParam String candidateName, @RequestParam String action, @RequestParam String actionBy,
-			@RequestParam(required = false) String notifyCode, @RequestParam(required = false) String notify,@RequestParam(required = false) String screenName,@RequestParam(required = false) String email) {
+			@RequestParam(required = false) String notifyCode, @RequestParam(required = false) String notify,
+			@RequestParam(required = false) String screenName, @RequestParam(required = false) String email) {
 		String methodName = "createApprovalCreateOffer()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
 		Map<String, Object> responseObjectsMap = new HashMap<>();
 		ResponseDTO responseDTO = null;
 		try {
-			Map<String, Object> result = recruitmentManagementService.createApprovalCreateOffer(orgId, id, candidateName, action,
-					actionBy, notifyCode, notify,screenName,email);
+			Map<String, Object> result = recruitmentManagementService.createApprovalCreateOffer(orgId, id,
+					candidateName, action, actionBy, notifyCode, notify, screenName, email);
 
 			// ✅ Correct keys from the returned map
 			responseObjectsMap.put("createOfferVO", result.get("createOfferVO"));
@@ -494,10 +492,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
 	@GetMapping("getCreateOfferCountByOrgId")
-	public ResponseEntity<ResponseDTO> getCreateOfferCountByOrgId(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getCreateOfferCountByOrgId(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getCreateOfferCountByOrgId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -505,7 +503,7 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<Map<String, Object>> createOfferVO = null;
 		try {
-			createOfferVO = recruitmentManagementService.getCreateOfferCountByOrgId(orgId,branchCode);
+			createOfferVO = recruitmentManagementService.getCreateOfferCountByOrgId(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -521,11 +519,10 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
-	
+
 	@GetMapping("getSelectedCandidates")
-	public ResponseEntity<ResponseDTO> getSelectedCandidates(@RequestParam Long orgId,@RequestParam String branchCode) {
+	public ResponseEntity<ResponseDTO> getSelectedCandidates(@RequestParam Long orgId,
+			@RequestParam String branchCode) {
 		String methodName = "getSelectedCandidates()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -533,7 +530,7 @@ public class RecruitmentManagementController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<CandidatesVO> candidatesVO = null;
 		try {
-			candidatesVO = recruitmentManagementService.getSelectedCandidates(orgId,branchCode);
+			candidatesVO = recruitmentManagementService.getSelectedCandidates(orgId, branchCode);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -549,6 +546,72 @@ public class RecruitmentManagementController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	
+
+	@PostMapping(value = "/excelUploadForJobPostings", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<Map<String, Object>> excelUploadForJobPostings(@RequestParam("files") MultipartFile files,
+			@RequestParam("orgId") Long orgId, @RequestParam("createdBy") String createdBy,
+			@RequestParam("branch") String branch, @RequestParam("branchCode") String branchCode) {
+
+		Map<String, Object> response = new HashMap<>();
+
+		try {
+
+			recruitmentManagementService.excelUploadForJobPostings(files, orgId, createdBy, branch, branchCode);
+
+			response.put("status", true);
+			response.put("message", "Job Postings Excel Uploaded Successfully");
+
+			response.put("totalRows", recruitmentManagementService.getTotalRows());
+
+			response.put("successfulUploads", recruitmentManagementService.getSuccessfulUploads());
+
+			return ResponseEntity.ok(response);
+
+		} catch (ApplicationException e) {
+
+			response.put("status", false);
+			response.put("message", e.getMessage());
+
+			return ResponseEntity.badRequest().body(response);
+
+		} catch (Exception e) {
+
+			response.put("status", false);
+			response.put("message", "Failed to upload Excel file : " + e.getMessage());
+
+			return ResponseEntity.internalServerError().body(response);
+		}
+	}
+
+	@GetMapping("/getJobPostingDetails")
+	public ResponseEntity<ResponseDTO> getJobPostingDetails(@RequestParam Long orgId, @RequestParam String department,
+			@RequestParam String branchCode,
+			@RequestParam(required = false) String fromDate, @RequestParam(required = false) String toDate) {
+		String methodName = "getJobPostingDetails()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<JobPostingsVO> assetAllocationVO = new ArrayList<>();
+		try {
+			assetAllocationVO = recruitmentManagementService.getJobPostingDetails(orgId, department, branchCode,
+					fromDate, toDate);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE,
+					"JobPostingDetails information get successfully ByOrgId");
+			responseObjectsMap.put("assetAllocationVO", assetAllocationVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap,
+					"JobPostingDetails information receive failedByOrgId", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+
+	}
+
 }

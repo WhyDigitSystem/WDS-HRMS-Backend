@@ -1,9 +1,11 @@
 package com.efit.hrms.service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,10 +17,18 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.efit.hrms.dto.CandidatesDTO;
 import com.efit.hrms.dto.CompensationDetailsDTO;
@@ -547,6 +557,194 @@ public class RecruitmentManagementServiceImpl implements RecruitmentManagementSe
 		}
 
 		return list;
+	}
+
+	private int totalRows = 0;
+	private int successfulUploads = 0;
+
+	private final DataFormatter dataFormatter = new DataFormatter();
+
+	@Transactional
+	@Override
+	public void excelUploadForJobPostings(MultipartFile files, Long orgId, String createdBy, String branch,
+			String branchCode) throws ApplicationException {
+
+		totalRows = 0;
+		successfulUploads = 0;
+
+		if (files.isEmpty()) {
+
+			throw new ApplicationException("The supplied file '" + files.getOriginalFilename() + "' is empty.");
+		}
+
+		try (Workbook workbook = WorkbookFactory.create(files.getInputStream())) {
+
+			Sheet sheet = workbook.getSheetAt(0);
+
+			System.out.println("Processing file : " + files.getOriginalFilename());
+
+			// HEADER VALIDATION
+			Row headerRow = sheet.getRow(0);
+
+			if (!isJobPostingsHeaderValid(headerRow)) {
+
+				throw new ApplicationException(
+						"Invalid Excel format. Expected headers : " + "Job Title, Department, Location, Description, "
+								+ "Experience, Education, Skills, Keywords, Active");
+			}
+
+			// LOOP ROWS
+			for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+
+				Row row = sheet.getRow(i);
+
+				if (row == null || isRowEmpty(row)) {
+
+					continue;
+				}
+
+				totalRows++;
+
+				System.out.println("Processing row : " + (i + 1));
+
+				try {
+
+					JobPostingsVO jobPostingsVO = new JobPostingsVO();
+
+					jobPostingsVO.setJobTitle(getStringCellValue(row.getCell(0)));
+
+					jobPostingsVO.setDepartment(getStringCellValue(row.getCell(1)));
+
+					jobPostingsVO.setLocation(getStringCellValue(row.getCell(2)));
+
+					jobPostingsVO.setDescription(getStringCellValue(row.getCell(3)));
+
+					jobPostingsVO.setExperience(getStringCellValue(row.getCell(4)));
+
+					jobPostingsVO.setEducation(getStringCellValue(row.getCell(5)));
+
+					jobPostingsVO.setSkills(getStringCellValue(row.getCell(6)));
+
+					jobPostingsVO.setKeywords(getStringCellValue(row.getCell(7)));
+
+					jobPostingsVO.setActive(getBooleanCellValue(row.getCell(8)));
+
+					// COMMON PARAMS
+					jobPostingsVO.setOrgId(orgId);
+
+					jobPostingsVO.setBranch(branch);
+
+					jobPostingsVO.setBranchCode(branchCode);
+
+					jobPostingsVO.setCreatedBy(createdBy);
+
+					jobPostingsVO.setUpdatedBy(createdBy);
+
+					// SAVE JOB POSTINGS
+					jobPostingsRepo.save(jobPostingsVO);
+
+					successfulUploads++;
+
+				} catch (Exception e) {
+
+					System.err.println("Error at row " + (i + 1) + " : " + e.getMessage());
+				}
+			}
+
+		} catch (IOException e) {
+
+			throw new ApplicationException(
+					"Failed to process file : " + files.getOriginalFilename() + " - " + e.getMessage());
+		}
+
+		System.out.println("Total Rows : " + totalRows);
+
+		System.out.println("Successfully Uploaded : " + successfulUploads);
+	}
+
+	private boolean isJobPostingsHeaderValid(Row headerRow) {
+
+		if (headerRow == null) {
+
+			return false;
+		}
+
+		List<String> expectedHeaders = Arrays.asList("job title", "department", "location", "description", "experience",
+				"education", "skills", "keywords", "active");
+
+		List<String> actualHeaders = new ArrayList<>();
+
+		for (Cell cell : headerRow) {
+
+			actualHeaders.add(getStringCellValue(cell).toLowerCase());
+		}
+
+		return expectedHeaders.equals(actualHeaders);
+	}
+
+	private String getStringCellValue(Cell cell) {
+
+		if (cell == null) {
+
+			return "";
+		}
+
+		return dataFormatter.formatCellValue(cell).trim();
+	}
+
+	private boolean isRowEmpty(Row row) {
+
+		for (Cell cell : row) {
+
+			if (cell != null && cell.getCellType() != CellType.BLANK && !getStringCellValue(cell).isEmpty()) {
+
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private Boolean getBooleanCellValue(Cell cell) {
+
+		if (cell == null) {
+
+			return false;
+		}
+
+		try {
+
+			if (cell.getCellType() == CellType.BOOLEAN) {
+
+				return cell.getBooleanCellValue();
+
+			} else if (cell.getCellType() == CellType.STRING) {
+
+				return Boolean.parseBoolean(cell.getStringCellValue().trim());
+			}
+
+		} catch (Exception e) {
+
+			System.err.println("Boolean parsing error : " + getStringCellValue(cell));
+		}
+
+		return false;
+	}
+
+	public int getTotalRows() {
+
+		return totalRows;
+	}
+
+	public int getSuccessfulUploads() {
+
+		return successfulUploads;
+	}
+
+	@Override
+	public List<JobPostingsVO> getJobPostingDetails(Long orgId, String department, String branchCode, String fromDate,
+			String toDate) {
+		return jobPostingsRepo.getJobPostingDetails(orgId, department, branchCode, fromDate, toDate);
 	}
 
 }

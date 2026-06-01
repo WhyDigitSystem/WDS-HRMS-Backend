@@ -57,7 +57,7 @@ public class JobPostingsVO {
 	private String experience;
 
 	@Column(name = "active")
-	private Boolean active;
+	private Boolean active=true;
 	@Column(name = "cancel")
 	private Boolean cancel = false;
 	@Column(name = "createdby")

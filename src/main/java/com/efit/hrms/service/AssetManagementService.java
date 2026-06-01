@@ -110,8 +110,7 @@ public interface AssetManagementService {
 
 	String getImageFileType(Long imageId) throws IOException;
 
-	void excelUploadForAssetMaster(MultipartFile file, Long orgId, String createdBy, String branch, String branchCode,
-			String finYear) throws ApplicationException;
+	void excelUploadForAssetMaster(MultipartFile files, Long orgId, String createdBy, String branch, String branchCode) throws ApplicationException;
 
 	int getTotalRows();
 

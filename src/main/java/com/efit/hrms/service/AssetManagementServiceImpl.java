@@ -1217,22 +1217,22 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	@Transactional
 	@Override
-	public void excelUploadForAssetMaster(MultipartFile file, Long orgId, String createdBy, String branch,
-			String branchCode, String finYear) throws ApplicationException {
+	public void excelUploadForAssetMaster(MultipartFile files, Long orgId, String createdBy, String branch,
+			String branchCode) throws ApplicationException {
 
 		totalRows = 0;
 		successfulUploads = 0;
 
-		if (file.isEmpty()) {
+		if (files.isEmpty()) {
 
-			throw new ApplicationException("The supplied file '" + file.getOriginalFilename() + "' is empty.");
+			throw new ApplicationException("The supplied file '" + files.getOriginalFilename() + "' is empty.");
 		}
 
-		try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+		try (Workbook workbook = WorkbookFactory.create(files.getInputStream())) {
 
 			Sheet sheet = workbook.getSheetAt(0);
 
-			System.out.println("Processing file : " + file.getOriginalFilename());
+			System.out.println("Processing file : " + files.getOriginalFilename());
 
 			// HEADER VALIDATION
 			Row headerRow = sheet.getRow(0);
@@ -1290,8 +1290,6 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 					assetMasterVO.setBranch(branch);
 
 					assetMasterVO.setBranchCode(branchCode);
-
-					assetMasterVO.setFinyear(finYear);
 
 					assetMasterVO.setCreatedBy(createdBy);
 
@@ -1374,7 +1372,7 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 		} catch (IOException e) {
 
 			throw new ApplicationException(
-					"Failed to process file : " + file.getOriginalFilename() + " - " + e.getMessage());
+					"Failed to process file : " + files.getOriginalFilename() + " - " + e.getMessage());
 		}
 
 		System.out.println("Total Rows : " + totalRows);

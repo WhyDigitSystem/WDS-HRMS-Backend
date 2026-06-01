@@ -23,7 +23,7 @@ public interface InvestmentDeclarationService {
 	Map<String, Object> updateCreateInvestmentDeclaration(@Valid InvestmentDeclarationDTO investmentDeclarationDTO)
 			throws ApplicationException;
 
-	List<InvestmentDeclarationVO> getInvestmentDeclarationDetails(Long orgId, String branch, String employeeCode);
+	List<InvestmentDeclarationVO> getInvestmentDeclarationDetails(Long orgId, String branch, String employeeCode,Long finYear);
 
 	InvestmentDeclarationVO getInvestmentDeclarationById(Long id);
 

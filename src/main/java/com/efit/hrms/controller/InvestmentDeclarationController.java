@@ -55,9 +55,9 @@ public class InvestmentDeclarationController extends BaseController {
 
 	// TaxInvoice
 
-	@GetMapping("/getInvestmentDeclarationDetails")
+	@GetMapping("/getInvestmen	tDeclarationDetails")
 	public ResponseEntity<ResponseDTO> getInvestmentDeclarationDetails(@RequestParam Long orgId,
-			@RequestParam String branch, @RequestParam String employeeCode) {
+			@RequestParam String branch, @RequestParam String employeeCode, @RequestParam Long finYear) {
 		String methodName = "getInvestmentDeclarationDetails()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -66,7 +66,7 @@ public class InvestmentDeclarationController extends BaseController {
 		List<InvestmentDeclarationVO> investmentDeclarationVO = new ArrayList<>();
 		try {
 			investmentDeclarationVO = investmentDeclarationService.getInvestmentDeclarationDetails(orgId, branch,
-					employeeCode);
+					employeeCode, finYear);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
