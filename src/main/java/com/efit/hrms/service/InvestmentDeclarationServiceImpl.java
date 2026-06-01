@@ -65,9 +65,9 @@ public class InvestmentDeclarationServiceImpl implements InvestmentDeclarationSe
 
 	@Override
 	public List<InvestmentDeclarationVO> getInvestmentDeclarationDetails(Long orgId, String branch,
-			String employeeCode) {
+			String employeeCode,Long finYear) {
 
-		return investmentDeclarationRepo.getInvestmentDeclarationDetails(orgId, branch, employeeCode);
+		return investmentDeclarationRepo.getInvestmentDeclarationDetails(orgId, branch, employeeCode,finYear);
 	}
 
 	@Override

@@ -66,7 +66,7 @@ public class InvestmentDeclarationDetailsVO {
 	private String proof;
 
 	@Column(name = "status")
-	private String status = "Pending";
+	private String status = "PENDING";
 
 	@Lob
 	@Column(name = "uploadfile", columnDefinition = "LONGBLOB")

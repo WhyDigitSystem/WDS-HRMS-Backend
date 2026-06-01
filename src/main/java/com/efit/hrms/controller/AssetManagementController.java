@@ -912,9 +912,9 @@ public class AssetManagementController extends BaseController {
 	}
 
 	@PostMapping("/excelUploadForAssetMaster")
-	public ResponseEntity<ResponseDTO> excelUploadForAssetMaster(@RequestParam MultipartFile file,
+	public ResponseEntity<ResponseDTO> excelUploadForAssetMaster(@RequestParam MultipartFile files,
 			@RequestParam Long orgId, @RequestParam(required = false) String createdBy, @RequestParam String branch,
-			@RequestParam String branchCode, @RequestParam String finYear) {
+			@RequestParam String branchCode) {
 
 		String methodName = "excelUploadForAssetMaster()";
 
@@ -928,7 +928,7 @@ public class AssetManagementController extends BaseController {
 
 		try {
 
-			assetManagementService.excelUploadForAssetMaster(file, orgId, createdBy, branch, branchCode, finYear);
+			assetManagementService.excelUploadForAssetMaster(files, orgId, createdBy, branch, branchCode);
 
 			totalRows = assetManagementService.getTotalRows();
 
