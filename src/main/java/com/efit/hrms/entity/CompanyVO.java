@@ -142,6 +142,9 @@ public class CompanyVO {
 	@Column(name = "mclastnum")
 	private int mcLastNum = 1;
 	
+	@Column(name = "monthlattendancemail")
+	private boolean monthlAttendanceMail=false;
+	
 	@OneToMany(mappedBy = "companyVO", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<CompanyWeekOffVO>companyWeekOffVO;
@@ -166,5 +169,13 @@ public class CompanyVO {
 
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
+
+
+
+	
+
+
+
+	
 
 }

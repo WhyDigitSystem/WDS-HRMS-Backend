@@ -157,6 +157,9 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 	
 	@Autowired
 	AttendanceDailyRepo attendanceDailyRepo;
+	
+	@Autowired
+	private EmailService emailService;
 
 	// LeaveType
 	@Override
@@ -323,8 +326,58 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 		leaveRequestRepo.save(leaveRequestVO);
 
-		leaveRequestRepo.save(leaveRequestVO);
+//		leaveRequestRepo.save(leaveRequestVO);
+		
+		// Send mail to main approver
+		emailService.sendLeaveRequestMail(
+		        leaveRequestVO.getNotifyEmail(),
+		        leaveRequestVO.getOrgId(),
+		        leaveRequestVO.getId(),
+		        leaveRequestVO.getEmployeeCode(),
+		        leaveRequestVO.getEmployeeName(),
+		        leaveRequestVO.getFromDate(),
+		        leaveRequestVO.getToDate(),
+		        leaveRequestVO.getNotes(),
+		        leaveRequestVO.getTotalDays(),
+		        leaveRequestVO.getNotifyCode(),true);
+		
+		// Send mail to additional approvers
+		if (leaveRequestVO.getLeaveRequestNotifyVO() != null) {
 
+		    for (LeaveRequestNotifyVO notifyVO
+		            : leaveRequestVO.getLeaveRequestNotifyVO()) {
+
+		        // skip empty mail
+		        if (notifyVO.getNotify2Email() == null
+		                || notifyVO.getNotify2Email().trim().isEmpty()) {
+
+		            continue;
+		        }
+
+		        emailService.sendLeaveRequestMail(
+
+		                notifyVO.getNotify2Email(),
+
+		                leaveRequestVO.getOrgId(),
+
+		                leaveRequestVO.getId(),
+
+		                leaveRequestVO.getEmployeeCode(),
+
+		                leaveRequestVO.getEmployeeName(),
+
+		                leaveRequestVO.getFromDate(),
+
+		                leaveRequestVO.getToDate(),
+
+		                leaveRequestVO.getNotes(),
+
+		                leaveRequestVO.getTotalDays(),
+
+		                notifyVO.getNotify2Code(),false
+		        );
+		    }
+		}
 		// 🔔 Notification message
 		String notifyMessage;
 		if (leaveRequestDTO.getId() == null) {
@@ -642,7 +695,11 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 			String actionBy, String notifyCode, String notify, String screenName, String email,String reason)
 			throws ApplicationException {
 
+
+
 		LeaveRequestVO leaveRequestVO = leaveRequestRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
+	
+			    
 		String message = "";
 		if (leaveRequestVO.getApproveStatus() == null
 				|| (!leaveRequestVO.getApproveStatus().equalsIgnoreCase("Approved")
@@ -795,6 +852,22 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 			leaveRequestVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
 			leaveRequestRepo.save(leaveRequestVO);
 
+			emailService.sendLeaveStatusMail(
+
+			        leaveRequestVO.getEmail(),
+
+			        leaveRequestVO.getEmployeeName(),
+
+			        action,
+
+			        leaveRequestVO.getReason(),
+
+			        leaveRequestVO.getFromDate(),
+
+			        leaveRequestVO.getToDate(),
+			        leaveRequestVO.getApproveBy()			);
+
+			
 			if (leaveRequestVO.getApproveStatus().equalsIgnoreCase("Approved")) {
 				message = "Approved Successfully";
 			} else if (leaveRequestVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
@@ -1417,9 +1490,46 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		}
 
 		compensatoryOffRepo.saveAll(compensatoryOffVOList); // Save all records
+		
+		
 
 		for (CompensatoryOffVO vo : compensatoryOffVOList) {
 
+			emailService.sendCompOffRequestMail(
+		            vo.getNotifyEmail(),
+		            vo.getOrgId(),
+		            vo.getId(),
+		            vo.getEmployeeCode(),
+		            vo.getEmployeeName(),
+		            vo.getLeaveType(),
+		            vo.getCompOffDate(),
+		            vo.getTotalDays(),
+		            vo.getNotes(),
+		            vo.getNotifyCode(),
+		            true);
+
+		    // ✅ Send mail to CC approvers
+		    if (vo.getCompoffNotifyVO() != null) {
+		        for (CompoffNotifyVO notifyVO : vo.getCompoffNotifyVO()) {
+		            if (notifyVO.getNotify2Email() == null
+		                    || notifyVO.getNotify2Email().trim().isEmpty()) continue;
+
+		            emailService.sendCompOffRequestMail(
+		                    notifyVO.getNotify2Email(),
+		                    vo.getOrgId(),
+		                    vo.getId(),
+		                    vo.getEmployeeCode(),
+		                    vo.getEmployeeName(),
+		                    vo.getLeaveType(),
+		                    vo.getCompOffDate(),
+		                    vo.getTotalDays(),
+		                    vo.getNotes(),
+		                    notifyVO.getNotify2Code(),
+		                    false);
+		        }
+		    }
+
+		    
 			// 🔔 Message
 			String notifyMessage;
 			if (vo.getId() == null) {
