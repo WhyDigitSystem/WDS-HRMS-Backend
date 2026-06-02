@@ -473,32 +473,32 @@ public class LeaveProcessController extends BaseController {
 	
 	// ApprovalLeave
   // change backend mail send so cmd
-//	@PutMapping("/createApprovalLeave")
-//	public ResponseEntity<ResponseDTO> createApprovalLeave(@RequestParam Long orgId, @RequestParam Long id,
-//			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
-//			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam String email,@RequestParam (required=false) String reason) {
-//		String methodName = "createApprovalLeave()";
-//		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
-//		String errorMsg = null;
-//		Map<String, Object> responseObjectsMap = new HashMap<>();
-//		ResponseDTO responseDTO = null;
-//		try {
-//			Map<String, Object> result = leaveProcessService.createApprovalLeave(orgId, id, employeeCode, action,
-//					actionBy, notifyCode, notify,screenName,email,reason);
-//
-//			// ✅ Correct keys from the returned map
-//			responseObjectsMap.put("leaveRequestVO", result.get("leaveRequestVO"));
-//			responseObjectsMap.put("message", result.get("message"));
-//
-//			responseDTO = createServiceResponse(responseObjectsMap);
-//		} catch (Exception e) {
-//			errorMsg = e.getMessage();
-//			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-//			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-//		}
-//		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-//		return ResponseEntity.ok().body(responseDTO);
-//	}
+	@PutMapping("/createApprovalLeave")
+	public ResponseEntity<ResponseDTO> createApprovalLeave(@RequestParam Long orgId, @RequestParam Long id,
+			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
+			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam String email,@RequestParam (required=false) String reason) {
+		String methodName = "createApprovalLeave()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		try {
+			Map<String, Object> result = leaveProcessService.createApprovalLeave(orgId, id, employeeCode, action,
+					actionBy, notifyCode, notify,screenName,email,reason);
+
+			// ✅ Correct keys from the returned map
+			responseObjectsMap.put("leaveRequestVO", result.get("leaveRequestVO"));
+			responseObjectsMap.put("message", result.get("message"));
+
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
 
 	@GetMapping("/calculateLeavedays")
 	public ResponseEntity<?> calculateLeavedays(@RequestParam Long orgId,

@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -415,103 +416,83 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	 
 	 //monthlyAttendanceMailSend
 	 
-//	 @Scheduled(cron = "0 0 8 1 * ?")
+	 @Scheduled(cron = "0 54 12 2 * ?")
 //	 @Scheduled(cron = "*/30 * * * * ?")
 	 public void sendMonthlyAttendanceMail() {
-         CompanyVO mailCompany = null;
+//         CompanyVO mailCompany = null;
 
-	     try {
+		 List<EmployeeVO> adminEmployees =
+			        employeeRepo.findByEmployeeCodeIn(
+			                Arrays.asList(
+			                        "WDS038",
+			                        "WDS032"
+			                )
+			        );
 
-	         // ADMIN EMPLOYEE
-	         EmployeeVO adminEmployee =
-	                 employeeRepo.findByEmployeeCode(
-	                         "WDS038"
-	                 );
+			if (adminEmployees == null || adminEmployees.isEmpty()) {
+			    return;
+			}
 
-	         if (adminEmployee == null
-	                 || adminEmployee.getEmail() == null
-	                 || adminEmployee.getEmail().trim().isEmpty()) {
+			for (EmployeeVO admin : adminEmployees) {
 
-	             return;
-	         }
+			    try {
 
-	         // GET ACTIVE EMPLOYEES
-	         List<EmployeeVO> employees =
-	                 employeeRepo.findByActiveTrue();
+			        Long orgId = admin.getOrgId();
 
-	         employees.sort(
+			        CompanyVO mailCompany =
+			                companyRepo.findById(orgId)
+			                           .orElse(null);
 
-	        	        Comparator.comparing(
-	        	                EmployeeVO::getEmployeeName,
-	        	                String.CASE_INSENSITIVE_ORDER
-	        	        )
-	        	);
-	         
-	         // EXCLUDED EMPLOYEES
-	         List<String> excludedEmployees =
-	                 Arrays.asList(
-	                         "WDS025",
-	                         "WDS008",
-	                         "WDS001",
-	                         "WDS0010",
-	                         "WDS0008"
-	                 );
+			        if (mailCompany == null) {
+			            continue;
+			        }
 
-	         StringBuilder tableRows =
-	                 new StringBuilder();
+			        if (!mailCompany.isMonthlyAttendanceMail()) {
+			            continue;
+			        }
 
-	         int index = 0;
+			        List<EmployeeVO> employees =
+			                employeeRepo.findByOrgIdAndActiveTrue(orgId);
 
-	         for (EmployeeVO emp : employees) {
+			        employees.sort(
+			                Comparator.comparing(
+			                        EmployeeVO::getEmployeeName,
+			                        String.CASE_INSENSITIVE_ORDER
+			                )
+			        );
 
-	             try {
+			        List<String> excludedEmployees =
+			                Arrays.asList(
+			                        "WDS025",
+			                        "WDS008",
+			                        "WDS001",
+			                        "WDS0010",
+			                        "WDS0008"
+			                );
 
-	                 // SKIP EXCLUDED EMPLOYEES
-	                 if (excludedEmployees.contains(
-	                         emp.getEmployeeCode()
-	                 )) {
+			        StringBuilder tableRows = new StringBuilder();
 
-	                     continue;
-	                 }
+			        int index = 0;
 
-	                 // GET COMPANY
-	                 Optional<CompanyVO> optionalCompany =
-	                         companyRepo.findById(
-	                                 emp.getOrgId()
-	                         );
+			        for (EmployeeVO emp : employees) {
 
-	                 if (!optionalCompany.isPresent()) {
+			            if (excludedEmployees.contains(
+			                    emp.getEmployeeCode())) {
+			                continue;
+			            }
 
-	                     continue;
-	                 }
-	                 
-	                 CompanyVO companyVO =
-	                         optionalCompany.get();
+			            List<Map<String, Object>> list =
+			                    attendanceProcessRepo
+			                            .getAttendanceDashboard(
+			                                    emp.getOrgId(),
+			                                    emp.getEmployeeCode()
+			                            );
 
-	                 mailCompany = companyVO;
-	                 // IMPORTANT CONDITION
-	                 // ONLY TRUE COMPANY SEND
-	                 if (!companyVO.isMonthlAttendanceMail()) {
+			            if (list == null || list.isEmpty()) {
+			                continue;
+			            }
 
-	                     continue;
-	                 }
-
-	                 // GET ATTENDANCE DATA
-	                 List<Map<String, Object>> list =
-	                         attendanceProcessRepo
-	                                 .getAttendanceDashboard(
-	                                         emp.getOrgId(),
-	                                         emp.getEmployeeCode()
-	                                 );
-
-	                 if (list == null
-	                         || list.isEmpty()) {
-
-	                     continue;
-	                 }
-
-	                 Map<String, Object> row =
-	                         list.get(0);
+			            Map<String, Object> row = list.get(0);
 
 	                 String expectedHours =
 	                         String.valueOf(
@@ -611,89 +592,77 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	                 );
 
 	                 index++;
+			        }
 
-	             } catch (Exception e) {
+			        String html =
+			                AttendanceMailTemplate
+			                        .loadMonthlySummaryTemplate();
 
-	                 e.printStackTrace();
-	             }
-	         }
+			        String monthName =
+			                LocalDate.now()
+			                         .minusMonths(1)
+			                         .getMonth()
+			                         .getDisplayName(
+			                                 TextStyle.FULL,
+			                                 Locale.ENGLISH
+			                         );
 
-	         // LOAD HTML TEMPLATE
-	         String html =
-	                 AttendanceMailTemplate
-	                         .loadMonthlySummaryTemplate();
+			        html = html.replace(
+			                "{{month_name}}",
+			                monthName
+			        );
 
-	         // PREVIOUS MONTH NAME
-	         String monthName =
-	                 java.time.LocalDate.now()
-	                         .minusMonths(1)
-	                         .getMonth()
-	                         .getDisplayName(
-	                                 java.time.format.TextStyle.FULL,
-	                                 java.util.Locale.ENGLISH
-	                         );
+			        html = html.replace(
+			                "{{table_rows}}",
+			                tableRows.toString()
+			        );
 
-	         html = html.replace(
-	                 "{{month_name}}",
-	                 monthName
-	         );
+			        MimeMessage mimeMessage =
+			                mailSender.createMimeMessage();
 
-	         // REPLACE TABLE ROWS
-	         html = html.replace(
-	                 "{{table_rows}}",
-	                 tableRows.toString()
-	         );
+			        MimeMessageHelper helper =
+			                new MimeMessageHelper(
+			                        mimeMessage,
+			                        true,
+			                        "UTF-8"
+			                );
 
-	         // CREATE MAIL
-	         MimeMessage mimeMessage =
-	                 mailSender.createMimeMessage();
+			        helper.setTo(admin.getEmail());
 
-	         MimeMessageHelper helper =
-	                 new MimeMessageHelper(
-	                         mimeMessage,
-	                         true,
-	                         "UTF-8"
-	                 );
+			        helper.setSubject(
+			                "All Employee Attendance Summary"
+			        );
 
-	         helper.setTo(
-	                 adminEmployee.getEmail()
-	         );
+			        helper.setText(
+			                html,
+			                true
+			        );
 
-	         helper.setSubject(
-	                 "All Employee Attendance Summary"
-	         );
+			        if (mailCompany.getCompanyLogo() != null) {
 
-	         helper.setText(
-	                 html,
-	                 true
-	         );
+			            ByteArrayResource image =
+			                    new ByteArrayResource(
+			                            mailCompany.getCompanyLogo()
+			                    );
 
-	         
-	         if (mailCompany != null
-	        	        && mailCompany.getCompanyLogo() != null) {
+			            helper.addInline(
+			                    "companyLogo",
+			                    image,
+			                    "image/png"
+			            );
+			        }
 
-	        	    ByteArrayResource image =
-	        	            new ByteArrayResource(
-	        	                    mailCompany.getCompanyLogo()
-	        	            );
+			        mailSender.send(mimeMessage);
 
-	        	    helper.addInline(
-	        	            "companyLogo",
-	        	            image,
-	        	            "image/png"
-	        	    );
-	        	}
-	         // SEND MAIL
-	         mailSender.send(mimeMessage);
+			        System.out.println(
+			                "Mail Sent To : "
+			                + admin.getEmail()
+			        );
 
-	         System.out.println(
-	                 "Attendance Mail Sent Successfully"
-	         );
-
-	     } catch (Exception e) {
-
-	         e.printStackTrace();
-	     }
+			    } catch (Exception e) {
+			        e.printStackTrace();
+			    }
+			}
 	 }
 
 	 private long convertToSeconds(
@@ -765,12 +734,13 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 		}
 	 
 	 //send mail separateemployee
-	 
-//	 @Scheduled(cron = "0 0 8 1 * ?")
+
+	 @Scheduled(cron = "0 10 16 1 * ?")
 //	 @Scheduled(cron = "*/30 * * * * ?")
 	 public void sendEmployeeAttendanceMail() {
 
 	     try {
+	    	
 
 	         List<EmployeeVO> employees =
 	                 employeeRepo.findByActiveTrue();
@@ -826,7 +796,7 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	                 CompanyVO companyVO =
 	                         optionalCompany.get();
 	                 
-	                 if (!companyVO.isMonthlAttendanceMail()) {
+	                 if (!companyVO.isMonthlyAttendanceMail()) {
 	                     continue;
 	                 }
 

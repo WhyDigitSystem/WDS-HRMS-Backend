@@ -274,11 +274,15 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 
 	Optional<EmployeeVO> findTopByOrgIdAndEmployeeCodeStartingWithOrderByIdDesc(Long orgId, String codePrefix);
 
+	
 
+//	EmployeeVO findByEmployeeName(String employeeName);
+
+	List<EmployeeVO> findByEmployeeCodeIn(List<String> asList);
+
+	List<EmployeeVO> findByOrgIdAndActiveTrue(Long orgId);
 
 	List<EmployeeVO> findByActiveTrue();
-
-	EmployeeVO findByEmployeeName(String employeeName);
 
 
 

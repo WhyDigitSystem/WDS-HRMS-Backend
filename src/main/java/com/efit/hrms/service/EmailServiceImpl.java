@@ -141,7 +141,7 @@ public class EmailServiceImpl implements EmailService {
 	            context.setVariable(
 	                    "approveUrl",
 
-	                    "http://localhost:8047/api/leaveprocess/mailLeaveAction"
+	                    "http://139.5.190.73:8047/api/leaveprocess/mailLeaveAction"
 	                    + "?orgId=" + orgId
 	                    + "&id=" + leaveId
 	                    + "&employeeCode=" + employeeCode
@@ -157,7 +157,7 @@ public class EmailServiceImpl implements EmailService {
 	            context.setVariable(
 	                    "rejectUrl",
 
-	                    "http://localhost:8047/api/leaveprocess/mailLeaveAction"
+	                    "http://139.5.190.73:8047/api/leaveprocess/mailLeaveAction"
 	                    + "?orgId=" + orgId
 	                    + "&id=" + leaveId
 	                    + "&employeeCode=" + employeeCode
@@ -173,7 +173,7 @@ public class EmailServiceImpl implements EmailService {
 
 	            	    "rejectPageUrl",
 
-	            	    "http://localhost:8047/api/leaveprocess/reject-page"
+	            	    "http://139.5.190.73:8047/api/leaveprocess/reject-page"
 
 	            	    + "?orgId=" + orgId
 	            	    + "&id=" + leaveId
@@ -319,7 +319,7 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("showButtons",  showButtons);
 
 		        context.setVariable("approveUrl",
-		                "http://localhost:8047/api/leaveprocess/mailCompOffAction"
+		                "http://139.5.190.73:8047/api/leaveprocess/mailCompOffAction"
 		                + "?orgId=" + orgId
 		                + "&id=" + compOffId
 		                + "&employeeCode=" + employeeCode
@@ -328,7 +328,7 @@ public class EmailServiceImpl implements EmailService {
 		                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
 		        context.setVariable("rejectPageUrl",
-		                "http://localhost:8047/api/leaveprocess/compoff-reject-page"
+		                "http://139.5.190.73:8047/api/leaveprocess/compoff-reject-page"
 		                + "?orgId=" + orgId
 		                + "&id=" + compOffId
 		                + "&employeeCode=" + employeeCode
