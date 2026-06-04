@@ -416,7 +416,7 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	 
 	 //monthlyAttendanceMailSend
 	 
-	 @Scheduled(cron = "0 54 12 2 * ?")
+	 @Scheduled(cron = "0 0 8 1 * ?")
 //	 @Scheduled(cron = "*/30 * * * * ?")
 	 public void sendMonthlyAttendanceMail() {
 //         CompanyVO mailCompany = null;
@@ -425,7 +425,9 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 			        employeeRepo.findByEmployeeCodeIn(
 			                Arrays.asList(
 			                        "WDS038",
-			                        "WDS032"
+			                        "WDS008",
+			                        "WDS051",
+			                        "WDS001"
 			                )
 			        );
 
@@ -735,7 +737,7 @@ public class NewDashBoardServiceImpl implements NewDashBoardService{
 	 
 	 //send mail separateemployee
 
-	 @Scheduled(cron = "0 10 16 1 * ?")
+	 @Scheduled(cron = "0 0 8 1 * ?")
 //	 @Scheduled(cron = "*/30 * * * * ?")
 	 public void sendEmployeeAttendanceMail() {
 
