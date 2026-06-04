@@ -48,5 +48,13 @@ public interface EmailService {
 	        String approvedBy);
 
 
+	void sendCheckInOutStatusMail(String employeeCode, String empName, String action, String reason,
+			LocalDate checkInDate, String entryIn, String entryOut, String approvedBy);
+
+	void sendCheckInOutRequestMail(String toEmail, Long orgId, String employeeCode, String empName,
+			LocalDate checkInDate, String entryIn, String entryOut, String requestReason, String notifyCode,
+			boolean showButtons);
+
+
 
 }

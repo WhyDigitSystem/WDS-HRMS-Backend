@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -32,6 +33,9 @@ public class EmailServiceImpl implements EmailService {
 	
 	@Autowired
 	EmployeeRepo employeeRepo;
+	
+	@Value("${app.base-url}")
+	private String baseUrl;
 
 	/**
 	 * Send an HTML formatted email
@@ -141,7 +145,7 @@ public class EmailServiceImpl implements EmailService {
 	            context.setVariable(
 	                    "approveUrl",
 
-	                    "http://139.5.190.73:8047/api/leaveprocess/mailLeaveAction"
+	                    baseUrl + "/api/leaveprocess/mailLeaveAction"
 	                    + "?orgId=" + orgId
 	                    + "&id=" + leaveId
 	                    + "&employeeCode=" + employeeCode
@@ -157,7 +161,7 @@ public class EmailServiceImpl implements EmailService {
 	            context.setVariable(
 	                    "rejectUrl",
 
-	                    "http://139.5.190.73:8047/api/leaveprocess/mailLeaveAction"
+	                    baseUrl + "/api/leaveprocess/mailLeaveAction"
 	                    + "?orgId=" + orgId
 	                    + "&id=" + leaveId
 	                    + "&employeeCode=" + employeeCode
@@ -173,7 +177,7 @@ public class EmailServiceImpl implements EmailService {
 
 	            	    "rejectPageUrl",
 
-	            	    "http://139.5.190.73:8047/api/leaveprocess/reject-page"
+	            	    baseUrl + "/api/leaveprocess/reject-page"
 
 	            	    + "?orgId=" + orgId
 	            	    + "&id=" + leaveId
@@ -319,7 +323,7 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("showButtons",  showButtons);
 
 		        context.setVariable("approveUrl",
-		                "http://139.5.190.73:8047/api/leaveprocess/mailCompOffAction"
+		        		baseUrl + "/api/leaveprocess/mailCompOffAction"
 		                + "?orgId=" + orgId
 		                + "&id=" + compOffId
 		                + "&employeeCode=" + employeeCode
@@ -328,7 +332,7 @@ public class EmailServiceImpl implements EmailService {
 		                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
 		        context.setVariable("rejectPageUrl",
-		                "http://139.5.190.73:8047/api/leaveprocess/compoff-reject-page"
+		        		baseUrl + "/api/leaveprocess/compoff-reject-page"
 		                + "?orgId=" + orgId
 		                + "&id=" + compOffId
 		                + "&employeeCode=" + employeeCode
@@ -398,4 +402,112 @@ public class EmailServiceImpl implements EmailService {
 		        e.printStackTrace();
 		    }
 		}
+	 
+	 @Override
+	 public void sendCheckInOutRequestMail(
+		        String toEmail,
+		        Long orgId,
+		        String employeeCode,
+		        String empName,
+//		        String branch,
+		        LocalDate checkInDate,
+		        String entryIn,
+		        String entryOut,
+		        String requestReason,
+		        String notifyCode,
+		        boolean showButtons) {
+
+		    try {
+		        Context context = new Context();
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+		        context.setVariable("empName",        empName);
+//		        context.setVariable("branch",         branch);
+		        context.setVariable("checkInDate",    checkInDate.format(formatter));
+		        context.setVariable("entryIn",        entryIn != null ? entryIn : "—");
+		        context.setVariable("entryOut",       entryOut != null ? entryOut : "—");
+		        context.setVariable("requestReason",  requestReason);
+		        context.setVariable("showButtons",    showButtons);
+
+		        context.setVariable("approveUrl",
+		        		baseUrl + "/api/basicmaster/mailCheckInOutAction"
+		                + "?orgId=" + orgId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=APPROVED"
+		                + "&actionBy=" + notifyCode
+		                + "&checkInDate=" + checkInDate
+		                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
+
+		        context.setVariable("rejectPageUrl",
+		        		baseUrl + "/api/basicmaster/checkinout-reject-page"
+		                + "?orgId=" + orgId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=REJECTED"
+		                + "&actionBy=" + notifyCode
+		                + "&checkInDate=" + checkInDate
+		                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
+
+		        String html = templateEngine.process("checkinout-request", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+		        helper.setSubject("Check-In/Out Adjustment Request - " + empName);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+
+		@Override
+		public void sendCheckInOutStatusMail(
+		        String employeeCode,
+		        String empName,
+		        String action,
+		        String reason,
+		        LocalDate checkInDate,
+		        String entryIn,
+		        String entryOut,
+		        String approvedBy) {
+
+		    try {
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        if (employee == null || employee.getEmail() == null) return;
+		        String toEmail = employee.getEmail();
+
+		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
+		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
+
+		        Context context = new Context();
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+		        context.setVariable("empName",      empName);
+		        context.setVariable("action",       action);
+		        context.setVariable("reason",       reason);
+		        context.setVariable("checkInDate",  checkInDate.format(formatter));
+		        context.setVariable("entryIn",      entryIn != null ? entryIn : "—");
+		        context.setVariable("entryOut",     entryOut != null ? entryOut : "—");
+		        context.setVariable("approvedBy",   approvedByName);
+
+		        String html = templateEngine.process("checkinout-reply", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+
+		        String subject = "APPROVED".equalsIgnoreCase(action)
+		                ? "Your Adjustment Request Has Been Approved"
+		                : "Your Adjustment Request Has Been Rejected";
+		        helper.setSubject(subject);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+
+	
 	}
