@@ -63,6 +63,8 @@ public interface TicketService {
 
 	void deleteComments(Long id, Long sourceId);
 
+	List<TicketVO> getTicketReport(Long orgId, String fromDate, String toDate);
+
 	
 
 

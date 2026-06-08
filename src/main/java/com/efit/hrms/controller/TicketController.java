@@ -1,6 +1,5 @@
 package com.efit.hrms.controller;
 
-
 import java.net.URLDecoder;
 
 import java.nio.charset.StandardCharsets;
@@ -39,20 +38,19 @@ import com.efit.hrms.entity.TicketVO;
 import com.efit.hrms.repo.TicketRepo;
 import com.efit.hrms.service.TicketService;
 
-
 @CrossOrigin
 @RestController
 @RequestMapping("/api/ticketcontroller")
-public class TicketController extends BaseController{
+public class TicketController extends BaseController {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(TicketController.class);
-	
+
 	@Autowired
 	TicketService ticketService;
-	
+
 	@Autowired
 	TicketRepo ticketRepo;
-	
+
 	@PutMapping("/createUpdateTicket")
 	public ResponseEntity<ResponseDTO> CreateUpdateTicket(@Valid @RequestBody TicketDTO ticketDTO) {
 		String methodName = "createUpdateTicket()";
@@ -62,17 +60,17 @@ public class TicketController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> ticketVO = ticketService.createUpdateTicket(ticketDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, ticketVO.get("message"));
-	        responseObjectsMap.put("ticketVO", ticketVO.get("ticketVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> ticketVO = ticketService.createUpdateTicket(ticketDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, ticketVO.get("message"));
+			responseObjectsMap.put("ticketVO", ticketVO.get("ticketVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
 
 	@PostMapping("/uploadTicketScreenShotInBloob")
@@ -100,7 +98,7 @@ public class TicketController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getTicketById")
 	public ResponseEntity<ResponseDTO> getTicketById(@RequestParam(required = false) Long id) {
 		String methodName = "getTicketById()";
@@ -112,7 +110,7 @@ public class TicketController extends BaseController{
 		try {
 			ticketVO = ticketService.getTicketById(id);
 		} catch (Exception e) {
-			errorMsg = e.getMessage();   
+			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
 		}
 		if (StringUtils.isBlank(errorMsg)) {
@@ -120,15 +118,16 @@ public class TicketController extends BaseController{
 			responseObjectsMap.put("ticketVO", ticketVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap,
-					"Ticket information receive failed By Id", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Ticket information receive failed By Id",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getTicketByUserName")
-	public ResponseEntity<ResponseDTO> getTicketByUserName(@RequestParam(required = false) String userName,@RequestParam(required = false) Long orgId) {
+	public ResponseEntity<ResponseDTO> getTicketByUserName(@RequestParam(required = false) String userName,
+			@RequestParam(required = false) Long orgId) {
 		String methodName = "getTicketByUserName()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -136,9 +135,9 @@ public class TicketController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<TicketVO> ticketVO = new ArrayList<TicketVO>();
 		try {
-			ticketVO = ticketService.getTicketByUserName(userName,orgId);
+			ticketVO = ticketService.getTicketByUserName(userName, orgId);
 		} catch (Exception e) {
-			errorMsg = e.getMessage();   
+			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
 		}
 		if (StringUtils.isBlank(errorMsg)) {
@@ -152,7 +151,7 @@ public class TicketController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getTicketByOrgId")
 	public ResponseEntity<ResponseDTO> getTicketByOrgId(@RequestParam(required = false) Long orgId) {
 		String methodName = "getTicketByOrgId()";
@@ -164,7 +163,7 @@ public class TicketController extends BaseController{
 		try {
 			ticketVO = ticketService.getTicketByOrgId(orgId);
 		} catch (Exception e) {
-			errorMsg = e.getMessage();   
+			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
 		}
 		if (StringUtils.isBlank(errorMsg)) {
@@ -172,15 +171,15 @@ public class TicketController extends BaseController{
 			responseObjectsMap.put("ticketVO", ticketVO);
 			responseDTO = createServiceResponse(responseObjectsMap);
 		} else {
-			responseDTO = createServiceResponseError(responseObjectsMap,
-					"Ticket information receive failed By orgId", errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Ticket information receive failed By orgId",
+					errorMsg);
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//Comments
-	
+
+	// Comments
+
 	@PutMapping("/updateCreateComments")
 	public ResponseEntity<ResponseDTO> updateCreateComments(@Valid @RequestBody CommentsDTO commentsDTO) {
 		String methodName = "updateCreateComments()";
@@ -190,21 +189,22 @@ public class TicketController extends BaseController{
 		ResponseDTO responseDTO = null;
 
 		try {
-	        Map<String, Object> commentsVO = ticketService.updateCreateComments(commentsDTO);
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, commentsVO.get("message"));
-	        responseObjectsMap.put("commentsVO", commentsVO.get("commentsVO")); // Corrected key
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-	    }
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			Map<String, Object> commentsVO = ticketService.updateCreateComments(commentsDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, commentsVO.get("message"));
+			responseObjectsMap.put("commentsVO", commentsVO.get("commentsVO")); // Corrected key
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getCommentsByTicketId")
-	public ResponseEntity<ResponseDTO> getCommentsByTicketId(@RequestParam(required = false) Long ticketId,@RequestParam(required = false) Long orgId ) {
+	public ResponseEntity<ResponseDTO> getCommentsByTicketId(@RequestParam(required = false) Long ticketId,
+			@RequestParam(required = false) Long orgId) {
 		String methodName = "getCommentsByTicketId()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -212,9 +212,9 @@ public class TicketController extends BaseController{
 		ResponseDTO responseDTO = null;
 		List<CommentsVO> commentsVO = new ArrayList<CommentsVO>();
 		try {
-			commentsVO = ticketService.getCommentsByTicketId(ticketId,orgId);
+			commentsVO = ticketService.getCommentsByTicketId(ticketId, orgId);
 		} catch (Exception e) {
-			errorMsg = e.getMessage();   
+			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
 		}
 		if (StringUtils.isBlank(errorMsg)) {
@@ -228,35 +228,33 @@ public class TicketController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@PutMapping("/updateTicketStatus")
-	public ResponseEntity<ResponseDTO> updateTicketStatus(
-	        @RequestParam(required = false) Long orgId,
-	        @RequestParam(required = false) Long ticketId,
-	        @RequestParam(required = false) String status,
-	        @RequestParam(required = false) String userName) {
-	    
-	    String methodName = "updateTicketStatus()";
-	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
-	    String errorMsg = null;
-	    Map<String, Object> responseObjectsMap = new HashMap<>();
-	    ResponseDTO responseDTO;
+	public ResponseEntity<ResponseDTO> updateTicketStatus(@RequestParam(required = false) Long orgId,
+			@RequestParam(required = false) Long ticketId, @RequestParam(required = false) String status,
+			@RequestParam(required = false) String userName) {
 
-	    try {
-	        // Assuming this updates the ticket status internally
-	        TicketVO ticketVO = ticketService.updateTicketStatus(orgId, ticketId,status,userName);
+		String methodName = "updateTicketStatus()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO;
 
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Ticket status updated successfully");
-	        responseObjectsMap.put("ticketVO", ticketVO);
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, "Ticket status update failed", errorMsg);
-	    }
+		try {
+			// Assuming this updates the ticket status internally
+			TicketVO ticketVO = ticketService.updateTicketStatus(orgId, ticketId, status, userName);
 
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Ticket status updated successfully");
+			responseObjectsMap.put("ticketVO", ticketVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Ticket status update failed", errorMsg);
+		}
+
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
 
 	@DeleteMapping("/deleteCommentsById")
@@ -278,9 +276,9 @@ public class TicketController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
-	//Notification
-	
+
+	// Notification
+
 	@GetMapping("/getTicketNotification")
 	public ResponseEntity<ResponseDTO> getTicketNotification(@RequestParam(required = false) Long orgId) {
 		String methodName = "getTicketNotification()";
@@ -288,11 +286,11 @@ public class TicketController extends BaseController{
 		String errorMsg = null;
 		Map<String, Object> responseObjectsMap = new HashMap<>();
 		ResponseDTO responseDTO = null;
-		List<Map<String,Object>> ticketVOs = new ArrayList<Map<String,Object>>();
+		List<Map<String, Object>> ticketVOs = new ArrayList<Map<String, Object>>();
 		try {
 			ticketVOs = ticketService.getTicketNotification(orgId);
 		} catch (Exception e) {
-			errorMsg = e.getMessage();   
+			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
 		}
 		if (StringUtils.isBlank(errorMsg)) {
@@ -306,36 +304,34 @@ public class TicketController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@PutMapping("/updateNotification")
-	public ResponseEntity<ResponseDTO> updateNotification(
-	        @RequestParam(required = false) Long orgId,
-	        @RequestParam(required = false) Long ticketId,
-	        @RequestParam(required = false) String status) {
-	    
-	    String methodName = "updateNotification()";
-	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
-	    String errorMsg = null;
-	    Map<String, Object> responseObjectsMap = new HashMap<>();
-	    ResponseDTO responseDTO;
+	public ResponseEntity<ResponseDTO> updateNotification(@RequestParam(required = false) Long orgId,
+			@RequestParam(required = false) Long ticketId, @RequestParam(required = false) String status) {
 
-	    try {
-	        // Assuming this updates the ticket status internally
-	        TicketVO ticketVO = ticketService.updateNotification(orgId, ticketId,status);
+		String methodName = "updateNotification()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO;
 
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Notification status updated successfully");
-	        responseObjectsMap.put("ticketVO", ticketVO);
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, "Notification update failed", errorMsg);
-	    }
+		try {
+			// Assuming this updates the ticket status internally
+			TicketVO ticketVO = ticketService.updateNotification(orgId, ticketId, status);
 
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Notification status updated successfully");
+			responseObjectsMap.put("ticketVO", ticketVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "Notification update failed", errorMsg);
+		}
+
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@GetMapping("/getNotificationFromUser")
 	public ResponseEntity<ResponseDTO> getNotificationFromUser(@RequestParam(required = false) String userName) {
 		String methodName = "getNotificationFromUser()";
@@ -343,11 +339,11 @@ public class TicketController extends BaseController{
 		String errorMsg = null;
 		Map<String, Object> responseObjectsMap = new HashMap<>();
 		ResponseDTO responseDTO = null;
-		List<Map<String,Object>> ticketVOs = new ArrayList<Map<String,Object>>();
+		List<Map<String, Object>> ticketVOs = new ArrayList<Map<String, Object>>();
 		try {
 			ticketVOs = ticketService.getNotificationFromUser(userName);
 		} catch (Exception e) {
-			errorMsg = e.getMessage();   
+			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
 		}
 		if (StringUtils.isBlank(errorMsg)) {
@@ -361,36 +357,35 @@ public class TicketController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
-	
+
 	@PutMapping("/clearUserNotification")
-	public ResponseEntity<ResponseDTO> clearUserNotification(
-	        @RequestParam(required = false) Long orgId,
-	        @RequestParam(required = false) String userName,
-	        @RequestParam(required = false) Long ticketId,
-	        @RequestParam(required = false) String status) {
-	    
-	    String methodName = "clearUserNotification()";
-	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
-	    String errorMsg = null;
-	    Map<String, Object> responseObjectsMap = new HashMap<>();
-	    ResponseDTO responseDTO;
+	public ResponseEntity<ResponseDTO> clearUserNotification(@RequestParam(required = false) Long orgId,
+			@RequestParam(required = false) String userName, @RequestParam(required = false) Long ticketId,
+			@RequestParam(required = false) String status) {
 
-	    try {
-	        // Assuming this updates the ticket status internally
-	        TicketVO ticketVO = ticketService.clearUserNotification(orgId,userName,ticketId,status);
+		String methodName = "clearUserNotification()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO;
 
-	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "User Notification Clear successfully");
-	        responseObjectsMap.put("ticketVO", ticketVO);
-	        responseDTO = createServiceResponse(responseObjectsMap);
-	    } catch (Exception e) {
-	        errorMsg = e.getMessage();
-	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-	        responseDTO = createServiceResponseError(responseObjectsMap, "User Notification Clear failed", errorMsg);
-	    }
+		try {
+			// Assuming this updates the ticket status internally
+			TicketVO ticketVO = ticketService.clearUserNotification(orgId, userName, ticketId, status);
 
-	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-	    return ResponseEntity.ok().body(responseDTO);
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "User Notification Clear successfully");
+			responseObjectsMap.put("ticketVO", ticketVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, "User Notification Clear failed", errorMsg);
+		}
+
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
 	}
+
 	@PostMapping("/createComments")
 	public ResponseEntity<ResponseDTO> createComments(@RequestBody CommentsDTO commentDTO) {
 		String methodName = "createComments()";
@@ -498,7 +493,7 @@ public class TicketController extends BaseController{
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok(responseDTO);
 	}
-  
+
 	@PutMapping("/updateTicketFromRemote")
 	public ResponseEntity<ResponseDTO> updateTicketFromRemote(@RequestParam Long orgId, @RequestParam Long id,
 			@RequestParam String status, @RequestParam String empCode, @RequestParam String email,
@@ -532,8 +527,32 @@ public class TicketController extends BaseController{
 
 		return ResponseEntity.ok(response);
 	}
-	
+
+	@GetMapping("/getTicketReport")
+	public ResponseEntity<ResponseDTO> getTicketReport(@RequestParam Long orgId,
+			@RequestParam(required = false) String fromDate, @RequestParam(required = false) String toDate) {
+		String methodName = "getTicketReport()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		List<TicketVO> ticketVO = new ArrayList<>();
+		try {
+			ticketVO = ticketService.getTicketReport(orgId, fromDate, toDate);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+		}
+		if (StringUtils.isBlank(errorMsg)) {
+			responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "TicketReport information get successfully ");
+			responseObjectsMap.put("ticketVO", ticketVO);
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} else {
+			responseDTO = createServiceResponseError(responseObjectsMap, "TicketReport receive failed", errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+
+	}
+
 }
-
-
-

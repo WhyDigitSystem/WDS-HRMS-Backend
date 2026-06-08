@@ -627,5 +627,10 @@ public class TicketServiceImpl implements TicketService {
 	    }
 	}
   
+	
+	@Override
+	public List<TicketVO> getTicketReport(Long orgId, String fromDate, String toDate) {
+		return ticketRepo.getTicketReport( orgId,  fromDate,  toDate);
+	}
 
 }
