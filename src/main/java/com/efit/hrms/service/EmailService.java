@@ -67,5 +67,28 @@ public interface EmailService {
 			String reportingManagerCode, boolean b);
 
 
+	void sendPermissionStatusMail(String employeeCode, String employeeName, String action, String reason, String date,
+			String fromTime, String toTime, String approvedBy);
+
+
+
+	void sendPermissionRequestMail(String toEmail, Long orgId, Long permissionId, String employeeCode,
+			String employeeName, String date, String fromTime, String toTime, String totalHours, String notes,
+			String notifyCode, boolean showButtons);
+
+
+	void sendTravelRequestMail(String toEmail, Long orgId, Long travelId, String employeeCode, String employeeName,
+			String travelTitle, String from, String to, String departureDate, String returnDate, String transportMode,
+			String accommodation, String estimatedCost, String businessPurpose, String notifyCode, boolean showButtons);
+
+
+
+	void sendTravelStatusMail(String employeeCode, String employeeName, String action, String reason,
+			String travelTitle, String from, String to, String departureDate, String returnDate, String approvedAmount,
+			String approvedBy);
+
+
+
+
 
 }

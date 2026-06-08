@@ -1,7 +1,8 @@
 package com.efit.hrms.controller;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
@@ -39,6 +42,8 @@ import com.efit.hrms.entity.SalaryHeadsVO;
 import com.efit.hrms.entity.SalaryProcessVO;
 import com.efit.hrms.entity.SalaryStructureVO;
 import com.efit.hrms.exception.ApplicationException;
+import com.efit.hrms.repo.PermissionRequestRepo;
+import com.efit.hrms.service.EmailService;
 import com.efit.hrms.service.EmployeeMasterService;
 
 @CrossOrigin
@@ -48,6 +53,15 @@ public class EmployeeMasterController extends BaseController{
 
 	@Autowired
 	EmployeeMasterService employeeMasterService;
+	
+	@Autowired
+	EmailService emailService;
+	
+	@Autowired
+	TemplateEngine templateEngine;
+	
+	@Autowired
+	PermissionRequestRepo permissionRequestRepo;
 	
 	public static final Logger LOGGER = LoggerFactory.getLogger(BasicMasterController.class);	
 
@@ -859,6 +873,120 @@ public class EmployeeMasterController extends BaseController{
 		return ResponseEntity.ok().body(responseDTO);
 	}
 	
+	@GetMapping("/mailPermissionAction")
+	public ResponseEntity<String> mailPermissionAction(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam String notifyCode,
+	        @RequestParam String notify,
+	        @RequestParam String screenName,
+	        @RequestParam String email,
+	        @RequestParam(required = false) String reason) {
+
+	    Context context = new Context();
+	    PermissionRequestVO vo = null;
+
+	    try {
+	        Map<String, Object> details = employeeMasterService.createApprovalPermissionRequest(
+	                orgId, id, employeeCode, action, actionBy,
+	                notifyCode, notify, screenName, reason);
+
+	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
+	        vo = (PermissionRequestVO) details.get("permissionRequestVO");
+
+	        context.setVariable("stateClass",   isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",    isApproved ? "Approved" : "Rejected");
+	        context.setVariable("title",        isApproved ? "Permission Approved Successfully" : "Permission Rejected Successfully");
+	        context.setVariable("message",      isApproved
+	                ? "The permission request has been approved and the employee has been notified."
+	                : "The permission request has been rejected and the employee has been notified.");
+	        context.setVariable("employeeName", vo.getEmployeeName());
+	        context.setVariable("date",         vo.getDate() != null ? vo.getDate().toString() : "—");
+	        context.setVariable("fromTime",     vo.getFromTime() != null ? vo.getFromTime().toString() : "—");
+	        context.setVariable("toTime",       vo.getToTime() != null ? vo.getToTime().toString() : "—");
+	        context.setVariable("reason",       reason);
+	        context.setVariable("approvedBy",   actionBy);
+	        context.setVariable("actionTime",   LocalDateTime.now()
+	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        context.setVariable("stateClass",  "state-error");
+	        context.setVariable("pillLabel",   "Failed");
+	        context.setVariable("title",       "Action Failed");
+	        context.setVariable("message",     "Something went wrong.");
+	        context.setVariable("reason",      e.getMessage());
+	    }
+
+	    String html = templateEngine.process("permission-status", context);
+
+	    if (vo != null) {
+	        emailService.sendPermissionStatusMail(
+	                vo.getEmployeeCode(),
+	                vo.getEmployeeName(),
+	                action,
+	                reason,
+	                vo.getDate() != null ? vo.getDate().toString() : "—",
+	                vo.getFromTime() != null ? vo.getFromTime().toString() : "—",
+	                vo.getToTime() != null ? vo.getToTime().toString() : "—",
+	                actionBy);
+	    }
+
+	    return ResponseEntity.ok(html);
+	}
+
+	@GetMapping("/permission-reject-page")
+	public ResponseEntity<String> permissionRejectPage(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam(required = false, defaultValue = "") String notifyCode,
+	        @RequestParam(required = false, defaultValue = "") String notify,
+	        @RequestParam(required = false, defaultValue = "") String screenName,
+	        @RequestParam(required = false, defaultValue = "") String email,
+	        @RequestParam(required = false, defaultValue = "") String reason) {
+
+	    try {
+	        PermissionRequestVO vo = permissionRequestRepo
+	                .findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
+
+	        if (vo.getApproveStatus() != null &&
+	            ("APPROVED".equalsIgnoreCase(vo.getApproveStatus()) ||
+	             "REJECTED".equalsIgnoreCase(vo.getApproveStatus()))) {
+	            return mailPermissionAction(orgId, id, employeeCode,
+	                    vo.getApproveStatus(), actionBy, notifyCode,
+	                    notify, screenName, email, reason);
+	        }
+
+	        Context context = new Context();
+	        context.setVariable("orgId",        orgId);
+	        context.setVariable("id",           id);
+	        context.setVariable("employeeCode", employeeCode);
+	        context.setVariable("action",       action);
+	        context.setVariable("actionBy",     actionBy);
+	        context.setVariable("notifyCode",   notifyCode);
+	        context.setVariable("notify",       notify);
+	        context.setVariable("screenName",   screenName);
+	        context.setVariable("email",        email);
+
+	        String html = templateEngine.process("permission-reject-reason", context);
+	        return ResponseEntity.ok(html);
+
+	    } catch (Exception e) {
+	        Context context = new Context();
+	        context.setVariable("stateClass", "state-error");
+	        context.setVariable("pillLabel",  "Failed");
+	        context.setVariable("title",      "Action Failed");
+	        context.setVariable("message",    e.getMessage());
+	        String html = templateEngine.process("permission-status", context);
+	        return ResponseEntity.ok(html);
+	    }
+	}
 	
 	@GetMapping("/getPendingPermissionRequest")
 	public ResponseEntity<ResponseDTO> getPendingPermissionRequest(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String reportingPersonCode) {

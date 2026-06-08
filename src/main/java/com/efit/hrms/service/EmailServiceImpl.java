@@ -616,4 +616,238 @@ public class EmailServiceImpl implements EmailService {
 		        e.printStackTrace();
 		    }
 		}
+		
+		//permission mail
+		
+		@Override
+		public void sendPermissionRequestMail(
+		        String toEmail,
+		        Long orgId,
+		        Long permissionId,
+		        String employeeCode,
+		        String employeeName,
+		        String date,
+		        String fromTime,
+		        String toTime,
+		        String totalHours,
+		        String notes,
+		        String notifyCode,
+		        boolean showButtons) {
+
+		    try {
+		        Context context = new Context();
+		        String encodedEmail = URLEncoder.encode(toEmail, StandardCharsets.UTF_8);
+
+		        context.setVariable("employeeName", employeeName);
+		        context.setVariable("date",         date);
+		        context.setVariable("fromTime",     fromTime);
+		        context.setVariable("toTime",       toTime);
+		        context.setVariable("totalHours",   totalHours);
+		        context.setVariable("notes",        notes);
+		        context.setVariable("showButtons",  showButtons);
+
+		        context.setVariable("approveUrl",
+		                baseUrl + "/api/employeemaster/mailPermissionAction"
+		                + "?orgId=" + orgId
+		                + "&id=" + permissionId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=APPROVED"
+		                + "&actionBy=" + notifyCode
+		                + "&notifyCode=&notify=&screenName=MAIL"
+		                + "&email=" + encodedEmail);
+
+		        context.setVariable("rejectPageUrl",
+		                baseUrl + "/api/employeemaster/permission-reject-page"
+		                + "?orgId=" + orgId
+		                + "&id=" + permissionId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=REJECTED"
+		                + "&actionBy=" + notifyCode
+		                + "&notifyCode=&notify=&screenName=MAIL"
+		                + "&email=" + encodedEmail);
+
+		        String html = templateEngine.process("permission-request", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+		        helper.setSubject("Permission Request - " + employeeName);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+
+		@Override
+		public void sendPermissionStatusMail(
+		        String employeeCode,
+		        String employeeName,
+		        String action,
+		        String reason,
+		        String date,
+		        String fromTime,
+		        String toTime,
+		        String approvedBy) {
+
+		    try {
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        if (employee == null || employee.getEmail() == null) return;
+		        String toEmail = employee.getEmail();
+
+		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
+		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
+
+		        Context context = new Context();
+		        context.setVariable("employeeName", employeeName);
+		        context.setVariable("action",       action);
+		        context.setVariable("date",         date);
+		        context.setVariable("fromTime",     fromTime);
+		        context.setVariable("toTime",       toTime);
+		        context.setVariable("reason",       reason);
+		        context.setVariable("approvedBy",   approvedByName);
+
+		        String html = templateEngine.process("permission-reply", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+
+		        String subject = "APPROVED".equalsIgnoreCase(action)
+		                ? "Your Permission Request Has Been Approved"
+		                : "Your Permission Request Has Been Rejected";
+		        helper.setSubject(subject);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+
+		
+		//travel requests
+		@Override
+		public void sendTravelRequestMail(
+		        String toEmail,
+		        Long orgId,
+		        Long travelId,
+		        String employeeCode,
+		        String employeeName,
+		        String travelTitle,
+		        String from,
+		        String to,
+		        String departureDate,
+		        String returnDate,
+		        String transportMode,
+		        String accommodation,
+		        String estimatedCost,
+		        String businessPurpose,
+		        String notifyCode,
+		        boolean showButtons) {
+
+		    try {
+		        Context context = new Context();
+		        String encodedEmail = URLEncoder.encode(toEmail, StandardCharsets.UTF_8);
+
+		        context.setVariable("employeeName",    employeeName);
+		        context.setVariable("travelTitle",     travelTitle);
+		        context.setVariable("from",            from);
+		        context.setVariable("to",              to);
+		        context.setVariable("departureDate",   departureDate);
+		        context.setVariable("returnDate",      returnDate);
+		        context.setVariable("transportMode",   transportMode);
+		        context.setVariable("accommodation",   accommodation);
+		        context.setVariable("estimatedCost",   estimatedCost);
+		        context.setVariable("businessPurpose", businessPurpose);
+		        context.setVariable("showButtons",     showButtons);
+
+		        context.setVariable("approveUrl",
+		                baseUrl + "/api/assetmanagement/mailTravelAction"
+		                + "?orgId=" + orgId
+		                + "&id=" + travelId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=APPROVED"
+		                + "&actionBy=" + notifyCode
+		                + "&approvedAmount=0"
+		                + "&notifyCode=&notify=&screenName=MAIL"
+		                + "&email=" + encodedEmail);
+
+		        context.setVariable("rejectPageUrl",
+		                baseUrl + "/api/assetmanagement/travel-reject-page"
+		                + "?orgId=" + orgId
+		                + "&id=" + travelId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=REJECTED"
+		                + "&actionBy=" + notifyCode
+		                + "&notifyCode=&notify=&screenName=MAIL"
+		                + "&email=" + encodedEmail);
+
+		        String html = templateEngine.process("travel-request", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+		        helper.setSubject("Travel Request - " + employeeName);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+
+		@Override
+		public void sendTravelStatusMail(
+		        String employeeCode,
+		        String employeeName,
+		        String action,
+		        String reason,
+		        String travelTitle,
+		        String from,
+		        String to,
+		        String departureDate,
+		        String returnDate,
+		        String approvedAmount,
+		        String approvedBy) {
+
+		    try {
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        if (employee == null || employee.getEmail() == null) return;
+		        String toEmail = employee.getEmail();
+
+		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
+		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
+
+		        Context context = new Context();
+		        context.setVariable("employeeName",  employeeName);
+		        context.setVariable("action",        action);
+		        context.setVariable("travelTitle",   travelTitle);
+		        context.setVariable("from",          from);
+		        context.setVariable("to",            to);
+		        context.setVariable("departureDate", departureDate);
+		        context.setVariable("returnDate",    returnDate);
+		        context.setVariable("approvedAmount",approvedAmount);
+		        context.setVariable("reason",        reason);
+		        context.setVariable("approvedBy",    approvedByName);
+
+		        String html = templateEngine.process("travel-reply", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+
+		        String subject = "APPROVED".equalsIgnoreCase(action)
+		                ? "Your Travel Request Has Been Approved"
+		                : "Your Travel Request Has Been Rejected";
+		        helper.setSubject(subject);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+		
 	}

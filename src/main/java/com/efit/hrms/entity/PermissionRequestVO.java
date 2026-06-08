@@ -40,7 +40,7 @@ public class PermissionRequestVO {
 	@Column(name = "totime")
 	private String toTime;
 	@Column(name = "totalhours")
-	private long totalHours;
+	private Long totalHours;
 	@Column(name = "notes")
 	private String notes;
 	@Column(name = "notify")

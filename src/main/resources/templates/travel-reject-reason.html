@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Reject Travel Request</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f8fafc; font-family: 'Segoe UI', sans-serif; padding: 1rem; }
+    .card { width: 100%; max-width: 420px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 28px; }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .icon-box { width: 40px; height: 40px; border-radius: 10px; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; color: #dc2626; }
+    .card-header h1 { font-size: 16px; font-weight: 600; color: #111827; }
+    .card-header p { font-size: 13px; color: #6b7280; margin-top: 2px; }
+    .divider { border-top: 1px solid #f3f4f6; padding-top: 16px; }
+    label { font-size: 13px; color: #6b7280; display: block; margin-bottom: 6px; }
+    label span { color: #dc2626; }
+    textarea { width: 100%; height: 110px; resize: none; font-size: 14px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; color: #111827; font-family: inherit; outline: none; transition: border-color 0.15s; }
+    textarea:focus { border-color: #6366f1; }
+    .actions { display: flex; gap: 10px; margin-top: 14px; }
+    .btn-cancel { flex: 1; padding: 9px; font-size: 14px; border-radius: 10px; background: transparent; border: 1px solid #e5e7eb; color: #6b7280; cursor: pointer; }
+    .btn-reject { flex: 1; padding: 9px; font-size: 14px; font-weight: 500; border-radius: 10px; background: #fee2e2; border: none; color: #dc2626; cursor: pointer; }
+    .btn-reject:hover:not(:disabled) { background: #fecaca; }
+    .btn-reject:disabled { opacity: 0.6; cursor: not-allowed; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #dc2626; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box"><i class="ti ti-x"></i></div>
+      <div>
+        <h1>Reject travel request</h1>
+        <p>Provide a reason before submitting</p>
+      </div>
+    </div> 
+    <form action="/api/assetmanagement/mailTravelAction" method="get" onsubmit="handleSubmit(this)">
+      <input type="hidden" name="orgId"        th:value="${orgId}" />
+      <input type="hidden" name="id"           th:value="${id}" />
+      <input type="hidden" name="employeeCode" th:value="${employeeCode}" />
+      <input type="hidden" name="action"       th:value="${action}" />
+      <input type="hidden" name="actionBy"     th:value="${actionBy}" />
+      <input type="hidden" name="notifyCode"   th:value="${notifyCode}" />
+      <input type="hidden" name="notify"       th:value="${notify}" />
+      <input type="hidden" name="screenName"   th:value="${screenName}" />
+      <input type="hidden" name="email"        th:value="${email}" />
+      <input type="hidden" name="approvedAmount" value="0" />
+      <div class="divider">
+        <label>Rejection reason <span>*</span></label>
+        <textarea name="reason" required placeholder="Enter reason for rejection..."></textarea>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn-reject" id="rejectBtn">
+          <i class="ti ti-x"></i> Reject
+        </button>
+      </div>
+    </form>
+    <script>
+      function handleSubmit(form) {
+        var btn = document.getElementById('rejectBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Submitting...';
+        return true;
+      }
+    </script>
+  </div>
+</body>
+</html>
