@@ -819,10 +819,10 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public Map<String, Object> sendOtp(String userName) {
 
-	    UserVO user = userRepo.findByEmployeeName(userName);
+	    UserVO user = userRepo.findByEmail(userName);
 
 	    if (user == null) {
-	        throw new RuntimeException("User not found");
+	        throw new RuntimeException("Email not found");
 	    }
 
 	    // 🔹 Generate OTP
@@ -863,7 +863,11 @@ public class AuthServiceImpl implements AuthService {
 	                UserConstants.ERRROR_MSG_INVALID_RESET_PASSWORD_INFORMATION);
 	    }
 
-	    UserVO userVO = userRepo.findByUserName(resetPasswordRequest.getUserName());
+	    UserVO userVO = userRepo.findByEmail(resetPasswordRequest.getUserName());
+	    
+	    if (userVO == null) {
+	        throw new RuntimeException("Email not found");
+	    }
 
 	    if (ObjectUtils.isNotEmpty(userVO)) {
 

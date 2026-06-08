@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ResetPasswordFormDTO {
 
-	@NotBlank(message = "Email is Required")
-	@Size(max = 30)
-	@Email
+//	@NotBlank(message = "Email is Required")
+//	@Size(max = 30)
+//	@Email
 	private String userName;
 	
 	private String otp;
