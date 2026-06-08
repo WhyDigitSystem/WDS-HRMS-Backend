@@ -57,4 +57,15 @@ public interface EmailService {
 
 
 
+	public void sendWfhStatusMail(String employeeCode, String employeeName, String action, String reason,
+			LocalDate wfhDate, String reason2, String actionBy);
+
+
+
+	public void sendWfhRequestMail(String reportingManagerEmail, Long orgId, Long id, String employeeCode,
+			String employeeName, LocalDate wfhDate, String reason, String workAccomplished, String departmentHead,
+			String reportingManagerCode, boolean b);
+
+
+
 }

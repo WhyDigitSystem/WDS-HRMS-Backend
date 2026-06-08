@@ -3,15 +3,16 @@ package com.efit.hrms.service;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -509,5 +510,110 @@ public class EmailServiceImpl implements EmailService {
 		    }
 		}
 
-	
+	//WORKFROMHOME
+		
+		public void sendWfhRequestMail(
+		        String toEmail,
+		        Long orgId,
+		        Long wfhId,
+		        String employeeCode,
+		        String employeeName,
+		        LocalDate wfhDate,
+		        String reason,
+		        String workAccomplished,
+		        String departmentHead,
+		        String notifyCode,
+		        boolean showButtons) {
+
+		    try {
+		        Context context = new Context();
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+		        context.setVariable("employeeName",      employeeName);
+		        context.setVariable("wfhDate",           wfhDate.format(formatter));
+		        context.setVariable("reason",            reason);
+		        context.setVariable("workAccomplished",  workAccomplished);
+		        context.setVariable("departmentHead",    departmentHead);
+		        context.setVariable("showButtons",       showButtons);
+
+		        String encodedEmail = URLEncoder.encode(toEmail, StandardCharsets.UTF_8);
+
+		        context.setVariable("approveUrl",
+		                baseUrl + "/api/leaveprocess/mailWfhAction"
+		                + "?orgId=" + orgId
+		                + "&id=" + wfhId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=APPROVED"
+		                + "&actionBy=" + notifyCode
+		                + "&notifyCode=&notify=&screenName=MAIL"
+		                + "&email=" + encodedEmail);
+
+		        context.setVariable("rejectPageUrl",
+		                baseUrl + "/api/leaveprocess/wfh-reject-page"
+		                + "?orgId=" + orgId
+		                + "&id=" + wfhId
+		                + "&employeeCode=" + employeeCode
+		                + "&action=REJECTED"
+		                + "&actionBy=" + notifyCode
+		                + "&notifyCode=&notify=&screenName=MAIL"
+		                + "&email=" + encodedEmail);
+
+		        String html = templateEngine.process("wfh-request", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+		        helper.setSubject("Work From Home Request - " + employeeName);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+
+		public void sendWfhStatusMail(
+		        String employeeCode,
+		        String employeeName,
+		        String action,
+		        String rejectReason,
+		        LocalDate wfhDate,
+		        String reason,
+		        String approvedBy) {
+
+		    try {
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        if (employee == null || employee.getEmail() == null) return;
+		        String toEmail = employee.getEmail();
+
+		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
+		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
+
+		        Context context = new Context();
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+		        context.setVariable("employeeName", employeeName);
+		        context.setVariable("action",       action);
+		        context.setVariable("wfhDate",      wfhDate.format(formatter));
+		        context.setVariable("reason",       reason);
+		        context.setVariable("rejectReason", rejectReason);
+		        context.setVariable("approvedBy",   approvedByName);
+
+		        String html = templateEngine.process("wfh-reply", context);
+
+		        MimeMessage mimeMessage = mailSender.createMimeMessage();
+		        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		        helper.setTo(toEmail);
+
+		        String subject = "APPROVED".equalsIgnoreCase(action)
+		                ? "Your WFH Request Has Been Approved"
+		                : "Your WFH Request Has Been Rejected";
+		        helper.setSubject(subject);
+		        helper.setText(html, true);
+		        mailSender.send(mimeMessage);
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
 	}
