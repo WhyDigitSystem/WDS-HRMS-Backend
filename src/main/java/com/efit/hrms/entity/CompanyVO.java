@@ -143,7 +143,7 @@ public class CompanyVO {
 	private int mcLastNum = 1;
 	
 	@Column(name = "monthlattendancemail")
-	private boolean monthlAttendanceMail=false;
+	private boolean monthlyAttendanceMail=false;
 	
 	@OneToMany(mappedBy = "companyVO", cascade = CascadeType.ALL)
 	@JsonManagedReference

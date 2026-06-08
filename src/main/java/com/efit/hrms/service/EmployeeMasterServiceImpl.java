@@ -102,6 +102,9 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 	
 	@Autowired
 	NotificationRepo notificationRepo;
+	
+	@Autowired
+	EmailService emailService;
 
 	@Override
 	@Transactional
@@ -416,6 +419,57 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 		// Save the entity
 		final PermissionRequestVO savedPermissionRequestVO = permissionRequestRepo.save(permissionRequestVO);
 
+		// ✅ Send mail to main approver
+		if (savedPermissionRequestVO.getNotifyCode() != null) {
+		    EmployeeVO notifyEmp = employeeRepo.findByEmployeeCode(
+		            savedPermissionRequestVO.getNotifyCode());
+
+		    if (notifyEmp != null && notifyEmp.getEmail() != null) {
+		    	emailService.sendPermissionRequestMail(
+		    	        notifyEmp.getEmail(),
+		    	        savedPermissionRequestVO.getOrgId(),
+		    	        savedPermissionRequestVO.getId(),
+		    	        savedPermissionRequestVO.getEmployeeCode(),
+		    	        savedPermissionRequestVO.getEmployeeName(),
+		    	        savedPermissionRequestVO.getDate() != null
+		    	                ? savedPermissionRequestVO.getDate().toString() : "—",
+		    	        savedPermissionRequestVO.getFromTime() != null
+		    	                ? savedPermissionRequestVO.getFromTime().toString() : "—",
+		    	        savedPermissionRequestVO.getToTime() != null
+		    	                ? savedPermissionRequestVO.getToTime().toString() : "—",
+		    	        savedPermissionRequestVO.getTotalHours() != null
+		    	                ? String.valueOf(savedPermissionRequestVO.getTotalHours()) : "—",  // ← convert to String
+		    	        savedPermissionRequestVO.getNotes(),
+		    	        savedPermissionRequestVO.getNotifyCode(),
+		    	        true);
+		    }
+		}
+
+		// ✅ Send mail to additional approvers (no buttons)
+		if (savedPermissionRequestVO.getPermissionRequestNotifyVO() != null) {
+		    for (PermissionRequestNotifyVO notifyVO :
+		            savedPermissionRequestVO.getPermissionRequestNotifyVO()) {
+		        if (notifyVO.getNotify2Email() == null
+		                || notifyVO.getNotify2Email().trim().isEmpty()) continue;
+
+		        emailService.sendPermissionRequestMail(
+		                notifyVO.getNotify2Email(),
+		                savedPermissionRequestVO.getOrgId(),
+		                savedPermissionRequestVO.getId(),
+		                savedPermissionRequestVO.getEmployeeCode(),
+		                savedPermissionRequestVO.getEmployeeName(),
+		                savedPermissionRequestVO.getDate() != null
+		                        ? savedPermissionRequestVO.getDate().toString() : "—",
+		                savedPermissionRequestVO.getFromTime() != null
+		                        ? savedPermissionRequestVO.getFromTime().toString() : "—",
+		                savedPermissionRequestVO.getToTime() != null
+		                        ? savedPermissionRequestVO.getToTime().toString() : "—",
+		                        		savedPermissionRequestVO.getTotalHours() != null
+				    	                ? String.valueOf(savedPermissionRequestVO.getTotalHours()) : "—", 		                savedPermissionRequestVO.getNotes(),
+		                notifyVO.getNotify2Code(),
+		                false);
+		    }
+		}
 		// 🔔 Prepare notification message
 		String notifyMessage;
 		if (permissionRequestDTO.getId() == null) {

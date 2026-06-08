@@ -2116,6 +2116,41 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 		createUpdateWorkFromHomeVOByWorkFromHomeDTO(workFromHomeDTO, workFromHomeVO);
 		workFromHomeRepo.save(workFromHomeVO);
+
+		// ✅ Send mail to reporting manager
+		if (workFromHomeVO.getReportingManagerEmail() != null
+		        && !workFromHomeVO.getReportingManagerEmail().trim().isEmpty()) {
+		    emailService.sendWfhRequestMail(
+		            workFromHomeVO.getReportingManagerEmail(),
+		            workFromHomeVO.getOrgId(),
+		            workFromHomeVO.getId(),
+		            workFromHomeVO.getEmployeeCode(),
+		            workFromHomeVO.getEmployeeName(),
+		            workFromHomeVO.getWfhDate(),
+		            workFromHomeVO.getReason(),
+		            workFromHomeVO.getWorkAccomplished(),
+		            workFromHomeVO.getDepartmentHead(),
+		            workFromHomeVO.getReportingManagerCode(),
+		            true);
+		}
+
+		// ✅ Send mail to department head (no buttons)
+		if (workFromHomeVO.getDepartmentHeadEmail() != null
+		        && !workFromHomeVO.getDepartmentHeadEmail().trim().isEmpty()) {
+		    emailService.sendWfhRequestMail(
+		            workFromHomeVO.getDepartmentHeadEmail(),
+		            workFromHomeVO.getOrgId(),
+		            workFromHomeVO.getId(),
+		            workFromHomeVO.getEmployeeCode(),
+		            workFromHomeVO.getEmployeeName(),
+		            workFromHomeVO.getWfhDate(),
+		            workFromHomeVO.getReason(),
+		            workFromHomeVO.getWorkAccomplished(),
+		            workFromHomeVO.getDepartmentHead(),
+		            workFromHomeVO.getDepartmentHeadCode(),
+		            false);
+		}
+		
 		Map<String, Object> response = new HashMap<>();
 		response.put("workFromHomeVO", workFromHomeVO);
 		response.put("message", message);

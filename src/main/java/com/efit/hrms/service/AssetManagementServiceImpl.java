@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -97,6 +96,9 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 	@Autowired
 	DocTypeMappingDetailsRepo docTypeMappingDetailsRepo;
+	
+	@Autowired
+	EmailService emailService;
 
 //	@Autowired
 //	DocumentTypeMappingDetailsRepo documentTypeMappingDetailsRepo;
@@ -653,6 +655,35 @@ public class AssetManagementServiceImpl implements AssetManagementService {
 
 		createUpdateTravelRequestsVOByTravelRequestsDTO(travelRequestsVO, travelRequestsDTO);
 		travelRequestsRepo.save(travelRequestsVO);
+		
+		// ✅ Send mail to reporting person
+		if (travelRequestsVO.getReportingPersonEmail() != null
+		        && !travelRequestsVO.getReportingPersonEmail().trim().isEmpty()) {
+
+		    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+		    emailService.sendTravelRequestMail(
+		            travelRequestsVO.getReportingPersonEmail(),
+		            travelRequestsVO.getOrgId(),
+		            travelRequestsVO.getId(),
+		            travelRequestsVO.getEmployeeCode(),
+		            travelRequestsVO.getEmployeeName(),
+		            travelRequestsVO.getTravelTitle(),
+		            travelRequestsVO.getFrom(),
+		            travelRequestsVO.getTo(),
+		            travelRequestsVO.getDepartureDate() != null
+		                    ? travelRequestsVO.getDepartureDate().format(fmt) : "—",
+		            travelRequestsVO.getReturnDate() != null
+		                    ? travelRequestsVO.getReturnDate().format(fmt) : "—",
+		            travelRequestsVO.getTransportMode(),
+		            travelRequestsVO.getAccommodation(),
+		            travelRequestsVO.getEstimatedCost() != null
+		                    ? travelRequestsVO.getEstimatedCost().toString() : "—",
+		            travelRequestsVO.getBusinessPurpose(),
+		            travelRequestsVO.getReportingPersonCode(),
+		            true);
+		}
+		
 		Map<String, Object> response = new HashMap<>();
 		response.put("travelRequestsVO", travelRequestsVO);
 		response.put("message", message);

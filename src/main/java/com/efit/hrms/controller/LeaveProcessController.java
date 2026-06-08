@@ -38,7 +38,6 @@ import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.dto.TravelRequestDTO;
 import com.efit.hrms.dto.WorkFromHomeDTO;
 import com.efit.hrms.entity.CompensatoryOffVO;
-import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.LeaveProcessVO;
 import com.efit.hrms.entity.LeaveRequestVO;
 import com.efit.hrms.entity.LeaveTypeVO;
@@ -48,6 +47,7 @@ import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.CompensatoryOffRepo;
 import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.LeaveRequestRepo;
+import com.efit.hrms.repo.WorkFromHomeRepo;
 import com.efit.hrms.service.EmailService;
 import com.efit.hrms.service.LeaveProcessService;
 
@@ -73,6 +73,9 @@ public class LeaveProcessController extends BaseController {
 	
 	@Autowired
 	EmailService emailService;
+	
+	@Autowired
+	WorkFromHomeRepo workFromHomeRepo;
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(LeaveProcessController.class);
 
@@ -473,32 +476,32 @@ public class LeaveProcessController extends BaseController {
 	
 	// ApprovalLeave
   // change backend mail send so cmd
-//	@PutMapping("/createApprovalLeave")
-//	public ResponseEntity<ResponseDTO> createApprovalLeave(@RequestParam Long orgId, @RequestParam Long id,
-//			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
-//			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam String email,@RequestParam (required=false) String reason) {
-//		String methodName = "createApprovalLeave()";
-//		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
-//		String errorMsg = null;
-//		Map<String, Object> responseObjectsMap = new HashMap<>();
-//		ResponseDTO responseDTO = null;
-//		try {
-//			Map<String, Object> result = leaveProcessService.createApprovalLeave(orgId, id, employeeCode, action,
-//					actionBy, notifyCode, notify,screenName,email,reason);
-//
-//			// ✅ Correct keys from the returned map
-//			responseObjectsMap.put("leaveRequestVO", result.get("leaveRequestVO"));
-//			responseObjectsMap.put("message", result.get("message"));
-//
-//			responseDTO = createServiceResponse(responseObjectsMap);
-//		} catch (Exception e) {
-//			errorMsg = e.getMessage();
-//			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
-//			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
-//		}
-//		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
-//		return ResponseEntity.ok().body(responseDTO);
-//	}
+	@PutMapping("/createApprovalLeave")
+	public ResponseEntity<ResponseDTO> createApprovalLeave(@RequestParam Long orgId, @RequestParam Long id,
+			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
+			@RequestParam String notifyCode, @RequestParam String notify,@RequestParam String screenName,@RequestParam String email,@RequestParam (required=false) String reason) {
+		String methodName = "createApprovalLeave()";
+		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+		String errorMsg = null;
+		Map<String, Object> responseObjectsMap = new HashMap<>();
+		ResponseDTO responseDTO = null;
+		try {
+			Map<String, Object> result = leaveProcessService.createApprovalLeave(orgId, id, employeeCode, action,
+					actionBy, notifyCode, notify,screenName,email,reason);
+
+			// ✅ Correct keys from the returned map
+			responseObjectsMap.put("leaveRequestVO", result.get("leaveRequestVO"));
+			responseObjectsMap.put("message", result.get("message"));
+
+			responseDTO = createServiceResponse(responseObjectsMap);
+		} catch (Exception e) {
+			errorMsg = e.getMessage();
+			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+		}
+		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+		return ResponseEntity.ok().body(responseDTO);
+	}
 
 	@GetMapping("/calculateLeavedays")
 	public ResponseEntity<?> calculateLeavedays(@RequestParam Long orgId,
@@ -878,8 +881,6 @@ public class LeaveProcessController extends BaseController {
 	        e.printStackTrace();
 	        context.setVariable("stateClass", "state-error");
 	        context.setVariable("pillLabel",  "Failed");
-	        context.setVariable("title",      "Action Failed");
-	        context.setVariable("message",    "Something went wrong.");
 	        context.setVariable("reason",     e.getMessage());
 	    }
 
@@ -1285,6 +1286,119 @@ public class LeaveProcessController extends BaseController {
 	    return ResponseEntity.ok().body(responseDTO);
 	}
 	
+	@GetMapping("/mailWfhAction")
+	public ResponseEntity<String> mailWfhAction(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam String notifyCode,
+	        @RequestParam String notify,
+	        @RequestParam String screenName,
+	        @RequestParam String email,
+	        @RequestParam(required = false) String reason) {
+
+	    Context context = new Context();
+	    WorkFromHomeVO vo = null;
+
+	    try {
+	        Map<String, Object> details = leaveProcessService.createApprovalWorkFromHome(
+	                orgId, employeeCode, action, actionBy,
+	                id, notifyCode, notify, screenName);
+
+	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
+	        vo = (WorkFromHomeVO) details.get("workFromHomeVO");
+
+	        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+	        context.setVariable("stateClass",   isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",    isApproved ? "Approved" : "Rejected");
+	        context.setVariable("title",        isApproved ? "WFH Approved Successfully" : "WFH Rejected Successfully");
+	        context.setVariable("message",      isApproved
+	                ? "The WFH request has been approved and the employee has been notified."
+	                : "The WFH request has been rejected and the employee has been notified.");
+	        context.setVariable("employeeName", vo.getEmployeeName());
+	        context.setVariable("wfhDate",      vo.getWfhDate().format(fmt));
+	        context.setVariable("reason",       vo.getReason());
+	        context.setVariable("rejectReason", reason);
+	        context.setVariable("approvedBy",   actionBy);
+	        context.setVariable("actionTime",   LocalDateTime.now()
+	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        context.setVariable("stateClass",   "state-error");
+	        context.setVariable("pillLabel",    "Failed");
+//	        context.setVariable("title",        "Action Failed");
+//	        context.setVariable("message",      "Something went wrong.");
+	        context.setVariable("rejectReason", e.getMessage());
+	    }
+
+	    String html = templateEngine.process("wfh-status", context);
+
+	    if (vo != null) {
+	        emailService.sendWfhStatusMail(
+	                vo.getEmployeeCode(),
+	                vo.getEmployeeName(),
+	                action,
+	                reason,
+	                vo.getWfhDate(),
+	                vo.getReason(),
+	                actionBy);
+	    }
+
+	    return ResponseEntity.ok(html);
+	}
+
+	@GetMapping("/wfh-reject-page")
+	public ResponseEntity<String> wfhRejectPage(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam(required = false, defaultValue = "") String notifyCode,
+	        @RequestParam(required = false, defaultValue = "") String notify,
+	        @RequestParam(required = false, defaultValue = "") String screenName,
+	        @RequestParam(required = false, defaultValue = "") String email,
+	        @RequestParam(required = false, defaultValue = "") String reason) {
+
+	    try {
+	        WorkFromHomeVO vo = workFromHomeRepo.findByOrgIdAndEmployeeCodeAndId(orgId, employeeCode, id);
+
+	        if (vo.getApproveStatus() != null &&
+	            ("APPROVED".equalsIgnoreCase(vo.getApproveStatus()) ||
+	             "REJECTED".equalsIgnoreCase(vo.getApproveStatus()))) {
+	            return mailWfhAction(orgId, id, employeeCode,
+	                    vo.getApproveStatus(), actionBy, notifyCode,
+	                    notify, screenName, email, reason);
+	        }
+
+	        Context context = new Context();
+	        context.setVariable("orgId",        orgId);
+	        context.setVariable("id",           id);
+	        context.setVariable("employeeCode", employeeCode);
+	        context.setVariable("action",       action);
+	        context.setVariable("actionBy",     actionBy);
+	        context.setVariable("notifyCode",   notifyCode);
+	        context.setVariable("notify",       notify);
+	        context.setVariable("screenName",   screenName);
+	        context.setVariable("email",        email);
+
+	        String html = templateEngine.process("wfh-reject-reason", context);
+	        return ResponseEntity.ok(html);
+
+	    } catch (Exception e) {
+	        Context context = new Context();
+	        context.setVariable("stateClass",   "state-error");
+	        context.setVariable("pillLabel",    "Failed");
+	        context.setVariable("title",        "Action Failed");
+	        context.setVariable("message",      e.getMessage());
+	        String html = templateEngine.process("wfh-status", context);
+	        return ResponseEntity.ok(html);
+	    }
+	}
 	
 	@GetMapping("/getPendingWorkFromHomeForDashBoard")
 	public ResponseEntity<ResponseDTO> getPendingWorkFromHomeForDashBoard(@RequestParam Long orgId,

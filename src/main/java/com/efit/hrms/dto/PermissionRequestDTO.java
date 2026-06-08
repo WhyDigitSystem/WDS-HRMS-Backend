@@ -19,7 +19,7 @@ private Long id;
 
 	private String toTime;
 
-	private long totalHours;
+	private Long totalHours;
 
 	private String notes;
 

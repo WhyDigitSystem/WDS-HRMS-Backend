@@ -48,5 +48,47 @@ public interface EmailService {
 	        String approvedBy);
 
 
+	void sendCheckInOutStatusMail(String employeeCode, String empName, String action, String reason,
+			LocalDate checkInDate, String entryIn, String entryOut, String approvedBy);
+
+	void sendCheckInOutRequestMail(String toEmail, Long orgId, String employeeCode, String empName,
+			LocalDate checkInDate, String entryIn, String entryOut, String requestReason, String notifyCode,
+			boolean showButtons);
+
+
+
+	public void sendWfhStatusMail(String employeeCode, String employeeName, String action, String reason,
+			LocalDate wfhDate, String reason2, String actionBy);
+
+
+
+	public void sendWfhRequestMail(String reportingManagerEmail, Long orgId, Long id, String employeeCode,
+			String employeeName, LocalDate wfhDate, String reason, String workAccomplished, String departmentHead,
+			String reportingManagerCode, boolean b);
+
+
+	void sendPermissionStatusMail(String employeeCode, String employeeName, String action, String reason, String date,
+			String fromTime, String toTime, String approvedBy);
+
+
+
+	void sendPermissionRequestMail(String toEmail, Long orgId, Long permissionId, String employeeCode,
+			String employeeName, String date, String fromTime, String toTime, String totalHours, String notes,
+			String notifyCode, boolean showButtons);
+
+
+	void sendTravelRequestMail(String toEmail, Long orgId, Long travelId, String employeeCode, String employeeName,
+			String travelTitle, String from, String to, String departureDate, String returnDate, String transportMode,
+			String accommodation, String estimatedCost, String businessPurpose, String notifyCode, boolean showButtons);
+
+
+
+	void sendTravelStatusMail(String employeeCode, String employeeName, String action, String reason,
+			String travelTitle, String from, String to, String departureDate, String returnDate, String approvedAmount,
+			String approvedBy);
+
+
+
+
 
 }

@@ -2,6 +2,8 @@ package com.efit.hrms.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
@@ -39,7 +43,9 @@ import com.efit.hrms.entity.AssetMasterVO;
 import com.efit.hrms.entity.AssetReturnVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
+import com.efit.hrms.repo.TravelRequestsRepo;
 import com.efit.hrms.service.AssetManagementService;
+import com.efit.hrms.service.EmailService;
 
 @CrossOrigin
 @RestController
@@ -50,6 +56,15 @@ public class AssetManagementController extends BaseController {
 
 	@Autowired
 	AssetManagementService assetManagementService;
+	
+	@Autowired
+	TravelRequestsRepo travelRequestsRepo;
+	
+	@Autowired
+	EmailService emailService;
+	
+	@Autowired
+	TemplateEngine templateEngine;
 
 	@PutMapping("/CreateUpdateAssetMaster")
 	public ResponseEntity<ResponseDTO> CreateUpdateAssetMaster(@RequestBody AssetMasterDTO assetMasterDTO) {
@@ -557,6 +572,131 @@ public class AssetManagementController extends BaseController {
 		}
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@GetMapping("/mailTravelAction")
+	public ResponseEntity<String> mailTravelAction(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam String notifyCode,
+	        @RequestParam String notify,
+	        @RequestParam String screenName,
+	        @RequestParam(required = false) String email,
+	        @RequestParam(required = false) BigDecimal approvedAmount,
+	        @RequestParam(required = false) String reason) {
+
+	    Context context = new Context();
+	    TravelRequestsVO vo = null;
+
+	    try {
+	        Map<String, Object> details = assetManagementService.createApprovalTravelRequests(
+	                orgId, id, employeeCode, action, actionBy,
+	                notifyCode, notify, screenName, email,
+	                approvedAmount != null ? approvedAmount : BigDecimal.ZERO);
+
+	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
+	        vo = (TravelRequestsVO) details.get("travelRequestsVO");
+
+	        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+	        context.setVariable("stateClass",    isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",     isApproved ? "Approved" : "Rejected");
+	        context.setVariable("title",         isApproved ? "Travel Request Approved" : "Travel Request Rejected");
+	        context.setVariable("message",       isApproved
+	                ? "The travel request has been approved and the employee has been notified."
+	                : "The travel request has been rejected and the employee has been notified.");
+	        context.setVariable("employeeName",  vo.getEmployeeName());
+	        context.setVariable("travelTitle",   vo.getTravelTitle());
+	        context.setVariable("from",          vo.getFrom());
+	        context.setVariable("to",            vo.getTo());
+	        context.setVariable("departureDate", vo.getDepartureDate() != null
+	                ? vo.getDepartureDate().format(fmt) : "—");
+	        context.setVariable("returnDate",    vo.getReturnDate() != null
+	                ? vo.getReturnDate().format(fmt) : "—");
+	        context.setVariable("reason",        reason);
+	        context.setVariable("approvedBy",    actionBy);
+	        context.setVariable("actionTime",    LocalDateTime.now()
+	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        context.setVariable("stateClass", "state-error");
+	        context.setVariable("pillLabel",  "Failed");
+	        context.setVariable("reason",     e.getMessage());
+	    }
+
+	    String html = templateEngine.process("travel-status", context);
+
+	    if (vo != null) {
+	        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+	        emailService.sendTravelStatusMail(
+	                vo.getEmployeeCode(),
+	                vo.getEmployeeName(),
+	                action,
+	                reason,
+	                vo.getTravelTitle(),
+	                vo.getFrom(),
+	                vo.getTo(),
+	                vo.getDepartureDate() != null ? vo.getDepartureDate().format(fmt) : "—",
+	                vo.getReturnDate() != null ? vo.getReturnDate().format(fmt) : "—",
+	                approvedAmount != null ? approvedAmount.toPlainString() : "—",
+	                actionBy);
+	    }
+
+	    return ResponseEntity.ok(html);
+	}
+
+	@GetMapping("/travel-reject-page")
+	public ResponseEntity<String> travelRejectPage(
+	        @RequestParam Long orgId,
+	        @RequestParam Long id,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam(required = false, defaultValue = "") String notifyCode,
+	        @RequestParam(required = false, defaultValue = "") String notify,
+	        @RequestParam(required = false, defaultValue = "") String screenName,
+	        @RequestParam(required = false, defaultValue = "") String email,
+	        @RequestParam(required = false, defaultValue = "") String reason) {
+
+	    try {
+	        TravelRequestsVO vo = travelRequestsRepo
+	                .findByOrgIdAndIdAndEmployeeCode(orgId, id, employeeCode);
+
+	        if (vo.getApproveStatus() != null &&
+	            ("APPROVED".equalsIgnoreCase(vo.getApproveStatus()) ||
+	             "REJECTED".equalsIgnoreCase(vo.getApproveStatus()))) {
+	            return mailTravelAction(orgId, id, employeeCode,
+	                    vo.getApproveStatus(), actionBy, notifyCode,
+	                    notify, screenName, email, BigDecimal.ZERO, reason);
+	        }
+
+	        Context context = new Context();
+	        context.setVariable("orgId",        orgId);
+	        context.setVariable("id",           id);
+	        context.setVariable("employeeCode", employeeCode);
+	        context.setVariable("action",       action);
+	        context.setVariable("actionBy",     actionBy);
+	        context.setVariable("notifyCode",   notifyCode);
+	        context.setVariable("notify",       notify);
+	        context.setVariable("screenName",   screenName);
+	        context.setVariable("email",        email);
+
+	        String html = templateEngine.process("travel-reject-reason", context);
+	        return ResponseEntity.ok(html);
+
+	    } catch (Exception e) {
+	        Context context = new Context();
+	        context.setVariable("stateClass", "state-error");
+	        context.setVariable("pillLabel",  "Failed");
+	        context.setVariable("title",      "Action Failed");
+	        context.setVariable("message",    e.getMessage());
+	        String html = templateEngine.process("travel-status", context);
+	        return ResponseEntity.ok(html);
+	    }
 	}
 
 	@GetMapping("/getTravelRequestsForDashBoard")

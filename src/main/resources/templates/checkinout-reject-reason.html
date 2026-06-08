@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Reject CompOff</title>
+  <title>Reject Adjustment</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,11 +19,13 @@
     textarea:focus { border-color: #6366f1; }
     .actions { display: flex; gap: 10px; margin-top: 14px; }
     .btn-cancel { flex: 1; padding: 9px; font-size: 14px; border-radius: 10px; background: transparent; border: 1px solid #e5e7eb; color: #6b7280; cursor: pointer; }
-    .btn-reject { flex: 1; padding: 9px; font-size: 14px; font-weight: 500; border-radius: 10px; background: #fee2e2; border: none; color: #dc2626; cursor: pointer; }
-    .btn-reject:hover { background: #fecaca; }
+    .btn-reject { flex: 1; padding: 9px; font-size: 14px; font-weight: 500; border-radius: 10px; background: #fee2e2; border: none; color: #dc2626; cursor: pointer; transition: opacity 0.2s; }
+    .btn-reject:hover:not(:disabled) { background: #fecaca; }
     .btn-reject:disabled { opacity: 0.6; cursor: not-allowed; }
-	@keyframes spin { to { transform: rotate(360deg); } }
-	.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #dc2626; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+    /* ✅ spinner animation */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #dc2626; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
   </style>
 </head>
 <body>
@@ -31,25 +33,29 @@
     <div class="card-header">
       <div class="icon-box"><i class="ti ti-x"></i></div>
       <div>
-        <h1>Reject comp-off request</h1>
+        <h1>Reject adjustment request</h1>
         <p>Provide a reason before submitting</p>
       </div>
     </div>
-    <form action="/api/leaveprocess/mailCompOffAction" method="get" onsubmit="handleSubmit(this)">
+
+    <!-- ✅ onsubmit added here -->
+    <form action="/api/basicmaster/mailCheckInOutAction" method="get" onsubmit="handleSubmit(this)">
       <input type="hidden" name="orgId"        th:value="${orgId}" />
-      <input type="hidden" name="id"           th:value="${id}" />
       <input type="hidden" name="employeeCode" th:value="${employeeCode}" />
       <input type="hidden" name="action"       th:value="${action}" />
       <input type="hidden" name="actionBy"     th:value="${actionBy}" />
+      <input type="hidden" name="checkInDate"  th:value="${checkInDate}" />
       <input type="hidden" name="notifyCode"   th:value="${notifyCode}" />
       <input type="hidden" name="notify"       th:value="${notify}" />
       <input type="hidden" name="screenName"   th:value="${screenName}" />
       <input type="hidden" name="email"        th:value="${email}" />
+
       <div class="divider">
         <label>Rejection reason <span>*</span></label>
         <textarea name="reason" required placeholder="Enter reason for rejection..."></textarea>
       </div>
-       <div class="actions">
+
+      <div class="actions">
         <button type="submit" class="btn-reject" id="rejectBtn">
           <i class="ti ti-x"></i> Reject
         </button>

@@ -174,6 +174,9 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 	
 	 @Autowired
 	 private PendingRequestRepository repo;
+	 
+	 @Autowired
+	 EmailService emailService;
 
 	// DAY,GENERAL,NIGHT SHIFT
 //	@Override
@@ -927,7 +930,7 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 			checkIn.setOrgId(dto.getOrgId());
 			checkIn.setNotify(dto.getNotify());
 			checkIn.setNotifyCode(dto.getNotifyCode());
-			checkIn.setNotifyEmail(dto.getNotifyEmail());
+			checkIn.setNotifyEmail(dto.getReportingPersonMail());
 			checkIn.setEmail(dto.getEmail());
 			checkIn.setRequestReason(dto.getRequestReason());
 
@@ -966,8 +969,9 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 			checkOut.setOrgId(dto.getOrgId());
 			checkOut.setNotify(dto.getNotify());
 			checkOut.setNotifyCode(dto.getNotifyCode());
-			checkOut.setNotifyEmail(dto.getNotifyEmail());
+			checkOut.setNotifyEmail(dto.getReportingPersonMail());
 			checkOut.setEmail(dto.getEmail());
+			checkOut.setRequestReason(dto.getRequestReason());
 
 			LocalDate checkOutDate = isNightShift ? localDate.plusDays(1) : localDate;
 			checkOut.setCheckInDate(checkOutDate); // base date
@@ -995,6 +999,40 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 			attendanceProcessRepo.save(attendanceOut);
 		}
 
+		// After savedEntries populated
+		CheckInOutAdjustmentVO inVO = savedEntries.stream()
+		        .filter(v -> "IN".equalsIgnoreCase(v.getStatus()))
+		        .findFirst().orElse(null);
+
+		CheckInOutAdjustmentVO outVO = savedEntries.stream()
+		        .filter(v -> "OUT".equalsIgnoreCase(v.getStatus()))
+		        .findFirst().orElse(null);
+
+		// Use whichever is available for mail
+		CheckInOutAdjustmentVO mailVO = inVO != null ? inVO : outVO;
+
+		if (mailVO != null && mailVO.getNotifyEmail() != null
+		        && !mailVO.getNotifyEmail().trim().isEmpty()) {
+
+		    System.out.println("Sending mail to: " + mailVO.getNotifyEmail());
+
+		    emailService.sendCheckInOutRequestMail(
+		            mailVO.getNotifyEmail(),
+		            mailVO.getOrgId(),
+		            mailVO.getEmpCode(),
+		            mailVO.getEmpName(),
+//		            mailVO.getBranch(),
+		            mailVO.getCheckInDate(),
+		            inVO != null && inVO.getEntryTime() != null
+		                    ? inVO.getEntryTime().toString() : "—",
+		            outVO != null && outVO.getEntryTime() != null
+		                    ? outVO.getEntryTime().toString() : "—",
+		            mailVO.getRequestReason(),
+		            mailVO.getNotifyCode(),
+		            true);
+		} else {
+		    System.out.println("Mail skipped — notifyEmail is null or empty");
+		}
 		response.put("message", "Check-in/out created successfully.");
 		response.put("entries", savedEntries);
 		return response;
@@ -1059,10 +1097,8 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 	public Map<String, Object> createApprovalCheckInOutAdjustment(Long orgId, String employeeCode, String action,
 			String actionBy, LocalDate localCheckInDate, String notifyCode, String notify, String screenName,String reason)
 			throws ApplicationException {
-	
 
-
-		List<CheckInOutAdjustmentVO> allAdjustments = checkInOutAdjustmentRepo
+List<CheckInOutAdjustmentVO> allAdjustments = checkInOutAdjustmentRepo
 				.findByOrgIdAndEmpCodeAndCheckInDateBetween(orgId, employeeCode, localCheckInDate,
 						localCheckInDate.plusDays(1));
 
@@ -1137,33 +1173,39 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 					LocalDateTime fullOut = LocalDateTime.of(out.getCheckInDate(), out.getEntryTime());
 					long seconds = Duration.between(fullIn, fullOut).getSeconds();
 
-					AttendanceDailyVO existing = attendanceDailyRepo.findByEmpCodeAndCheckInDateAndOrgIdAndBranch(
-							in.getEmpCode(), in.getCheckInDate(), orgId, in.getBranch());
+					if ("APPROVED".equalsIgnoreCase(action)) {
 
-					boolean isDuplicate = existing != null && in.getEntryTime().equals(existing.getInTime())
-							&& out.getEntryTime().equals(existing.getOutTime());
+					    AttendanceDailyVO existing = attendanceDailyRepo.findByEmpCodeAndCheckInDateAndOrgIdAndBranch(
+					            in.getEmpCode(), in.getCheckInDate(), orgId, in.getBranch());
 
-					if (isDuplicate)
-						break;
+					    boolean isDuplicate = existing != null
+					            && in.getEntryTime().equals(existing.getInTime())
+					            && out.getEntryTime().equals(existing.getOutTime());
 
-					AttendanceDailyVO daily = (existing != null) ? existing : new AttendanceDailyVO();
-					daily.setEmpCode(in.getEmpCode());
-					daily.setEmpName(in.getEmpName());
-					daily.setBranch(in.getBranch());
-					daily.setBranchCode(in.getBranchCode());
-					daily.setOrgId(in.getOrgId());
-					daily.setCheckInDate(in.getCheckInDate());
-					daily.setFinyear(String.valueOf(in.getCheckInDate().getYear()));
-					daily.setAttendanceMode("System");
+					    if (!isDuplicate) {
 
-					daily.setInTime(in.getEntryTime());
-					daily.setOutTime(out.getEntryTime());
-					daily.setCheckOutDate(out.getCheckInDate());
-					daily.setEffectiveHours((int) (seconds / 3600));
-					daily.setGrossHours((int) (seconds / 3600));
+					        AttendanceDailyVO daily = (existing != null)
+					                ? existing
+					                : new AttendanceDailyVO();
 
-					attendanceDailyRepo.save(daily);
-					break;
+					        daily.setEmpCode(in.getEmpCode());
+					        daily.setEmpName(in.getEmpName());
+					        daily.setBranch(in.getBranch());
+					        daily.setBranchCode(in.getBranchCode());
+					        daily.setOrgId(in.getOrgId());
+					        daily.setCheckInDate(in.getCheckInDate());
+					        daily.setFinyear(String.valueOf(in.getCheckInDate().getYear()));
+					        daily.setAttendanceMode("System");
+
+					        daily.setInTime(in.getEntryTime());
+					        daily.setOutTime(out.getEntryTime());
+					        daily.setCheckOutDate(out.getCheckInDate());
+					        daily.setEffectiveHours((int) (seconds / 3600));
+					        daily.setGrossHours((int) (seconds / 3600));
+
+					        attendanceDailyRepo.save(daily);
+					    }
+					}
 				}
 			}
 		}
