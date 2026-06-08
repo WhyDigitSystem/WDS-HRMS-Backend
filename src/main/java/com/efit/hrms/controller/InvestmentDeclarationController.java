@@ -55,7 +55,7 @@ public class InvestmentDeclarationController extends BaseController {
 
 	// TaxInvoice
 
-	@GetMapping("/getInvestmen	tDeclarationDetails")
+	@GetMapping("/getInvestmentDeclarationDetails")
 	public ResponseEntity<ResponseDTO> getInvestmentDeclarationDetails(@RequestParam Long orgId,
 			@RequestParam String branch, @RequestParam String employeeCode, @RequestParam Long finYear) {
 		String methodName = "getInvestmentDeclarationDetails()";
