@@ -625,8 +625,6 @@ public class AssetManagementController extends BaseController {
 	        e.printStackTrace();
 	        context.setVariable("stateClass", "state-error");
 	        context.setVariable("pillLabel",  "Failed");
-	        context.setVariable("title",      "Action Failed");
-	        context.setVariable("message",    "Something went wrong.");
 	        context.setVariable("reason",     e.getMessage());
 	    }
 
