@@ -145,6 +145,9 @@ public class CompanyVO {
 	@Column(name = "monthlattendancemail")
 	private boolean monthlyAttendanceMail=false;
 	
+	@Column(name = "permissionrequest")
+	private boolean permissionRequest=false;
+	
 	@OneToMany(mappedBy = "companyVO", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<CompanyWeekOffVO>companyWeekOffVO;

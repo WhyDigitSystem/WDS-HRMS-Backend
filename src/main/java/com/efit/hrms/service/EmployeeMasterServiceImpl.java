@@ -37,6 +37,7 @@ import com.efit.hrms.dto.SalaryEarningDetailsDTO;
 import com.efit.hrms.dto.SalaryHeadsDTO;
 import com.efit.hrms.dto.SalaryProcessDTO;
 import com.efit.hrms.dto.SalaryStructureDTO;
+import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.LeaveProcessVO;
 import com.efit.hrms.entity.NotificationVO;
@@ -50,6 +51,7 @@ import com.efit.hrms.entity.SalaryStructureVO;
 import com.efit.hrms.entity.UserVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.AdvanceRepo;
+import com.efit.hrms.repo.CompanyRepo;
 import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.LeaveProcessRepo;
 import com.efit.hrms.repo.NotificationRepo;
@@ -105,6 +107,9 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 	
 	@Autowired
 	EmailService emailService;
+	
+	@Autowired
+	CompanyRepo companyRepo;
 
 	@Override
 	@Transactional
@@ -419,8 +424,11 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 		// Save the entity
 		final PermissionRequestVO savedPermissionRequestVO = permissionRequestRepo.save(permissionRequestVO);
 
+		CompanyVO company = companyRepo.findById(permissionRequestDTO.getOrgId())
+		        .orElseThrow(() -> new ApplicationException("Company not found"));
+		boolean permissionRequest = company.isPermissionRequest();
 		// ✅ Send mail to main approver
-		if (savedPermissionRequestVO.getNotifyCode() != null) {
+		if (savedPermissionRequestVO.getNotifyCode() != null && permissionRequest ) {
 		    EmployeeVO notifyEmp = employeeRepo.findByEmployeeCode(
 		            savedPermissionRequestVO.getNotifyCode());
 
@@ -446,7 +454,7 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 		}
 
 		// ✅ Send mail to additional approvers (no buttons)
-		if (savedPermissionRequestVO.getPermissionRequestNotifyVO() != null) {
+		if (savedPermissionRequestVO.getPermissionRequestNotifyVO() != null && permissionRequest) {
 		    for (PermissionRequestNotifyVO notifyVO :
 		            savedPermissionRequestVO.getPermissionRequestNotifyVO()) {
 		        if (notifyVO.getNotify2Email() == null

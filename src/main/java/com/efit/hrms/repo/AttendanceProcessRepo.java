@@ -2006,7 +2006,45 @@ public interface AttendanceProcessRepo extends JpaRepository<AttendanceProcessVO
 		        "FROM checkinoutadjustment " +
 		        "WHERE orgid = :orgId " +
 		        "AND empcode = :employeeCode " +
-		        "AND approvalstatus = 'PENDING' " +
+		        "AND approvalstatus = 'PENDING' "
+		        + ""
+		        + "UNION ALL\r\n"
+		        + "\r\n"
+		        + "SELECT\r\n"
+		        + "    workfromhomeid AS id,\r\n"
+		        + "    employeecode,\r\n"
+		        + "    employeename,\r\n"
+		        + "    screencode,\r\n"
+		        + "    screenname,\r\n"
+		        + "    wfhdate AS fromdate,\r\n"
+		        + "    wfhdate AS todate,\r\n"
+		        + "    NULL AS time,\r\n"
+		        + "    NULL AS totaldays,\r\n"
+		        + "    approvestatus AS status,\r\n"
+		        + "    createdon\r\n"
+		        + "FROM workfromhome\r\n"
+		        + "WHERE orgid = :orgId\r\n"
+		        + "AND employeecode = :employeeCode\r\n"
+		        + "AND approvestatus = 'PENDING'\r\n"
+		        + "\r\n"
+		        + "UNION ALL\r\n"
+		        + "\r\n"
+		        + "SELECT\r\n"
+		        + "    travelrequestsid AS id,\r\n"
+		        + "    employeecode,\r\n"
+		        + "    employeename,\r\n"
+		        + "    screencode,\r\n"
+		        + "    screenname,\r\n"
+		        + "    departuredate AS fromdate,\r\n"
+		        + "    returndate AS todate,\r\n"
+		        + "    NULL AS time,\r\n"
+		        + "    NULL AS totaldays,\r\n"
+		        + "    approvestatus AS status,\r\n"
+		        + "    createdon\r\n"
+		        + "FROM travelrequests\r\n"
+		        + "WHERE orgid = :orgId\r\n"
+		        + "AND employeecode = :employeeCode\r\n"
+		        + "AND approvestatus = 'PENDING'" +
 
 		        "ORDER BY createdon DESC",
 		        nativeQuery = true)
