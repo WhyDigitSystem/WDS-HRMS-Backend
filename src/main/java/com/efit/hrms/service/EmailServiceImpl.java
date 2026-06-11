@@ -416,7 +416,7 @@ public class EmailServiceImpl implements EmailService {
 		        String entryOut,
 		        String requestReason,
 		        String notifyCode,
-		        boolean showButtons) {
+		        String department, String designation, String codeAndName, boolean showButtons) {
 
 		    try {
 		        Context context = new Context();
@@ -430,6 +430,11 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("requestReason",  requestReason);
 		        context.setVariable("showButtons",    showButtons);
 
+		        // ... existing code ...
+		        context.setVariable("department",  department);
+		        context.setVariable("designation", designation);
+		        context.setVariable("codeAndName", codeAndName);
+		        
 		        context.setVariable("approveUrl",
 		        		baseUrl + "/api/basicmaster/mailCheckInOutAction"
 		                + "?orgId=" + orgId
@@ -478,6 +483,11 @@ public class EmailServiceImpl implements EmailService {
 		        if (employee == null || employee.getEmail() == null) return;
 		        String toEmail = employee.getEmail();
 
+
+		        // ← pull from the already-fetched employee object
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
+
 		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
 		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
 
@@ -488,10 +498,13 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("action",       action);
 		        context.setVariable("reason",       reason);
 		        context.setVariable("checkInDate",  checkInDate.format(formatter));
-		        context.setVariable("entryIn",      entryIn != null ? entryIn : "—");
+		        context.setVariable("entryIn",      entryIn  != null ? entryIn  : "—");
 		        context.setVariable("entryOut",     entryOut != null ? entryOut : "—");
 		        context.setVariable("approvedBy",   approvedByName);
-
+		        context.setVariable("department",   department);
+		        context.setVariable("designation",  designation);
+		        context.setVariable("codeAndName",  employeeCode + " - " + empName);
+		        
 		        String html = templateEngine.process("checkinout-reply", context);
 
 		        MimeMessage mimeMessage = mailSender.createMimeMessage();

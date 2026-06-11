@@ -50,9 +50,11 @@ import com.efit.hrms.entity.CalendarVO;
 import com.efit.hrms.entity.CheckInOutAdjustmentVO;
 import com.efit.hrms.entity.CircularVO;
 import com.efit.hrms.entity.EmployeeCodeConfigVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.HolidayVO;
 import com.efit.hrms.entity.PollsVO;
 import com.efit.hrms.repo.CheckInOutAdjustmentRepo;
+import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.service.BasicMasterService;
 import com.efit.hrms.service.EmailService;
 
@@ -72,6 +74,9 @@ public class BasicMasterController extends BaseController {
 	
 	@Autowired
 	CheckInOutAdjustmentRepo checkInOutAdjustmentRepo;
+	
+	@Autowired
+	EmployeeRepo employeeRepo;
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(BasicMasterController.class);
 
@@ -318,24 +323,38 @@ public class BasicMasterController extends BaseController {
 
 	        CheckInOutAdjustmentVO mainVO = inVO != null ? inVO : outVO;
 
+	     // After getting mainVO, fetch employee details
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null ? employee.getDepartment()   : "";
+	        String designation = employee != null ? employee.getDesignation()  : "";
+
+	        // Also resolve actionBy name
+	        EmployeeVO approver = employeeRepo.findByEmployeeCode(actionBy);
+	        String approvedByName = approver != null ? approver.getEmployeeName() : actionBy;
+
 	        context.setVariable("stateClass",   isApproved ? "state-approved" : "state-rejected");
 	        context.setVariable("pillLabel",    isApproved ? "Approved" : "Rejected");
 	        context.setVariable("title",        isApproved ? "Adjustment Approved Successfully" : "Adjustment Rejected Successfully");
 	        context.setVariable("message",      isApproved
 	                ? "The adjustment request has been approved and the team has been notified."
 	                : "The adjustment request has been rejected and the employee has been notified.");
-	        context.setVariable("employeeName", mainVO.getEmpName());
+
+	        // ← replace employeeName with these 3
+	        context.setVariable("codeAndName",  employeeCode + " - " + mainVO.getEmpName());
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
+
 	        context.setVariable("fromDate",     mainVO.getCheckInDate()
 	                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 	        context.setVariable("inTime",       inVO != null && inVO.getEntryTime() != null
 	                                                ? inVO.getEntryTime().toString() : "—");
 	        context.setVariable("outTime",      outVO != null && outVO.getEntryTime() != null
 	                                                ? outVO.getEntryTime().toString() : "—");
-	        context.setVariable("approvedBy",   actionBy);
+	        context.setVariable("approvedBy",   approvedByName); // ← resolved name, not code
 	        context.setVariable("actionTime",   LocalDateTime.now()
 	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
 	        context.setVariable("reason",       reason);
-
+	        
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        context.setVariable("stateClass", "state-error");

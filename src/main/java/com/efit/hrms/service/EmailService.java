@@ -53,7 +53,7 @@ public interface EmailService {
 
 	void sendCheckInOutRequestMail(String toEmail, Long orgId, String employeeCode, String empName,
 			LocalDate checkInDate, String entryIn, String entryOut, String requestReason, String notifyCode,
-			boolean showButtons);
+			String department, String designation, String codeAndName, boolean showButtons);
 
 
 

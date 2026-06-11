@@ -15,10 +15,7 @@
           : 'width:52px;height:52px;border-radius:14px;background:#fee2e2;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:26px;'">
         <span th:text="${action == 'APPROVED'} ? '✅' : '❌'"></span>
       </div>
-      <h1 th:style="${action == 'APPROVED'} ? 'margin:0;font-size:20px;font-weight:600;color:#15803d;' : 'margin:0;font-size:20px;font-weight:600;color:#dc2626;'"
-          th:text="${action == 'APPROVED'} ? 'Travel Request Approved' : 'Travel Request Rejected'"></h1>
-      <p th:style="${action == 'APPROVED'} ? 'margin:6px 0 0;font-size:13px;color:#16a34a;' : 'margin:6px 0 0;font-size:13px;color:#ef4444;'"
-         th:text="${action == 'APPROVED'} ? 'Your request has been approved' : 'Your request could not be approved'"></p>
+     
     </div>
 
     <div style="padding:24px;">

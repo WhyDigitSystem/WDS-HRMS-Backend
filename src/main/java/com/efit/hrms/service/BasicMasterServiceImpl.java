@@ -1016,12 +1016,18 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 
 		    System.out.println("Sending mail to: " + mailVO.getNotifyEmail());
 
+		 // Fetch employee details for mail
+		    EmployeeVO employeeVO = employeeRepo.findByEmployeeCode(mailVO.getEmpCode());
+
+		    String department   = employeeVO != null ? employeeVO.getDepartment()   : "";
+		    String designation  = employeeVO != null ? employeeVO.getDesignation()  : "";
+		    String codeAndName  = mailVO.getEmpCode() + " - " + mailVO.getEmpName();
+
 		    emailService.sendCheckInOutRequestMail(
 		            mailVO.getNotifyEmail(),
 		            mailVO.getOrgId(),
 		            mailVO.getEmpCode(),
 		            mailVO.getEmpName(),
-//		            mailVO.getBranch(),
 		            mailVO.getCheckInDate(),
 		            inVO != null && inVO.getEntryTime() != null
 		                    ? inVO.getEntryTime().toString() : "—",
@@ -1029,6 +1035,9 @@ public class BasicMasterServiceImpl implements BasicMasterService {
 		                    ? outVO.getEntryTime().toString() : "—",
 		            mailVO.getRequestReason(),
 		            mailVO.getNotifyCode(),
+		            department,       // ← new
+		            designation,      // ← new
+		            codeAndName,      // ← new
 		            true);
 		} else {
 		    System.out.println("Mail skipped — notifyEmail is null or empty");
