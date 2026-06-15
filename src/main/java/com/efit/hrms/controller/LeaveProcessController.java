@@ -311,42 +311,39 @@ public class LeaveProcessController extends BaseController {
 
 	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
 
-	        context.setVariable("stateClass",   isApproved ? "state-approved" : "state-rejected");
-	        context.setVariable("pillLabel",    isApproved ? "Approved"       : "Rejected");
-	        context.setVariable("title",        isApproved ? "Leave Approved Successfully"
-	                                                       : "Leave Rejected Successfully");
-	        context.setVariable("message",      isApproved
+	        LeaveRequestVO leaveRequestVO = (LeaveRequestVO) details.get("leaveRequestVO");
+
+	        // ✅ Fetch employee details
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+	        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
+	        // ✅ Resolve approver name
+	        EmployeeVO approver = employeeRepo.findByEmployeeCode(actionBy);
+	        String approvedByName = approver != null ? approver.getEmployeeName() : actionBy;
+
+	        context.setVariable("stateClass",  isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",   isApproved ? "Approved"       : "Rejected");
+	        context.setVariable("title",       isApproved ? "Leave Approved Successfully" : "Leave Rejected Successfully");
+	        context.setVariable("message",     isApproved
 	                ? "The leave request has been approved and the team has been notified."
 	                : "The leave request has been rejected and the employee has been notified.");
 
-	        LeaveRequestVO leaveRequestVO =
-	                (LeaveRequestVO) details.get("leaveRequestVO");
-	        
-	        context.setVariable(
-	                "employeeName",
-	                leaveRequestVO.getEmployeeName());
-
-	        context.setVariable(
-	                "leaveType",
-	                leaveRequestVO.getLeaveType());
-
-	        context.setVariable(
-	                "fromDate",
-	                leaveRequestVO.getFromDate());
-
-	        context.setVariable(
-	                "toDate",
-	                leaveRequestVO.getToDate());
-	        context.setVariable("approvedBy",   actionBy);
+	        context.setVariable("codeAndName",  employeeCode + " - " + leaveRequestVO.getEmployeeName());
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
+	        context.setVariable("employeeName", leaveRequestVO.getEmployeeName());
+	        context.setVariable("leaveType",    leaveRequestVO.getLeaveType());
+	        context.setVariable("fromDate",     leaveRequestVO.getFromDate());
+	        context.setVariable("toDate",       leaveRequestVO.getToDate());
+	        context.setVariable("approvedBy",   approvedByName);
 	        context.setVariable("actionTime",   LocalDateTime.now()
 	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
-	        context.setVariable("reason",       reason); // shown only on rejected
+	        context.setVariable("reason",       reason);
 
 	    } catch (Exception e) {
 	        context.setVariable("stateClass", "state-error");
 	        context.setVariable("pillLabel",  "Failed");
-//	        context.setVariable("title",      "Action Failed");
-//	        context.setVariable("message",    "Something went wrong while processing this request.");
 	        context.setVariable("reason",     e.getMessage());
 	    }
 

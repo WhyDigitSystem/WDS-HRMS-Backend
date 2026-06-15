@@ -28,8 +28,14 @@ public interface EmailService {
 
 
 
-	public void sendLeaveStatusMail(String email, String employeeName, String action, String reason, LocalDate fromDate,
-			LocalDate toDate, String approvedBy);
+	public void sendLeaveStatusMail( String toEmail,
+	        String employeeCode,     // ← add this parameter
+	        String employeeName,
+	        String action,
+	        String reason,
+	        LocalDate fromDate,
+	        LocalDate toDate,
+	        String approvedBy);
 
 
 

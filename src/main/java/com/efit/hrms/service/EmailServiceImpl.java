@@ -111,193 +111,120 @@ public class EmailServiceImpl implements EmailService {
 
 	// leaverequestmail
 
-	 public void sendLeaveRequestMail(
-	            String toEmail,
-	            Long orgId,
-	            Long leaveId,
-	            String employeeCode,
-	            String employeeName,
-	            LocalDate fromDate,
-	            LocalDate toDate,
-	            String reason,
-	            BigDecimal totalDays,
-	            String notifyCode,
-	            boolean showButtons) {
-		 
-	        try {
+	public void sendLeaveRequestMail(
+	        String toEmail,
+	        Long orgId,
+	        Long leaveId,
+	        String employeeCode,
+	        String employeeName,
+	        LocalDate fromDate,
+	        LocalDate toDate,
+	        String reason,
+	        BigDecimal totalDays,
+	        String notifyCode,
+	        boolean showButtons) {
 
-	            // THYMELEAF VARIABLES
-	            Context context = new Context();
+	    try {
+	        // ✅ Fetch employee for department & designation
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+	        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
 
-	            context.setVariable("employeeName", employeeName);
-	            context.setVariable("reason", reason);
-//	            context.setVariable("fromDate", fromDate);
-	         // DATE FORMATTER
-	            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+	        Context context = new Context();
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-	            context.setVariable("fromDate", fromDate.format(formatter));
-	            context.setVariable("toDate", toDate.format(formatter));
-//	            context.setVariable("toDate", toDate);
-	            context.setVariable("totalDays", totalDays.toPlainString());	
-	            context.setVariable(
-	                    "showButtons",
-	                    showButtons);
-	            // APPROVE URL
-	            context.setVariable(
-	                    "approveUrl",
+	        context.setVariable("codeAndName",  employeeCode + " - " + employeeName);
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
+	        context.setVariable("employeeName", employeeName);
+	        context.setVariable("reason",       reason);
+	        context.setVariable("fromDate",     fromDate.format(formatter));
+	        context.setVariable("toDate",       toDate.format(formatter));
+	        context.setVariable("totalDays",    totalDays.toPlainString());
+	        context.setVariable("showButtons",  showButtons);
 
-	                    baseUrl + "/api/leaveprocess/mailLeaveAction"
-	                    + "?orgId=" + orgId
-	                    + "&id=" + leaveId
-	                    + "&employeeCode=" + employeeCode
-	                    + "&action=APPROVED"
-	                    + "&actionBy=" + notifyCode
-	                    + "&notifyCode="
-	                    + "&notify="
-	                    + "&screenName=MAIL"
-	                    + "&email=" + toEmail
-	            );
+	        context.setVariable("approveUrl",
+	                baseUrl + "/api/leaveprocess/mailLeaveAction"
+	                + "?orgId=" + orgId + "&id=" + leaveId
+	                + "&employeeCode=" + employeeCode
+	                + "&action=APPROVED&actionBy=" + notifyCode
+	                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
-	            // REJECT URL
-	            context.setVariable(
-	                    "rejectUrl",
+	        context.setVariable("rejectUrl",
+	                baseUrl + "/api/leaveprocess/mailLeaveAction"
+	                + "?orgId=" + orgId + "&id=" + leaveId
+	                + "&employeeCode=" + employeeCode
+	                + "&action=REJECTED&actionBy=" + notifyCode
+	                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
-	                    baseUrl + "/api/leaveprocess/mailLeaveAction"
-	                    + "?orgId=" + orgId
-	                    + "&id=" + leaveId
-	                    + "&employeeCode=" + employeeCode
-	                    + "&action=REJECTED"
-	                    + "&actionBy=" + notifyCode
-	                    + "&notifyCode="
-	                    + "&notify="
-	                    + "&screenName=MAIL"
-	                    + "&email=" + toEmail
-	            );
+	        context.setVariable("rejectPageUrl",
+	                baseUrl + "/api/leaveprocess/reject-page"
+	                + "?orgId=" + orgId + "&id=" + leaveId
+	                + "&employeeCode=" + employeeCode
+	                + "&action=REJECTED&actionBy=" + notifyCode
+	                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
-	            context.setVariable(
+	        String htmlContent = templateEngine.process("leave-request", context);
 
-	            	    "rejectPageUrl",
+	        MimeMessage mimeMessage = mailSender.createMimeMessage();
+	        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+	        helper.setTo(toEmail);
+	        helper.setSubject("Leave Request - " + reason);
+	        helper.setText(htmlContent, true);
+	        mailSender.send(mimeMessage);
 
-	            	    baseUrl + "/api/leaveprocess/reject-page"
-
-	            	    + "?orgId=" + orgId
-	            	    + "&id=" + leaveId
-	            	    + "&employeeCode=" + employeeCode
-	            	    + "&action=REJECTED"
-	            	    + "&actionBy=" + notifyCode
-	            	    + "&notifyCode="
-	            	    + "&notify="
-	            	    + "&screenName=MAIL"
-	            	    + "&email=" + toEmail
-	            	);
-	            
-	            
-	            // LOAD HTML TEMPLATE
-	            String htmlContent =
-	                    templateEngine.process(
-	                            "leave-request",
-	                            context);
-
-//	            String htmlContent =
-//	                    "<h1>MAIL WORKING</h1>";
-	            
-	            // CREATE MAIL
-	            MimeMessage mimeMessage =
-	                    mailSender.createMimeMessage();
-
-	            MimeMessageHelper helper =
-	                    new MimeMessageHelper(mimeMessage, true);
-
-	            helper.setTo(toEmail);
-
-	            helper.setSubject(
-	                    "Leave Request - " + reason);
-
-	            // TRUE = HTML MAIL
-	            helper.setText(htmlContent, true);
-
-	            // SEND MAIL
-	            mailSender.send(mimeMessage);
-
-	        } catch (Exception e) {
-	        	
-	            e.printStackTrace();
-	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
 	    }
+	}
 	 
 	 //response return leave mail 
-	 public void sendLeaveStatusMail(
+	public void sendLeaveStatusMail(
+	        String toEmail,
+	        String employeeCode,     // ← add this parameter
+	        String employeeName,
+	        String action,
+	        String reason,
+	        LocalDate fromDate,
+	        LocalDate toDate,
+	        String approvedBy) {
 
-		        String toEmail,
-		        String employeeName,
-		        String action,
-		        String reason,
-		        LocalDate fromDate,
-		        LocalDate toDate,
-		        String approvedBy) {
+	    try {
+	        // ✅ Fetch employee for department & designation
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+	        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
 
-		 EmployeeVO employee = employeeRepo.findByEmployeeCode(approvedBy);
-		 String approved = employee.getEmployeeName();
-		    try {
+	        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
+	        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
 
-		        Context context = new Context();
+	        Context context = new Context();
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-		        context.setVariable(
-		                "employeeName",
-		                employeeName);
+	        context.setVariable("codeAndName",  employeeCode + " - " + employeeName);
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
+	        context.setVariable("employeeName", employeeName);
+	        context.setVariable("action",       action);
+	        context.setVariable("reason",       reason);
+	        context.setVariable("fromDate",     fromDate.format(formatter));
+	        context.setVariable("toDate",       toDate.format(formatter));
+	        context.setVariable("approvedBy",   approvedByName);
 
-		        context.setVariable(
-		                "action",
-		                action);
+	        String html = templateEngine.process("leave-reply", context);
 
-		        context.setVariable(
-		                "reason",
-		                reason);
+	        MimeMessage mimeMessage = mailSender.createMimeMessage();
+	        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+	        helper.setTo(toEmail);
+	        helper.setSubject("Leave Request " + action);
+	        helper.setText(html, true);
+	        mailSender.send(mimeMessage);
 
-		        DateTimeFormatter formatter =
-		                DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-		        context.setVariable(
-		                "fromDate",
-		                fromDate.format(formatter));
-
-		        context.setVariable(
-		                "toDate",
-		                toDate.format(formatter));
-		        
-		        context.setVariable("approvedBy",   approved);
-		        // TEMPLATE
-		        String html =
-		                templateEngine.process(
-		                        "leave-reply",
-		                        context);
-
-		        MimeMessage mimeMessage =
-		                mailSender.createMimeMessage();
-
-		        MimeMessageHelper helper =
-		                new MimeMessageHelper(
-		                        mimeMessage,
-		                        true);
-
-		        helper.setTo(toEmail);
-
-		        helper.setSubject(
-		                "Leave Request " + action);
-
-		        helper.setText(
-		                html,
-		                true);
-
-		        mailSender.send(mimeMessage);
-
-		    }
-
-		    catch (Exception e) {
-		    	System.out.println("MAIL ERROR");
-		        e.printStackTrace();
-		    }
-		}
+	    } catch (Exception e) {
+	        System.out.println("MAIL ERROR");
+	        e.printStackTrace();
+	    }
+	}
 	 
 	 public void sendCompOffRequestMail(
 		        String toEmail,

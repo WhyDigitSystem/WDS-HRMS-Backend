@@ -855,7 +855,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 			emailService.sendLeaveStatusMail(
 
 			        leaveRequestVO.getEmail(),
-
+			        leaveRequestVO.getEmployeeCode(),
 			        leaveRequestVO.getEmployeeName(),
 
 			        action,
