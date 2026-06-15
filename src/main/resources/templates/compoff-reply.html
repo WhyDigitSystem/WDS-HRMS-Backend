@@ -11,27 +11,29 @@
     <div th:style="${action == 'APPROVED'}
         ? 'padding:28px 24px 22px;text-align:center;background:#f0fdf4;border-bottom:1px solid #bbf7d0;'
         : 'padding:28px 24px 22px;text-align:center;background:#fef2f2;border-bottom:1px solid #fecaca;'">
-
       <div th:style="${action == 'APPROVED'}
           ? 'width:52px;height:52px;border-radius:14px;background:#dcfce7;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:26px;'
           : 'width:52px;height:52px;border-radius:14px;background:#fee2e2;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:26px;'">
         <span th:text="${action == 'APPROVED'} ? '✅' : '❌'"></span>
       </div>
-
     </div>
 
-    <!-- BODY -->
     <div style="padding:24px;">
 
-      <p style="font-size:15px;color:#111827;margin:0 0 16px;">
-        Hello, <strong th:text="${employeeName}"></strong>
-      </p>
+      <!-- Employee Info -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f8fafc;border-radius:10px;margin-bottom:16px;border:1px solid #e2e8f0;">
+        <span style="font-size:20px;">👤</span>
+        <div>
+          <p style="margin:0;font-size:15px;font-weight:600;color:#0f172a;" th:text="${codeAndName}">—</p>
+          <p style="margin:2px 0 0;font-size:12px;color:#64748b;" th:text="${designation + ' · ' + department}">—</p>
+        </div>
+      </div>
 
       <!-- Comp-Off Date -->
       <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:10px;margin-bottom:8px;border:1px solid #f1f5f9;">
         <span style="font-size:16px;flex-shrink:0;">📅</span>
         <div>
-          <div style="font-size:12px;color:#94a3b8;">Comp-off date</div>
+          <div style="font-size:12px;color:#94a3b8;">Comp-off Date</div>
           <div style="font-size:13px;font-weight:500;color:#1e293b;" th:text="${compOffDate}"></div>
         </div>
       </div>
@@ -40,7 +42,7 @@
       <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:10px;margin-bottom:8px;border:1px solid #f1f5f9;">
         <span style="font-size:16px;flex-shrink:0;">🏷️</span>
         <div>
-          <div style="font-size:12px;color:#94a3b8;">Leave type</div>
+          <div style="font-size:12px;color:#94a3b8;">Leave Type</div>
           <div style="font-size:13px;font-weight:500;color:#1e293b;" th:text="${leaveType}"></div>
         </div>
       </div>
@@ -54,12 +56,12 @@
             <span th:style="${action == 'APPROVED'}
                 ? 'display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;background:#dcfce7;color:#15803d;'
                 : 'display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;background:#fee2e2;color:#dc2626;'"
-                  th:text="${action == 'APPROVED'} ? '✓ Approved' : '✗ Rejected'"></span>
+                th:text="${action == 'APPROVED'} ? '✓ Approved' : '✗ Rejected'"></span>
           </div>
         </div>
       </div>
 
-      <!-- Approved By -->
+      <!-- Actioned By -->
       <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:10px;margin-bottom:8px;border:1px solid #f1f5f9;">
         <span style="font-size:16px;flex-shrink:0;">👤</span>
         <div>
@@ -68,7 +70,7 @@
         </div>
       </div>
 
-      <!-- Reason (rejection only) -->
+      <!-- Reason -->
       <div th:if="${reason != null && reason != ''}"
            style="margin-top:14px;padding:14px;background:#fafafa;border-radius:10px;border:1px solid #f1f5f9;border-left:3px solid #fca5a5;">
         <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 6px;">Reason</p>

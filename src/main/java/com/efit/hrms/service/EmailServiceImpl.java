@@ -313,9 +313,17 @@ public class EmailServiceImpl implements EmailService {
 		        boolean showButtons) {
 
 		    try {
+		        // Fetch employee for department & designation
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
 		        Context context = new Context();
 		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName);
+		        context.setVariable("department",   department);
+		        context.setVariable("designation",  designation);
 		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("leaveType",    leaveType);
 		        context.setVariable("compOffDate",  compOffDate.format(formatter));
@@ -324,7 +332,7 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("showButtons",  showButtons);
 
 		        context.setVariable("approveUrl",
-		        		baseUrl + "/api/leaveprocess/mailCompOffAction"
+		                baseUrl + "/api/leaveprocess/mailCompOffAction"
 		                + "?orgId=" + orgId
 		                + "&id=" + compOffId
 		                + "&employeeCode=" + employeeCode
@@ -333,7 +341,7 @@ public class EmailServiceImpl implements EmailService {
 		                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
 		        context.setVariable("rejectPageUrl",
-		        		baseUrl + "/api/leaveprocess/compoff-reject-page"
+		                baseUrl + "/api/leaveprocess/compoff-reject-page"
 		                + "?orgId=" + orgId
 		                + "&id=" + compOffId
 		                + "&employeeCode=" + employeeCode
@@ -354,9 +362,9 @@ public class EmailServiceImpl implements EmailService {
 		        e.printStackTrace();
 		    }
 		}
-	 
-	 public void sendCompOffStatusMail(
-		        String employeeCode,    // ← pass employeeCode instead of email
+
+		public void sendCompOffStatusMail(
+		        String employeeCode,
 		        String employeeName,
 		        String action,
 		        String reason,
@@ -365,13 +373,12 @@ public class EmailServiceImpl implements EmailService {
 		        String approvedBy) {
 
 		    try {
-		        // ✅ repo call inside service — correct place
 		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
-		        if (employee == null || employee.getEmail() == null) {
-//		            log.error("Employee not found or email missing: {}", employeeCode);
-		            return;
-		        }
+		        if (employee == null || employee.getEmail() == null) return;
 		        String toEmail = employee.getEmail();
+
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
 
 		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
 		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
@@ -379,6 +386,9 @@ public class EmailServiceImpl implements EmailService {
 		        Context context = new Context();
 		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName);
+		        context.setVariable("department",   department);
+		        context.setVariable("designation",  designation);
 		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("action",       action);
 		        context.setVariable("reason",       reason);
@@ -403,7 +413,6 @@ public class EmailServiceImpl implements EmailService {
 		        e.printStackTrace();
 		    }
 		}
-	 
 	 @Override
 	 public void sendCheckInOutRequestMail(
 		        String toEmail,
