@@ -478,7 +478,14 @@ public class EmailServiceImpl implements EmailService {
 		        Context context = new Context();
 		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-		        context.setVariable("employeeName",      employeeName);
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);                           // ← add
+		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("wfhDate",           wfhDate.format(formatter));
 		        context.setVariable("reason",            reason);
 		        context.setVariable("workAccomplished",  workAccomplished);
@@ -541,7 +548,12 @@ public class EmailServiceImpl implements EmailService {
 		        Context context = new Context();
 		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-		        context.setVariable("employeeName", employeeName);
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
+
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);
 		        context.setVariable("action",       action);
 		        context.setVariable("wfhDate",      wfhDate.format(formatter));
 		        context.setVariable("reason",       reason);
@@ -568,25 +580,25 @@ public class EmailServiceImpl implements EmailService {
 		
 		//permission mail
 		
-		@Override
 		public void sendPermissionRequestMail(
-		        String toEmail,
-		        Long orgId,
-		        Long permissionId,
-		        String employeeCode,
-		        String employeeName,
-		        String date,
-		        String fromTime,
-		        String toTime,
-		        String totalHours,
-		        String notes,
-		        String notifyCode,
-		        boolean showButtons) {
+		        String toEmail, Long orgId, Long permissionId,
+		        String employeeCode, String employeeName,
+		        String date, String fromTime, String toTime,
+		        String totalHours, String notes,
+		        String notifyCode, boolean showButtons) {
 
 		    try {
+		        // ✅ fetch dept & designation
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
 		        Context context = new Context();
 		        String encodedEmail = URLEncoder.encode(toEmail, StandardCharsets.UTF_8);
 
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);                           // ← add
 		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("date",         date);
 		        context.setVariable("fromTime",     fromTime);
@@ -594,6 +606,7 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("totalHours",   totalHours);
 		        context.setVariable("notes",        notes);
 		        context.setVariable("showButtons",  showButtons);
+		        // ... urls same
 
 		        context.setVariable("approveUrl",
 		                baseUrl + "/api/employeemaster/mailPermissionAction"
@@ -629,26 +642,27 @@ public class EmailServiceImpl implements EmailService {
 		    }
 		}
 
-		@Override
 		public void sendPermissionStatusMail(
-		        String employeeCode,
-		        String employeeName,
-		        String action,
-		        String reason,
-		        String date,
-		        String fromTime,
-		        String toTime,
-		        String approvedBy) {
+		        String employeeCode, String employeeName, String action,
+		        String reason, String date, String fromTime,
+		        String toTime, String approvedBy) {
 
 		    try {
 		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
 		        if (employee == null || employee.getEmail() == null) return;
 		        String toEmail = employee.getEmail();
 
+		        // ✅ fetch dept & designation
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
+
 		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
 		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
 
 		        Context context = new Context();
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);                           // ← add
 		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("action",       action);
 		        context.setVariable("date",         date);
@@ -656,7 +670,7 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("toTime",       toTime);
 		        context.setVariable("reason",       reason);
 		        context.setVariable("approvedBy",   approvedByName);
-
+		        // ... rest same
 		        String html = templateEngine.process("permission-reply", context);
 
 		        MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -700,7 +714,13 @@ public class EmailServiceImpl implements EmailService {
 		        Context context = new Context();
 		        String encodedEmail = URLEncoder.encode(toEmail, StandardCharsets.UTF_8);
 
-		        context.setVariable("employeeName",    employeeName);
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);
 		        context.setVariable("travelTitle",     travelTitle);
 		        context.setVariable("from",            from);
 		        context.setVariable("to",              to);
@@ -770,7 +790,12 @@ public class EmailServiceImpl implements EmailService {
 		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
 
 		        Context context = new Context();
-		        context.setVariable("employeeName",  employeeName);
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
+
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation); 
 		        context.setVariable("action",        action);
 		        context.setVariable("travelTitle",   travelTitle);
 		        context.setVariable("from",          from);

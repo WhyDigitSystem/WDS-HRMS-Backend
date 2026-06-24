@@ -1328,8 +1328,10 @@ public class LeaveProcessController extends BaseController {
 	        context.setVariable("message",      isApproved
 	                ? "The WFH request has been approved and the employee has been notified."
 	                : "The WFH request has been rejected and the employee has been notified.");
-	        context.setVariable("employeeName", vo.getEmployeeName());
-	        context.setVariable("wfhDate",      vo.getWfhDate().format(fmt));
+	        EmployeeVO emp = employeeRepo.findByEmployeeCode(vo.getEmployeeCode());
+	        context.setVariable("codeAndName",  vo.getEmployeeCode() + " - " + vo.getEmployeeName());
+	        context.setVariable("designation",  emp != null && emp.getDesignation() != null ? emp.getDesignation() : "—");
+	        context.setVariable("department",   emp != null && emp.getDepartment()  != null ? emp.getDepartment()  : "—");	        context.setVariable("wfhDate",      vo.getWfhDate().format(fmt));
 	        context.setVariable("reason",       vo.getReason());
 	        context.setVariable("rejectReason", reason);
 	        context.setVariable("approvedBy",   actionBy);

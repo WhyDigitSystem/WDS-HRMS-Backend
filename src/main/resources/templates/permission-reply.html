@@ -19,8 +19,15 @@
     </div>
 
     <div style="padding:24px;">
-      <p style="font-size:15px;color:#111827;margin:0 0 16px;">Hello, <strong th:text="${employeeName}"></strong></p>
-
+<!-- Replace existing employee box with this -->
+	<div style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8fafc;border-radius:10px;margin-bottom:28px;border:1px solid #e2e8f0;">
+	  <div style="width:44px;height:44px;border-radius:10px;background:#eef2ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">👤</div>
+	  <div>
+	    <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:600;">Employee</p>
+	    <p style="margin:3px 0 0;font-size:17px;font-weight:600;color:#0f172a;" th:text="${codeAndName}">—</p>
+	    <p style="margin:2px 0 0;font-size:13px;color:#64748b;" th:text="${designation + ' | ' + department}">—</p>
+	  </div>
+	</div>
       <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:10px;margin-bottom:8px;border:1px solid #f1f5f9;">
         <span style="font-size:16px;flex-shrink:0;">📅</span>
         <div>
