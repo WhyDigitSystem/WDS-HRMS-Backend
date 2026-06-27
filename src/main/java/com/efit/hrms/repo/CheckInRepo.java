@@ -376,6 +376,180 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 
 	Optional<CheckInVO> findTopByEmpCodeAndCheckInDateAndStatusAndOrgIdAndBranchOrderByIdDesc(String empcode,
 			LocalDate checkInDate, String string, long orgId, String branch);
+	
+	@Query(value =
+			"WITH RECURSIVE dates AS ( " +
+			"    SELECT DATE(?1) AS attendance_date " +
+			"    UNION ALL " +
+			"    SELECT DATE_ADD(attendance_date, INTERVAL 1 DAY) " +
+			"    FROM dates " +
+			"    WHERE attendance_date < DATE(?2) " +
+			") " +
+
+			"SELECT " +
+			"    e.employeecode, " +
+			"    e.employee, " +
+			"    e.department, " +
+			"    e.designation, " +
+			"    d.attendance_date, " +
+			"    a.status, " +
+			"    a.entrytime, " +
+			"    a.reason, " +
+			"    a.requestreason, " +
+			"    a.approvalstatus, " +
+			"    a.approveon, " +
+			"    a.approveby, " +
+			"    approver.employee AS approvedByName " +
+
+			"FROM employee e " +
+
+			"CROSS JOIN dates d " +
+
+			"INNER JOIN checkinoutadjustment a " +
+			"ON a.empcode = e.employeecode " +
+			"AND a.checkindate = d.attendance_date " +
+			"AND a.approvalstatus = 'APPROVED' " +
+
+			"LEFT JOIN employee approver " +
+			"ON approver.employeecode = a.approveby " +
+			"AND approver.orgid = a.orgid " +
+
+			"WHERE e.orgid = ?3 " +
+			"AND e.branchcode = ?4 " +
+			"AND e.active = 1 " +
+			"AND (?5 IS NULL OR ?5='' OR e.employeecode=?5) " +
+
+			"ORDER BY e.employeecode, d.attendance_date",
+			nativeQuery = true)
+			List<Object[]> getAdjustmentEscalationReport(
+			        String fromDate,
+			        String toDate,
+			        Long orgId,
+			        String branchCode,
+			        String employeeCode);
+			
+			
+			@Query(value =
+					"WITH RECURSIVE dates AS ( " +
+					"    SELECT DATE(?1) AS attendance_date " +
+					"    UNION ALL " +
+					"    SELECT DATE_ADD(attendance_date, INTERVAL 1 DAY) " +
+					"    FROM dates " +
+					"    WHERE attendance_date < DATE(?2) " +
+					"), " +
+
+					"checkin_summary AS ( " +
+					"    SELECT " +
+					"        empcode, " +
+					"        checkindate, " +
+					"        MIN(CASE WHEN status='In' THEN entrytime END) AS first_in, " +
+					"        MAX(CASE WHEN status='Out' THEN entrytime END) AS last_out " +
+					"    FROM checkin " +
+					"    GROUP BY empcode, checkindate " +
+					") " +
+
+					"SELECT " +
+					"    e.employeecode, " +
+					"    e.employee, " +
+					"    e.department, " +
+					"    e.designation, " +
+					"    d.attendance_date " +
+
+					"FROM employee e " +
+
+					"CROSS JOIN dates d " +
+
+					"LEFT JOIN checkin_summary c " +
+					"ON c.empcode = e.employeecode " +
+					"AND c.checkindate = d.attendance_date " +
+
+					"LEFT JOIN leaverequest l " +
+					"ON l.employeecode = e.employeecode " +
+					"AND d.attendance_date BETWEEN l.fromdate AND l.todate " +
+					"AND l.approvestatus = 'APPROVED' " +
+					"AND l.cancel = 0 " +
+
+					"LEFT JOIN permissionrequest p " +
+					"ON p.employeecode = e.employeecode " +
+					"AND p.date = d.attendance_date " +
+					"AND p.approvestatus = 'APPROVED' " +
+					"AND p.cancel = 0 " +
+
+					"WHERE e.orgid = ?3 " +
+					"AND e.branchcode = ?4 " +
+					"AND e.active = 1 " +
+					"AND (?5 IS NULL OR ?5 = '' OR e.employeecode = ?5) " +
+
+					"AND ( " +
+					"      (c.first_in IS NULL OR c.first_in = '00:00:00') " +
+					"  AND (c.last_out IS NULL OR c.last_out = '00:00:00') " +
+					") " +
+
+					"AND l.leaverequestid IS NULL " +
+					"AND p.permissionrequestid IS NULL " +
+
+					"ORDER BY e.employeecode, d.attendance_date",
+					nativeQuery = true)
+					List<Object[]> getAbsentEscalationReport(
+					        String fromDate,
+					        String toDate,
+					        Long orgId,
+					        String branchCode,
+					        String employeeCode);
+	
+	@Query(value =
+			"WITH checkin_summary AS ( " +
+			"   SELECT empcode, checkindate, " +
+			"          MIN(CASE WHEN status='In' THEN entrytime END) AS first_in, " +
+			"          MAX(CASE WHEN status='Out' THEN entrytime END) AS last_out " +
+			"   FROM checkin " +
+			"   GROUP BY empcode, checkindate " +
+			") " +
+
+			"SELECT " +
+			"e.employeecode, " +
+			"e.employee, " +
+			"e.department, " +
+			"e.designation, " +
+			"c.checkindate, " +
+			"c.first_in, " +
+			"c.last_out " +
+
+			"FROM employee e " +
+
+			"INNER JOIN checkin_summary c " +
+			"ON c.empcode = e.employeecode " +
+
+			"LEFT JOIN checkinoutadjustment coa " +
+			"ON coa.empcode = e.employeecode " +
+			"AND coa.checkindate = c.checkindate " +
+
+			"AND coa.checkinoutadjustmentid IS NULL " +
+
+			"WHERE e.orgid = ?1 " +
+			"AND e.branchcode = ?2 " +
+			"AND e.active = 1 " +
+			"AND (?3 IS NULL OR ?3 = '' OR e.employeecode = ?3) " +
+			"AND (\r\n"
+			+ "    (\r\n"
+			+ "        c.first_in IS NOT NULL\r\n"
+			+ "        AND c.first_in <> '00:00:00'\r\n"
+			+ "        AND (c.last_out IS NULL OR c.last_out = '00:00:00')\r\n"
+			+ "    )\r\n"
+			+ "    OR\r\n"
+			+ "    (\r\n"
+			+ "        (c.first_in IS NULL OR c.first_in = '00:00:00')\r\n"
+			+ "        AND c.last_out IS NOT NULL\r\n"
+			+ "        AND c.last_out <> '00:00:00'\r\n"
+			+ "    )\r\n"
+			+ ")"
+			+ "AND coa.checkinoutadjustmentid IS NULL ORDER BY e.employeecode, c.checkindate" +
+
+			"",
+			nativeQuery = true)
+			List<Object[]> getMissingPunchReport(Long orgId,
+			                                     String branchCode,
+			                                     String employeeCode);
 
 
 

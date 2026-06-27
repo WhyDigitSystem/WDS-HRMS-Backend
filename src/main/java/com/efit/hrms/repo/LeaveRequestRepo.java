@@ -117,4 +117,56 @@ public interface LeaveRequestRepo extends JpaRepository<LeaveRequestVO, Long> {
 
 	List<LeaveRequestVO> findByOrgIdAndNotifyCode(Long orgId, String notifyCode);
 
+	@Query(value =
+			"WITH RECURSIVE dates AS ( " +
+			"    SELECT DATE(?1) AS attendance_date " +
+			"    UNION ALL " +
+			"    SELECT DATE_ADD(attendance_date, INTERVAL 1 DAY) " +
+			"    FROM dates " +
+			"    WHERE attendance_date < DATE(?2) " +
+			") " +
+
+			"SELECT " +
+			"    e.employeecode, " +
+			"    e.employee, " +
+			"    e.department, " +
+			"    e.designation, " +
+			"    d.attendance_date, " +
+			"    l.leavecode, " +
+			"    l.leavetype, " +
+			"    l.totaldays, " +
+			"    l.notes, " +
+			"    l.reason, " +
+			"    l.approvestatus, " +
+			"    l.approveon, " +
+			"    l.approveby, " +
+			"    approver.employee AS approvedByName " +
+
+			"FROM employee e " +
+
+			"CROSS JOIN dates d " +
+
+			"INNER JOIN leaverequest l\r\n"
+			+ "ON l.employeecode = e.employeecode\r\n"
+			+ "AND d.attendance_date BETWEEN l.fromdate AND l.todate\r\n"
+			+ "AND l.cancel = 0\r\n"
+			+ "AND l.approvestatus IN ('PENDING', 'APPROVED', 'REJECTED')"+
+
+			"LEFT JOIN employee approver " +
+			"ON approver.employeecode = l.approveby " +
+			"AND approver.orgid = l.orgid " +
+
+			"WHERE e.orgid = ?3 " +
+			"AND e.branchcode = ?4 " +
+			"AND e.active = 1 " +
+			"AND (?5 IS NULL OR ?5 = '' OR e.employeecode = ?5) " +
+
+			"ORDER BY e.employeecode, d.attendance_date",
+			nativeQuery = true)
+			List<Object[]> getLeaveEscalationReport(
+			        String fromDate,
+			        String toDate,
+			        Long orgId,
+			        String branchCode,
+			        String employeeCode);
 }

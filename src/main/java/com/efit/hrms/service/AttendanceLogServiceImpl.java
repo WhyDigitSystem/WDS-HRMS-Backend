@@ -22,7 +22,11 @@ import com.efit.hrms.dto.SubDepartmentResponse;
 import com.efit.hrms.entity.AttendanceLogVO;
 import com.efit.hrms.entity.DeviceLogVO;
 import com.efit.hrms.repo.AttendanceLogRepo;
+import com.efit.hrms.repo.AttendanceProcessRepo;
+import com.efit.hrms.repo.CheckInRepo;
 import com.efit.hrms.repo.DeviceLogRepo;
+import com.efit.hrms.repo.LeaveRequestRepo;
+import com.efit.hrms.repo.PermissionRequestRepo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -37,6 +41,15 @@ public class AttendanceLogServiceImpl implements AttendanceLogService {
 
 	@Autowired
 	DeviceLogRepo deviceLogRepo;
+	
+	@Autowired
+	 LeaveRequestRepo leaveRequestRepo;
+	
+	@Autowired
+	PermissionRequestRepo permissionRequestRepo;
+	
+	@Autowired
+	CheckInRepo checkInRepo;
 
 	@Override
 	public List<AttendanceLogVO> getAllAttendanceLogDetails(String startDate, String endDate) {
@@ -255,6 +268,141 @@ public class AttendanceLogServiceImpl implements AttendanceLogService {
 		Map<String,String>response= new HashMap<>();
 		response.put("message", message);
 		return response; // return saved data
+	}
+	
+	
+	@Override
+	public List<Map<String, Object>> getAttendanceEscalationReport(
+	        String fromDate,
+	        String toDate,
+	        Long orgId,
+	        String branchCode,
+	        String employeeCode,
+	        String itemType) {
+
+	    List<Object[]> result = new ArrayList<>();
+
+	    switch (itemType.toUpperCase()) {
+
+	        case "LEAVE":
+	            result = leaveRequestRepo.getLeaveEscalationReport(
+	                    fromDate, toDate, orgId, branchCode, employeeCode);
+	            break;
+
+	        case "PERMISSION":
+	            result = permissionRequestRepo.getPermissionEscalationReport(
+	                    fromDate, toDate, orgId, branchCode, employeeCode);
+	            break;
+
+	        case "CHECKINOUTADJUSTMENT":
+	            result = checkInRepo.getAdjustmentEscalationReport(
+	                    fromDate, toDate, orgId, branchCode, employeeCode);
+	            break;
+
+	        case "ABSENT":
+	            result = checkInRepo.getAbsentEscalationReport(
+	                    fromDate, toDate, orgId, branchCode, employeeCode);
+	            break;
+
+	        case "MISSINGPUNCH":
+	            result = checkInRepo.getMissingPunchReport(
+	                    orgId, branchCode, employeeCode);
+	            break;
+
+	        default:
+	            throw new RuntimeException("Invalid Item Type");
+	    }
+
+	    List<Map<String, Object>> response = new ArrayList<>();
+
+	    for (Object[] row : result) {
+
+	        Map<String, Object> map = new LinkedHashMap<>();
+
+	        switch (itemType.toUpperCase()) {
+
+	        case "LEAVE":
+
+	            map.put("employeeCode", row[0]);
+	            map.put("employeeName", row[1]);
+	            map.put("department", row[2]);
+	            map.put("designation", row[3]);
+	            map.put("attendanceDate", row[4]);
+	            map.put("leaveCode", row[5]);
+	            map.put("leaveType", row[6]);
+	            map.put("totalDays", row[7]);
+	            map.put("notes", row[8]);
+	            map.put("reason", row[9]);
+	            map.put("approvalStatus", row[10]);
+	            map.put("approvedOn", row[11]);
+	            map.put("approvedByCode", row[12]);
+	            map.put("approvedBy", row[13]);
+
+	            break;
+
+	        case "PERMISSION":
+
+	            map.put("employeeCode", row[0]);
+	            map.put("employeeName", row[1]);
+	            map.put("department", row[2]);
+	            map.put("designation", row[3]);
+	            map.put("attendanceDate", row[4]);
+	            map.put("fromTime", row[5]);
+	            map.put("toTime", row[6]);
+	            map.put("totalHours", row[7]);
+	            map.put("notes", row[8]);
+	            map.put("reason", row[9]);
+	            map.put("approvalStatus", row[10]);
+	            map.put("approvedOn", row[11]);
+	            map.put("approvedByCode", row[12]);
+	            map.put("approvedBy", row[13]);
+
+	            break;
+
+	        case "CHECKINOUTADJUSTMENT":
+
+	            map.put("employeeCode", row[0]);
+	            map.put("employeeName", row[1]);
+	            map.put("department", row[2]);
+	            map.put("designation", row[3]);
+	            map.put("attendanceDate", row[4]);
+	            map.put("status", row[5]);
+	            map.put("entryTime", row[6]);
+	            map.put("reason", row[7]);
+	            map.put("requestReason", row[8]);
+	            map.put("approvalStatus", row[9]);
+	            map.put("approvedOn", row[10]);
+	            map.put("approvedByCode", row[11]);
+	            map.put("approvedBy", row[12]);
+
+	            break;
+
+	        case "ABSENT":
+
+	            map.put("employeeCode", row[0]);
+	            map.put("employeeName", row[1]);
+	            map.put("department", row[2]);
+	            map.put("designation", row[3]);
+	            map.put("attendanceDate", row[4]);
+
+	            break;
+
+	        case "MISSINGPUNCH":
+
+	            map.put("employeeCode", row[0]);
+	            map.put("employeeName", row[1]);
+	            map.put("department", row[2]);
+	            map.put("designation", row[3]);
+	            map.put("attendanceDate", row[4]);
+	            map.put("firstIn", row[5]);
+	            map.put("lastOut", row[6]);
+
+	            break;
+	        }
+	        response.add(map);
+	    }
+
+	    return response;
 	}
 
 }
