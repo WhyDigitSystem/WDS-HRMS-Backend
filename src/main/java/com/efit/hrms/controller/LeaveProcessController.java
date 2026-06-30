@@ -38,6 +38,7 @@ import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.dto.TravelRequestDTO;
 import com.efit.hrms.dto.WorkFromHomeDTO;
 import com.efit.hrms.entity.CompensatoryOffVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.LeaveProcessVO;
 import com.efit.hrms.entity.LeaveRequestVO;
 import com.efit.hrms.entity.LeaveTypeVO;
@@ -310,42 +311,39 @@ public class LeaveProcessController extends BaseController {
 
 	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
 
-	        context.setVariable("stateClass",   isApproved ? "state-approved" : "state-rejected");
-	        context.setVariable("pillLabel",    isApproved ? "Approved"       : "Rejected");
-	        context.setVariable("title",        isApproved ? "Leave Approved Successfully"
-	                                                       : "Leave Rejected Successfully");
-	        context.setVariable("message",      isApproved
+	        LeaveRequestVO leaveRequestVO = (LeaveRequestVO) details.get("leaveRequestVO");
+
+	        // ✅ Fetch employee details
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+	        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
+	        // ✅ Resolve approver name
+	        EmployeeVO approver = employeeRepo.findByEmployeeCode(actionBy);
+	        String approvedByName = approver != null ? approver.getEmployeeName() : actionBy;
+
+	        context.setVariable("stateClass",  isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",   isApproved ? "Approved"       : "Rejected");
+	        context.setVariable("title",       isApproved ? "Leave Approved Successfully" : "Leave Rejected Successfully");
+	        context.setVariable("message",     isApproved
 	                ? "The leave request has been approved and the team has been notified."
 	                : "The leave request has been rejected and the employee has been notified.");
 
-	        LeaveRequestVO leaveRequestVO =
-	                (LeaveRequestVO) details.get("leaveRequestVO");
-	        
-	        context.setVariable(
-	                "employeeName",
-	                leaveRequestVO.getEmployeeName());
-
-	        context.setVariable(
-	                "leaveType",
-	                leaveRequestVO.getLeaveType());
-
-	        context.setVariable(
-	                "fromDate",
-	                leaveRequestVO.getFromDate());
-
-	        context.setVariable(
-	                "toDate",
-	                leaveRequestVO.getToDate());
-	        context.setVariable("approvedBy",   actionBy);
+	        context.setVariable("codeAndName",  employeeCode + " - " + leaveRequestVO.getEmployeeName());
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
+	        context.setVariable("employeeName", leaveRequestVO.getEmployeeName());
+	        context.setVariable("leaveType",    leaveRequestVO.getLeaveType());
+	        context.setVariable("fromDate",     leaveRequestVO.getFromDate());
+	        context.setVariable("toDate",       leaveRequestVO.getToDate());
+	        context.setVariable("approvedBy",   approvedByName);
 	        context.setVariable("actionTime",   LocalDateTime.now()
 	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
-	        context.setVariable("reason",       reason); // shown only on rejected
+	        context.setVariable("reason",       reason);
 
 	    } catch (Exception e) {
 	        context.setVariable("stateClass", "state-error");
 	        context.setVariable("pillLabel",  "Failed");
-//	        context.setVariable("title",      "Action Failed");
-//	        context.setVariable("message",    "Something went wrong while processing this request.");
 	        context.setVariable("reason",     e.getMessage());
 	    }
 
@@ -850,7 +848,7 @@ public class LeaveProcessController extends BaseController {
 	        @RequestParam(required = false) String reason) {
 
 	    Context context = new Context();
-	    CompensatoryOffVO vo = null; // ← declare outside try
+	    CompensatoryOffVO vo = null;
 
 	    try {
 	        Map<String, Object> details = leaveProcessService.createApprovalCompOff(
@@ -858,21 +856,34 @@ public class LeaveProcessController extends BaseController {
 	                notifyCode, notify, screenName, reason);
 
 	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
+	        vo = (CompensatoryOffVO) details.get("compensatoryOffVO");
 
-	        vo = (CompensatoryOffVO) details.get("compensatoryOffVO"); // ← assign here
+	        // ✅ Fetch employee details
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+	        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
 
-	        context.setVariable("stateClass", isApproved ? "state-approved" : "state-rejected");
-	        context.setVariable("pillLabel",  isApproved ? "Approved" : "Rejected");
-	        context.setVariable("title",      isApproved ? "Comp-Off Approved Successfully" : "Comp-Off Rejected Successfully");
-	        context.setVariable("message",    isApproved
+	        // ✅ Resolve approver name
+	        EmployeeVO approver = employeeRepo.findByEmployeeCode(actionBy);
+	        String approvedByName = approver != null ? approver.getEmployeeName() : actionBy;
+
+	        context.setVariable("stateClass",  isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",   isApproved ? "Approved" : "Rejected");
+	        context.setVariable("title",       isApproved ? "Comp-Off Approved Successfully" : "Comp-Off Rejected Successfully");
+	        context.setVariable("message",     isApproved
 	                ? "The comp-off request has been approved and the team has been notified."
 	                : "The comp-off request has been rejected and the employee has been notified.");
 
+	        context.setVariable("codeAndName",  employeeCode + " - " + vo.getEmployeeName());
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
 	        context.setVariable("employeeName", vo.getEmployeeName());
 	        context.setVariable("leaveType",    vo.getLeaveType());
-	        context.setVariable("fromDate",     vo.getCompOffDate());
-	        context.setVariable("toDate",       vo.getCompOffDate());
-	        context.setVariable("approvedBy",   actionBy);
+	        context.setVariable("fromDate",     vo.getCompOffDate()
+	                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+	        context.setVariable("toDate",   vo.getCompOffDate()   // ← same date
+	                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+	        context.setVariable("approvedBy",   approvedByName);
 	        context.setVariable("actionTime",   LocalDateTime.now()
 	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
 	        context.setVariable("reason",       reason);
@@ -881,15 +892,15 @@ public class LeaveProcessController extends BaseController {
 	        e.printStackTrace();
 	        context.setVariable("stateClass", "state-error");
 	        context.setVariable("pillLabel",  "Failed");
+	        context.setVariable("title",      "Action Failed");
 	        context.setVariable("reason",     e.getMessage());
 	    }
 
 	    String html = templateEngine.process("leave-status", context);
 
-	    // ← send mail only if vo is not null (no error occurred)
 	    if (vo != null) {
 	        emailService.sendCompOffStatusMail(
-	                vo.getEmployeeCode(),  // ← just pass employeeCode
+	                vo.getEmployeeCode(),
 	                vo.getEmployeeName(),
 	                action,
 	                reason,
@@ -900,7 +911,6 @@ public class LeaveProcessController extends BaseController {
 
 	    return ResponseEntity.ok(html);
 	}
-
 	@GetMapping("/compoff-reject-page")
 	public ResponseEntity<String> compOffRejectPage(
 	        @RequestParam Long orgId,
@@ -1318,8 +1328,10 @@ public class LeaveProcessController extends BaseController {
 	        context.setVariable("message",      isApproved
 	                ? "The WFH request has been approved and the employee has been notified."
 	                : "The WFH request has been rejected and the employee has been notified.");
-	        context.setVariable("employeeName", vo.getEmployeeName());
-	        context.setVariable("wfhDate",      vo.getWfhDate().format(fmt));
+	        EmployeeVO emp = employeeRepo.findByEmployeeCode(vo.getEmployeeCode());
+	        context.setVariable("codeAndName",  vo.getEmployeeCode() + " - " + vo.getEmployeeName());
+	        context.setVariable("designation",  emp != null && emp.getDesignation() != null ? emp.getDesignation() : "—");
+	        context.setVariable("department",   emp != null && emp.getDepartment()  != null ? emp.getDepartment()  : "—");	        context.setVariable("wfhDate",      vo.getWfhDate().format(fmt));
 	        context.setVariable("reason",       vo.getReason());
 	        context.setVariable("rejectReason", reason);
 	        context.setVariable("approvedBy",   actionBy);

@@ -41,8 +41,10 @@ import com.efit.hrms.entity.AssetAllocationVO;
 import com.efit.hrms.entity.AssetImageVO;
 import com.efit.hrms.entity.AssetMasterVO;
 import com.efit.hrms.entity.AssetReturnVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.ExpenseClaimsVO;
 import com.efit.hrms.entity.TravelRequestsVO;
+import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.TravelRequestsRepo;
 import com.efit.hrms.service.AssetManagementService;
 import com.efit.hrms.service.EmailService;
@@ -65,6 +67,9 @@ public class AssetManagementController extends BaseController {
 	
 	@Autowired
 	TemplateEngine templateEngine;
+	
+	@Autowired
+	EmployeeRepo employeeRepo;
 
 	@PutMapping("/CreateUpdateAssetMaster")
 	public ResponseEntity<ResponseDTO> CreateUpdateAssetMaster(@RequestBody AssetMasterDTO assetMasterDTO) {
@@ -608,8 +613,10 @@ public class AssetManagementController extends BaseController {
 	        context.setVariable("message",       isApproved
 	                ? "The travel request has been approved and the employee has been notified."
 	                : "The travel request has been rejected and the employee has been notified.");
-	        context.setVariable("employeeName",  vo.getEmployeeName());
-	        context.setVariable("travelTitle",   vo.getTravelTitle());
+	        EmployeeVO emp = employeeRepo.findByEmployeeCode(vo.getEmployeeCode());
+	        context.setVariable("codeAndName",  vo.getEmployeeCode() + " - " + vo.getEmployeeName());
+	        context.setVariable("designation",  emp != null && emp.getDesignation() != null ? emp.getDesignation() : "—");
+	        context.setVariable("department",   emp != null && emp.getDepartment()  != null ? emp.getDepartment()  : "—");	        context.setVariable("travelTitle",   vo.getTravelTitle());
 	        context.setVariable("from",          vo.getFrom());
 	        context.setVariable("to",            vo.getTo());
 	        context.setVariable("departureDate", vo.getDepartureDate() != null

@@ -111,193 +111,120 @@ public class EmailServiceImpl implements EmailService {
 
 	// leaverequestmail
 
-	 public void sendLeaveRequestMail(
-	            String toEmail,
-	            Long orgId,
-	            Long leaveId,
-	            String employeeCode,
-	            String employeeName,
-	            LocalDate fromDate,
-	            LocalDate toDate,
-	            String reason,
-	            BigDecimal totalDays,
-	            String notifyCode,
-	            boolean showButtons) {
-		 
-	        try {
+	public void sendLeaveRequestMail(
+	        String toEmail,
+	        Long orgId,
+	        Long leaveId,
+	        String employeeCode,
+	        String employeeName,
+	        LocalDate fromDate,
+	        LocalDate toDate,
+	        String reason,
+	        BigDecimal totalDays,
+	        String notifyCode,
+	        boolean showButtons) {
 
-	            // THYMELEAF VARIABLES
-	            Context context = new Context();
+	    try {
+	        // ✅ Fetch employee for department & designation
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+	        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
 
-	            context.setVariable("employeeName", employeeName);
-	            context.setVariable("reason", reason);
-//	            context.setVariable("fromDate", fromDate);
-	         // DATE FORMATTER
-	            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+	        Context context = new Context();
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-	            context.setVariable("fromDate", fromDate.format(formatter));
-	            context.setVariable("toDate", toDate.format(formatter));
-//	            context.setVariable("toDate", toDate);
-	            context.setVariable("totalDays", totalDays.toPlainString());	
-	            context.setVariable(
-	                    "showButtons",
-	                    showButtons);
-	            // APPROVE URL
-	            context.setVariable(
-	                    "approveUrl",
+	        context.setVariable("codeAndName",  employeeCode + " - " + employeeName);
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
+	        context.setVariable("employeeName", employeeName);
+	        context.setVariable("reason",       reason);
+	        context.setVariable("fromDate",     fromDate.format(formatter));
+	        context.setVariable("toDate",       toDate.format(formatter));
+	        context.setVariable("totalDays",    totalDays.toPlainString());
+	        context.setVariable("showButtons",  showButtons);
 
-	                    baseUrl + "/api/leaveprocess/mailLeaveAction"
-	                    + "?orgId=" + orgId
-	                    + "&id=" + leaveId
-	                    + "&employeeCode=" + employeeCode
-	                    + "&action=APPROVED"
-	                    + "&actionBy=" + notifyCode
-	                    + "&notifyCode="
-	                    + "&notify="
-	                    + "&screenName=MAIL"
-	                    + "&email=" + toEmail
-	            );
+	        context.setVariable("approveUrl",
+	                baseUrl + "/api/leaveprocess/mailLeaveAction"
+	                + "?orgId=" + orgId + "&id=" + leaveId
+	                + "&employeeCode=" + employeeCode
+	                + "&action=APPROVED&actionBy=" + notifyCode
+	                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
-	            // REJECT URL
-	            context.setVariable(
-	                    "rejectUrl",
+	        context.setVariable("rejectUrl",
+	                baseUrl + "/api/leaveprocess/mailLeaveAction"
+	                + "?orgId=" + orgId + "&id=" + leaveId
+	                + "&employeeCode=" + employeeCode
+	                + "&action=REJECTED&actionBy=" + notifyCode
+	                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
-	                    baseUrl + "/api/leaveprocess/mailLeaveAction"
-	                    + "?orgId=" + orgId
-	                    + "&id=" + leaveId
-	                    + "&employeeCode=" + employeeCode
-	                    + "&action=REJECTED"
-	                    + "&actionBy=" + notifyCode
-	                    + "&notifyCode="
-	                    + "&notify="
-	                    + "&screenName=MAIL"
-	                    + "&email=" + toEmail
-	            );
+	        context.setVariable("rejectPageUrl",
+	                baseUrl + "/api/leaveprocess/reject-page"
+	                + "?orgId=" + orgId + "&id=" + leaveId
+	                + "&employeeCode=" + employeeCode
+	                + "&action=REJECTED&actionBy=" + notifyCode
+	                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
-	            context.setVariable(
+	        String htmlContent = templateEngine.process("leave-request", context);
 
-	            	    "rejectPageUrl",
+	        MimeMessage mimeMessage = mailSender.createMimeMessage();
+	        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+	        helper.setTo(toEmail);
+	        helper.setSubject("Leave Request - " + reason);
+	        helper.setText(htmlContent, true);
+	        mailSender.send(mimeMessage);
 
-	            	    baseUrl + "/api/leaveprocess/reject-page"
-
-	            	    + "?orgId=" + orgId
-	            	    + "&id=" + leaveId
-	            	    + "&employeeCode=" + employeeCode
-	            	    + "&action=REJECTED"
-	            	    + "&actionBy=" + notifyCode
-	            	    + "&notifyCode="
-	            	    + "&notify="
-	            	    + "&screenName=MAIL"
-	            	    + "&email=" + toEmail
-	            	);
-	            
-	            
-	            // LOAD HTML TEMPLATE
-	            String htmlContent =
-	                    templateEngine.process(
-	                            "leave-request",
-	                            context);
-
-//	            String htmlContent =
-//	                    "<h1>MAIL WORKING</h1>";
-	            
-	            // CREATE MAIL
-	            MimeMessage mimeMessage =
-	                    mailSender.createMimeMessage();
-
-	            MimeMessageHelper helper =
-	                    new MimeMessageHelper(mimeMessage, true);
-
-	            helper.setTo(toEmail);
-
-	            helper.setSubject(
-	                    "Leave Request - " + reason);
-
-	            // TRUE = HTML MAIL
-	            helper.setText(htmlContent, true);
-
-	            // SEND MAIL
-	            mailSender.send(mimeMessage);
-
-	        } catch (Exception e) {
-	        	
-	            e.printStackTrace();
-	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
 	    }
+	}
 	 
 	 //response return leave mail 
-	 public void sendLeaveStatusMail(
+	public void sendLeaveStatusMail(
+	        String toEmail,
+	        String employeeCode,     // ← add this parameter
+	        String employeeName,
+	        String action,
+	        String reason,
+	        LocalDate fromDate,
+	        LocalDate toDate,
+	        String approvedBy) {
 
-		        String toEmail,
-		        String employeeName,
-		        String action,
-		        String reason,
-		        LocalDate fromDate,
-		        LocalDate toDate,
-		        String approvedBy) {
+	    try {
+	        // ✅ Fetch employee for department & designation
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+	        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
 
-		 EmployeeVO employee = employeeRepo.findByEmployeeCode(approvedBy);
-		 String approved = employee.getEmployeeName();
-		    try {
+	        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
+	        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
 
-		        Context context = new Context();
+	        Context context = new Context();
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-		        context.setVariable(
-		                "employeeName",
-		                employeeName);
+	        context.setVariable("codeAndName",  employeeCode + " - " + employeeName);
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
+	        context.setVariable("employeeName", employeeName);
+	        context.setVariable("action",       action);
+	        context.setVariable("reason",       reason);
+	        context.setVariable("fromDate",     fromDate.format(formatter));
+	        context.setVariable("toDate",       toDate.format(formatter));
+	        context.setVariable("approvedBy",   approvedByName);
 
-		        context.setVariable(
-		                "action",
-		                action);
+	        String html = templateEngine.process("leave-reply", context);
 
-		        context.setVariable(
-		                "reason",
-		                reason);
+	        MimeMessage mimeMessage = mailSender.createMimeMessage();
+	        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+	        helper.setTo(toEmail);
+	        helper.setSubject("Leave Request " + action);
+	        helper.setText(html, true);
+	        mailSender.send(mimeMessage);
 
-		        DateTimeFormatter formatter =
-		                DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-		        context.setVariable(
-		                "fromDate",
-		                fromDate.format(formatter));
-
-		        context.setVariable(
-		                "toDate",
-		                toDate.format(formatter));
-		        
-		        context.setVariable("approvedBy",   approved);
-		        // TEMPLATE
-		        String html =
-		                templateEngine.process(
-		                        "leave-reply",
-		                        context);
-
-		        MimeMessage mimeMessage =
-		                mailSender.createMimeMessage();
-
-		        MimeMessageHelper helper =
-		                new MimeMessageHelper(
-		                        mimeMessage,
-		                        true);
-
-		        helper.setTo(toEmail);
-
-		        helper.setSubject(
-		                "Leave Request " + action);
-
-		        helper.setText(
-		                html,
-		                true);
-
-		        mailSender.send(mimeMessage);
-
-		    }
-
-		    catch (Exception e) {
-		    	System.out.println("MAIL ERROR");
-		        e.printStackTrace();
-		    }
-		}
+	    } catch (Exception e) {
+	        System.out.println("MAIL ERROR");
+	        e.printStackTrace();
+	    }
+	}
 	 
 	 public void sendCompOffRequestMail(
 		        String toEmail,
@@ -313,9 +240,17 @@ public class EmailServiceImpl implements EmailService {
 		        boolean showButtons) {
 
 		    try {
+		        // Fetch employee for department & designation
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
 		        Context context = new Context();
 		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName);
+		        context.setVariable("department",   department);
+		        context.setVariable("designation",  designation);
 		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("leaveType",    leaveType);
 		        context.setVariable("compOffDate",  compOffDate.format(formatter));
@@ -324,7 +259,7 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("showButtons",  showButtons);
 
 		        context.setVariable("approveUrl",
-		        		baseUrl + "/api/leaveprocess/mailCompOffAction"
+		                baseUrl + "/api/leaveprocess/mailCompOffAction"
 		                + "?orgId=" + orgId
 		                + "&id=" + compOffId
 		                + "&employeeCode=" + employeeCode
@@ -333,7 +268,7 @@ public class EmailServiceImpl implements EmailService {
 		                + "&notifyCode=&notify=&screenName=MAIL&email=" + toEmail);
 
 		        context.setVariable("rejectPageUrl",
-		        		baseUrl + "/api/leaveprocess/compoff-reject-page"
+		                baseUrl + "/api/leaveprocess/compoff-reject-page"
 		                + "?orgId=" + orgId
 		                + "&id=" + compOffId
 		                + "&employeeCode=" + employeeCode
@@ -354,9 +289,9 @@ public class EmailServiceImpl implements EmailService {
 		        e.printStackTrace();
 		    }
 		}
-	 
-	 public void sendCompOffStatusMail(
-		        String employeeCode,    // ← pass employeeCode instead of email
+
+		public void sendCompOffStatusMail(
+		        String employeeCode,
 		        String employeeName,
 		        String action,
 		        String reason,
@@ -365,13 +300,12 @@ public class EmailServiceImpl implements EmailService {
 		        String approvedBy) {
 
 		    try {
-		        // ✅ repo call inside service — correct place
 		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
-		        if (employee == null || employee.getEmail() == null) {
-//		            log.error("Employee not found or email missing: {}", employeeCode);
-		            return;
-		        }
+		        if (employee == null || employee.getEmail() == null) return;
 		        String toEmail = employee.getEmail();
+
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
 
 		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
 		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
@@ -379,6 +313,9 @@ public class EmailServiceImpl implements EmailService {
 		        Context context = new Context();
 		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName);
+		        context.setVariable("department",   department);
+		        context.setVariable("designation",  designation);
 		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("action",       action);
 		        context.setVariable("reason",       reason);
@@ -403,7 +340,6 @@ public class EmailServiceImpl implements EmailService {
 		        e.printStackTrace();
 		    }
 		}
-	 
 	 @Override
 	 public void sendCheckInOutRequestMail(
 		        String toEmail,
@@ -416,7 +352,7 @@ public class EmailServiceImpl implements EmailService {
 		        String entryOut,
 		        String requestReason,
 		        String notifyCode,
-		        boolean showButtons) {
+		        String department, String designation, String codeAndName, boolean showButtons) {
 
 		    try {
 		        Context context = new Context();
@@ -430,6 +366,11 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("requestReason",  requestReason);
 		        context.setVariable("showButtons",    showButtons);
 
+		        // ... existing code ...
+		        context.setVariable("department",  department);
+		        context.setVariable("designation", designation);
+		        context.setVariable("codeAndName", codeAndName);
+		        
 		        context.setVariable("approveUrl",
 		        		baseUrl + "/api/basicmaster/mailCheckInOutAction"
 		                + "?orgId=" + orgId
@@ -478,6 +419,11 @@ public class EmailServiceImpl implements EmailService {
 		        if (employee == null || employee.getEmail() == null) return;
 		        String toEmail = employee.getEmail();
 
+
+		        // ← pull from the already-fetched employee object
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
+
 		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
 		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
 
@@ -488,10 +434,13 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("action",       action);
 		        context.setVariable("reason",       reason);
 		        context.setVariable("checkInDate",  checkInDate.format(formatter));
-		        context.setVariable("entryIn",      entryIn != null ? entryIn : "—");
+		        context.setVariable("entryIn",      entryIn  != null ? entryIn  : "—");
 		        context.setVariable("entryOut",     entryOut != null ? entryOut : "—");
 		        context.setVariable("approvedBy",   approvedByName);
-
+		        context.setVariable("department",   department);
+		        context.setVariable("designation",  designation);
+		        context.setVariable("codeAndName",  employeeCode + " - " + empName);
+		        
 		        String html = templateEngine.process("checkinout-reply", context);
 
 		        MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -529,7 +478,14 @@ public class EmailServiceImpl implements EmailService {
 		        Context context = new Context();
 		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-		        context.setVariable("employeeName",      employeeName);
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);                           // ← add
+		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("wfhDate",           wfhDate.format(formatter));
 		        context.setVariable("reason",            reason);
 		        context.setVariable("workAccomplished",  workAccomplished);
@@ -592,7 +548,12 @@ public class EmailServiceImpl implements EmailService {
 		        Context context = new Context();
 		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-		        context.setVariable("employeeName", employeeName);
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
+
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);
 		        context.setVariable("action",       action);
 		        context.setVariable("wfhDate",      wfhDate.format(formatter));
 		        context.setVariable("reason",       reason);
@@ -619,25 +580,25 @@ public class EmailServiceImpl implements EmailService {
 		
 		//permission mail
 		
-		@Override
 		public void sendPermissionRequestMail(
-		        String toEmail,
-		        Long orgId,
-		        Long permissionId,
-		        String employeeCode,
-		        String employeeName,
-		        String date,
-		        String fromTime,
-		        String toTime,
-		        String totalHours,
-		        String notes,
-		        String notifyCode,
-		        boolean showButtons) {
+		        String toEmail, Long orgId, Long permissionId,
+		        String employeeCode, String employeeName,
+		        String date, String fromTime, String toTime,
+		        String totalHours, String notes,
+		        String notifyCode, boolean showButtons) {
 
 		    try {
+		        // ✅ fetch dept & designation
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
 		        Context context = new Context();
 		        String encodedEmail = URLEncoder.encode(toEmail, StandardCharsets.UTF_8);
 
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);                           // ← add
 		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("date",         date);
 		        context.setVariable("fromTime",     fromTime);
@@ -645,6 +606,7 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("totalHours",   totalHours);
 		        context.setVariable("notes",        notes);
 		        context.setVariable("showButtons",  showButtons);
+		        // ... urls same
 
 		        context.setVariable("approveUrl",
 		                baseUrl + "/api/employeemaster/mailPermissionAction"
@@ -680,26 +642,27 @@ public class EmailServiceImpl implements EmailService {
 		    }
 		}
 
-		@Override
 		public void sendPermissionStatusMail(
-		        String employeeCode,
-		        String employeeName,
-		        String action,
-		        String reason,
-		        String date,
-		        String fromTime,
-		        String toTime,
-		        String approvedBy) {
+		        String employeeCode, String employeeName, String action,
+		        String reason, String date, String fromTime,
+		        String toTime, String approvedBy) {
 
 		    try {
 		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
 		        if (employee == null || employee.getEmail() == null) return;
 		        String toEmail = employee.getEmail();
 
+		        // ✅ fetch dept & designation
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
+
 		        EmployeeVO approver = employeeRepo.findByEmployeeCode(approvedBy);
 		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
 
 		        Context context = new Context();
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);                           // ← add
 		        context.setVariable("employeeName", employeeName);
 		        context.setVariable("action",       action);
 		        context.setVariable("date",         date);
@@ -707,7 +670,7 @@ public class EmailServiceImpl implements EmailService {
 		        context.setVariable("toTime",       toTime);
 		        context.setVariable("reason",       reason);
 		        context.setVariable("approvedBy",   approvedByName);
-
+		        // ... rest same
 		        String html = templateEngine.process("permission-reply", context);
 
 		        MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -751,7 +714,13 @@ public class EmailServiceImpl implements EmailService {
 		        Context context = new Context();
 		        String encodedEmail = URLEncoder.encode(toEmail, StandardCharsets.UTF_8);
 
-		        context.setVariable("employeeName",    employeeName);
+		        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+		        String department  = employee != null && employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee != null && employee.getDesignation() != null ? employee.getDesignation() : "";
+
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation);
 		        context.setVariable("travelTitle",     travelTitle);
 		        context.setVariable("from",            from);
 		        context.setVariable("to",              to);
@@ -821,7 +790,12 @@ public class EmailServiceImpl implements EmailService {
 		        String approvedByName = approver != null ? approver.getEmployeeName() : approvedBy;
 
 		        Context context = new Context();
-		        context.setVariable("employeeName",  employeeName);
+		        String department  = employee.getDepartment()  != null ? employee.getDepartment()  : "";
+		        String designation = employee.getDesignation() != null ? employee.getDesignation() : "";
+
+		        context.setVariable("codeAndName",  employeeCode + " - " + employeeName); // ← add
+		        context.setVariable("department",   department);                            // ← add
+		        context.setVariable("designation",  designation); 
 		        context.setVariable("action",        action);
 		        context.setVariable("travelTitle",   travelTitle);
 		        context.setVariable("from",          from);

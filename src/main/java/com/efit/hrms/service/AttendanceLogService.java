@@ -23,6 +23,9 @@ public interface AttendanceLogService {
 
 	Map<String, String> fetchAndSaveDeviceLog(String startDate, String endDate);
 
+	List<Map<String, Object>> getAttendanceEscalationReport(String fromDate, String toDate, Long orgId,
+			String branchCode, String employeeCode, String itemType);
+
 
 	
 	

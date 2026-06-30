@@ -42,6 +42,7 @@ import com.efit.hrms.entity.SalaryHeadsVO;
 import com.efit.hrms.entity.SalaryProcessVO;
 import com.efit.hrms.entity.SalaryStructureVO;
 import com.efit.hrms.exception.ApplicationException;
+import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.PermissionRequestRepo;
 import com.efit.hrms.service.EmailService;
 import com.efit.hrms.service.EmployeeMasterService;
@@ -59,6 +60,9 @@ public class EmployeeMasterController extends BaseController{
 	
 	@Autowired
 	TemplateEngine templateEngine;
+	
+	@Autowired
+	EmployeeRepo employeeRepo;
 	
 	@Autowired
 	PermissionRequestRepo permissionRequestRepo;
@@ -903,8 +907,10 @@ public class EmployeeMasterController extends BaseController{
 	        context.setVariable("message",      isApproved
 	                ? "The permission request has been approved and the employee has been notified."
 	                : "The permission request has been rejected and the employee has been notified.");
-	        context.setVariable("employeeName", vo.getEmployeeName());
-	        context.setVariable("date",         vo.getDate() != null ? vo.getDate().toString() : "—");
+	        EmployeeVO emp = employeeRepo.findByEmployeeCode(vo.getEmployeeCode());
+	        context.setVariable("codeAndName",  vo.getEmployeeCode() + " - " + vo.getEmployeeName());
+	        context.setVariable("designation",  emp != null && emp.getDesignation() != null ? emp.getDesignation() : "—");
+	        context.setVariable("department",   emp != null && emp.getDepartment()  != null ? emp.getDepartment()  : "—");	        context.setVariable("date",         vo.getDate() != null ? vo.getDate().toString() : "—");
 	        context.setVariable("fromTime",     vo.getFromTime() != null ? vo.getFromTime().toString() : "—");
 	        context.setVariable("toTime",       vo.getToTime() != null ? vo.getToTime().toString() : "—");
 	        context.setVariable("reason",       reason);

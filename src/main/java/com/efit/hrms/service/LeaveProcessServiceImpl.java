@@ -855,7 +855,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 			emailService.sendLeaveStatusMail(
 
 			        leaveRequestVO.getEmail(),
-
+			        leaveRequestVO.getEmployeeCode(),
 			        leaveRequestVO.getEmployeeName(),
 
 			        action,
@@ -2114,6 +2114,19 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 			message = "WorkFromHome Created Successfully";
 		}
 
+		boolean attendanceExists =
+		        attendanceDailyRepo.existsByEmpCodeAndCheckInDate(
+		                workFromHomeDTO.getEmployeeCode(),
+		                workFromHomeDTO.getWfhDate());
+
+		if (!attendanceExists) {
+		    throw new ApplicationException(
+		            "Attendance not processed for employee "
+		            + workFromHomeDTO.getEmployeeCode()
+		            + " on "
+		            + workFromHomeDTO.getWfhDate()
+		            + ". Work From Home request cannot be created.");
+		}
 		createUpdateWorkFromHomeVOByWorkFromHomeDTO(workFromHomeDTO, workFromHomeVO);
 		workFromHomeRepo.save(workFromHomeVO);
 

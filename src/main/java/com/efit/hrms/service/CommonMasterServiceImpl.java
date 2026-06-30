@@ -291,6 +291,9 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		companyVO.setOtPolicy(companyDTO.getOtPolicy());
 		companyVO.setOtEligibleHours(companyDTO.getOtEligibleHours());
 		companyVO.setShiftHours(companyDTO.getShiftHours());
+		companyVO.setMonthlyAttendanceMail(companyDTO.isMonthlyAttendanceMail());
+		companyVO.setPermissionRequest(companyDTO.isPermissionRequest());
+
 		companyVO.setSeparation(
 		        String.join(",", companyDTO.getSeparation())
 		);

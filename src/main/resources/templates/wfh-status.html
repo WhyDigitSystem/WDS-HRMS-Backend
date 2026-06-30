@@ -11,7 +11,7 @@
     body.state-approved { background: #f0f4f0; }
     body.state-rejected { background: #fdf0f0; }
     body.state-error    { background: #fdf5e8; }
-    .card { background: #fff; border-radius: 18px; padding: 1.5rem; max-width: 360px; width: 100%; text-align: center; position: relative; overflow: hidden; animation: rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+    .card { background: #fff; border-radius: 18px; padding: 1.5rem; max-width: 380px; width: 100%; text-align: center; position: relative; overflow: hidden; animation: rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }
     body.state-approved .card { border: 1px solid #e2ede2; }
     body.state-rejected .card { border: 1px solid #eddddd; }
     body.state-error    .card { border: 1px solid #eddfcc; }
@@ -26,7 +26,7 @@
     body.state-error    .icon-wrap { background: #fef5e4; border: 2px solid #f8d7a0; }
     @keyframes popIn { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
     .icon-wrap svg { width: 28px; height: 28px; }
-    .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; border-radius: 100px; padding: 4px 11px; margin-bottom: 0.6rem; }
+    .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; border-radius: 100px; padding: 4px 11px; margin-bottom: 0.9rem; }
     body.state-approved .pill { background: #eaf7ef; color: #1e7a42; border: 1px solid #b6e8cb; }
     body.state-rejected .pill { background: #fdecea; color: #922b21; border: 1px solid #f5b7b1; }
     body.state-error    .pill { background: #fef5e4; color: #9a5f00; border: 1px solid #f8d7a0; }
@@ -35,8 +35,22 @@
     body.state-rejected .pill-dot { background: #c0392b; }
     body.state-error    .pill-dot { background: #e67e22; }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
-    h2 { font-size: 17px; font-weight: 700; color: #111c14; margin-bottom: 0.3rem; line-height: 1.25; }
-    .subtitle { font-size: 13px; color: #5a6e5e; line-height: 1.5; margin-bottom: 1rem; }
+    .emp-banner { display: flex; align-items: center; gap: 10px; border-radius: 10px; padding: 10px 12px; margin-bottom: 1rem; text-align: left; }
+    body.state-approved .emp-banner { background: #f0faf3; border: 1px solid #c6e8d1; }
+    body.state-rejected .emp-banner { background: #fdf5f5; border: 1px solid #f0cccc; }
+    body.state-error    .emp-banner { background: #fdf9f1; border: 1px solid #f0d9a8; }
+    .emp-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    body.state-approved .emp-avatar { background: #d0f0de; }
+    body.state-rejected .emp-avatar { background: #fad7d5; }
+    body.state-error    .emp-avatar { background: #fde8c0; }
+    .emp-name { font-size: 14px; font-weight: 700; line-height: 1.2; }
+    body.state-approved .emp-name { color: #1b3a22; }
+    body.state-rejected .emp-name { color: #3a1b1b; }
+    body.state-error    .emp-name  { color: #3a2e1b; }
+    .emp-meta { font-size: 11px; margin-top: 2px; }
+    body.state-approved .emp-meta { color: #5a8a6a; }
+    body.state-rejected .emp-meta { color: #9a6060; }
+    body.state-error    .emp-meta  { color: #9a7840; }
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
     .info-cell { border-radius: 10px; padding: 9px 11px; text-align: left; }
     body.state-approved .info-cell { background: #f7fbf8; border: 1px solid #daeee0; }
@@ -63,7 +77,6 @@
 <body th:class="${stateClass}">
   <div class="card">
     <div class="top-strip"></div>
-
     <div class="icon-wrap">
       <svg th:if="${stateClass == 'state-approved'}" viewBox="0 0 36 36" fill="none">
         <circle cx="18" cy="18" r="18" fill="#d0f0de"/>
@@ -84,30 +97,31 @@
       <span th:text="${pillLabel}">Status</span>
     </div>
 
-    <h2 th:text="${title}">WFH Action</h2>
-    <p class="subtitle" th:text="${message}">Processing...</p>
+    <div class="emp-banner" th:if="${stateClass != 'state-error'}">
+      <div class="emp-avatar">👤</div>
+      <div>
+        <div class="emp-name" th:text="${codeAndName}">—</div>
+        <div class="emp-meta" th:text="${designation + ' · ' + department}">—</div>
+      </div>
+    </div>
 
     <div class="info-grid" th:if="${stateClass != 'state-error'}">
-      <div class="info-cell">
-        <div class="info-label">Employee</div>
-        <div class="info-value" th:text="${employeeName}">—</div>
-      </div>
       <div class="info-cell">
         <div class="info-label">WFH Date</div>
         <div class="info-value" th:text="${wfhDate}">—</div>
       </div>
       <div class="info-cell">
+        <div class="info-label">Action</div>
+        <div class="info-value" th:text="${pillLabel}">—</div>
+      </div>
+      <div class="info-cell" style="grid-column: span 2;">
         <div class="info-label">Reason</div>
         <div class="info-value" th:text="${reason}">—</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-label">Actioned by</div>
-        <div class="info-value" th:text="${approvedBy}">—</div>
       </div>
     </div>
 
     <div class="reason-box" th:if="${(stateClass == 'state-rejected' or stateClass == 'state-error') and rejectReason != null and !#strings.isEmpty(rejectReason)}">
-      <div class="reason-label" th:text="${stateClass == 'state-error'} ? 'Error details' : 'Reason'">Reason</div>
+      <div class="reason-label" th:text="${stateClass == 'state-error'} ? 'Error details' : 'Rejection Reason'">Reason</div>
       <div th:text="${rejectReason}">—</div>
     </div>
 
