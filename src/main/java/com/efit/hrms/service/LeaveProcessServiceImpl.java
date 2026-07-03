@@ -179,7 +179,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 							leaveTypeDTO.getLeaveType());
 					throw new ApplicationException(errorMessage);
 				}
-				leaveTypeVO.setLeaveType(leaveTypeDTO.getLeaveType().toUpperCase());
+				leaveTypeVO.setLeaveType(leaveTypeDTO.getLeaveType());
 			}
 
 			if (!leaveTypeVO.getLeaveCode().equalsIgnoreCase(leaveTypeDTO.getLeaveCode())) {
@@ -188,7 +188,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 							leaveTypeDTO.getLeaveType());
 					throw new ApplicationException(errorMessage);
 				}
-				leaveTypeVO.setLeaveCode(leaveTypeDTO.getLeaveCode().toUpperCase());
+				leaveTypeVO.setLeaveCode(leaveTypeDTO.getLeaveCode());
 			}
 
 			message = "LeaveType Updated Successfully";
@@ -219,10 +219,10 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 	}
 
 	private void createUpdateLeaveTypeVOByLeaveTypeDTO(LeaveTypeDTO leaveTypeDTO, LeaveTypeVO leaveTypeVO) {
-		leaveTypeVO.setLeaveType(leaveTypeDTO.getLeaveType().toUpperCase());
+		leaveTypeVO.setLeaveType(leaveTypeDTO.getLeaveType());
 		leaveTypeVO.setOrgId(leaveTypeDTO.getOrgId());
 		leaveTypeVO.setActive(leaveTypeDTO.isActive());
-		leaveTypeVO.setLeaveCode(leaveTypeDTO.getLeaveCode().toUpperCase());
+		leaveTypeVO.setLeaveCode(leaveTypeDTO.getLeaveCode());
 		leaveTypeVO.setLeaveApplicable(leaveTypeDTO.getLeaveApplicable());
 		leaveTypeVO.setBranch(leaveTypeDTO.getBranch());
 		leaveTypeVO.setBranchCode(leaveTypeDTO.getBranchCode());
@@ -275,8 +275,8 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 
 	private void createUpdateLeaveRequestVOByLeaveRequestDTO(LeaveRequestDTO leaveRequestDTO,
 			LeaveRequestVO leaveRequestVO) {
-		leaveRequestVO.setLeaveType(leaveRequestDTO.getLeaveType().toUpperCase());
-		leaveRequestVO.setLeaveCode(leaveRequestDTO.getLeaveCode().toUpperCase());
+		leaveRequestVO.setLeaveType(leaveRequestDTO.getLeaveType());
+		leaveRequestVO.setLeaveCode(leaveRequestDTO.getLeaveCode());
 		leaveRequestVO.setOrgId(leaveRequestDTO.getOrgId());
 //		leaveRequestVO.setId(leaveRequestDTO.getId());
 		leaveRequestVO.setFromDate(leaveRequestDTO.getFromDate());
@@ -1449,7 +1449,7 @@ public class LeaveProcessServiceImpl implements LeaveProcessService {
 		for (CompensatoryOffDTO dto : compensatoryOffDTOList) {
 			// Unique key based on duplicate rule (Branch + Emp + Org + LeaveCode + Date)
 			String uniqueKey = dto.getBranch().trim().toUpperCase() + "|" + dto.getEmployeeCode().trim().toUpperCase()
-					+ "|" + dto.getOrgId() + "|" + dto.getLeaveCode().trim().toUpperCase() + "|" + dto.getCompOffDate();
+					+ "|" + dto.getOrgId() + "|" + dto.getLeaveCode().trim() + "|" + dto.getCompOffDate();
 
 			if (!duplicateCheckSet.add(uniqueKey)) {
 				throw new ApplicationException("Duplicate CompensatoryOff found in request for Date: "
