@@ -483,7 +483,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							countryDTO.getCountryCode());
 					throw new ApplicationException(errorMessage);
 				}
-				countryVO.setCountryCode(countryDTO.getCountryCode().toUpperCase());
+				countryVO.setCountryCode(countryDTO.getCountryCode());
 			}
 			if (!countryVO.getCountryName().equalsIgnoreCase(countryDTO.getCountryName())) {
 				if (countryRepo.existsByCountryNameAndOrgId(countryDTO.getCountryName(), countryDTO.getOrgId())) {
@@ -491,7 +491,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							countryDTO.getCountryName());
 					throw new ApplicationException(errorMessage);
 				}
-				countryVO.setCountryName(countryDTO.getCountryName().toUpperCase());
+				countryVO.setCountryName(countryDTO.getCountryName());
 
 			}
 			message = "Country Update Successfully";
@@ -547,8 +547,8 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	            }
 
 	            CountryVO country = new CountryVO();
-	            country.setCountryCode(countryCode.trim().toUpperCase());
-	            country.setCountryName(countryName.trim().toUpperCase());
+	            country.setCountryCode(countryCode.trim());
+	            country.setCountryName(countryName.trim());
 	            country.setOrgId(orgId);
 	            country.setCreatedBy(createdBy);
 
@@ -622,7 +622,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							stateDTO.getStateCode());
 					throw new ApplicationException(errorMessage);
 				}
-				stateVO.setStateCode(stateDTO.getStateCode().toUpperCase());
+				stateVO.setStateCode(stateDTO.getStateCode());
 			}
 
 			if (!stateVO.getStateName().equalsIgnoreCase(stateDTO.getStateName())) {
@@ -631,7 +631,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							stateDTO.getStateName());
 					throw new ApplicationException(errorMessage);
 				}
-				stateVO.setStateName(stateDTO.getStateName().toUpperCase());
+				stateVO.setStateName(stateDTO.getStateName());
 			}
 
 			if (!stateVO.getStateNumber().equalsIgnoreCase(stateDTO.getStateNumber())) {
@@ -640,7 +640,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							stateDTO.getStateNumber());
 					throw new ApplicationException(errorMessage);
 				}
-				stateVO.setStateNumber(stateDTO.getStateNumber().toUpperCase());
+				stateVO.setStateNumber(stateDTO.getStateNumber());
 			}
 
 			message = "State Update Successfully";
@@ -705,10 +705,10 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	            }
 
 	            StateVO state = new StateVO();
-	            state.setStateCode(stateCode.trim().toUpperCase());
-	            state.setStateName(stateName.trim().toUpperCase());
-	            state.setStateNumber(stateNumber.trim().toUpperCase());
-	            state.setCountry(country.trim().toUpperCase());
+	            state.setStateCode(stateCode.trim());
+	            state.setStateName(stateName.trim());
+	            state.setStateNumber(stateNumber.trim());
+	            state.setCountry(country.trim());
 
 	            state.setOrgId(orgId);
 	            state.setCreatedBy(createdBy);
@@ -775,7 +775,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							cityDTO.getCityCode());
 					throw new ApplicationException(errorMessage);
 				}
-				cityVO.setCityCode(cityDTO.getCityCode().toUpperCase());
+				cityVO.setCityCode(cityDTO.getCityCode());
 			}
 
 			if (!cityVO.getCityName().equalsIgnoreCase(cityDTO.getCityName())) {
@@ -784,7 +784,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							cityDTO.getCityName());
 					throw new ApplicationException(errorMessage);
 				}
-				cityVO.setCityName(cityDTO.getCityName().toUpperCase());
+				cityVO.setCityName(cityDTO.getCityName());
 			}
 			message = "City Updated Successfully";
 		}
@@ -799,10 +799,10 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	}
 
 	private void getCityVOFromCityDTO(CityVO cityVO, CityDTO cityDTO) {
-		cityVO.setCityCode(cityDTO.getCityCode().toUpperCase());
-		cityVO.setCityName(cityDTO.getCityName().toUpperCase());
-		cityVO.setCountry(cityDTO.getCountry().toUpperCase());
-		cityVO.setState(cityDTO.getState().toUpperCase());
+		cityVO.setCityCode(cityDTO.getCityCode());
+		cityVO.setCityName(cityDTO.getCityName());
+		cityVO.setCountry(cityDTO.getCountry());
+		cityVO.setState(cityDTO.getState());
 		cityVO.setActive(cityDTO.isActive());
 		cityVO.setOrgId(cityDTO.getOrgId());
 		cityVO.setCancel(cityDTO.isCancel());
@@ -836,10 +836,10 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	            }
 
 	            CityVO city = new CityVO();
-	            city.setCityCode(cityCode.trim().toUpperCase());
-	            city.setCityName(cityName.trim().toUpperCase());
-	            city.setState(state.trim().toUpperCase());
-	            city.setCountry(country.trim().toUpperCase());
+	            city.setCityCode(cityCode.trim());
+	            city.setCityName(cityName.trim());
+	            city.setState(state.trim());
+	            city.setCountry(country.trim());
 
 	            city.setOrgId(orgId);
 	            city.setCreatedBy(createdBy);
@@ -911,7 +911,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							regionDTO.getRegionName());
 					throw new ApplicationException(errorMessage);
 				}
-				regionVO.setRegionName(regionDTO.getRegionName().toUpperCase());
+				regionVO.setRegionName(regionDTO.getRegionName());
 			}
 
 			if (!regionVO.getRegionCode().equalsIgnoreCase(regionDTO.getRegionCode())) {
@@ -920,7 +920,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							regionDTO.getRegionCode());
 					throw new ApplicationException(errorMessage);
 				}
-				regionVO.setRegionCode(regionDTO.getRegionCode().toUpperCase());
+				regionVO.setRegionCode(regionDTO.getRegionCode());
 			}
 			message = "Region Updated Successfully";
 		}
@@ -938,8 +938,8 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 		regionVO.setActive(regionDTO.isActive());
 		regionVO.setOrgId(regionDTO.getOrgId());
 		regionVO.setCancel(regionDTO.isCancel());
-		regionVO.setRegionCode(regionDTO.getRegionCode().toUpperCase());
-		regionVO.setRegionName(regionDTO.getRegionName().toUpperCase());
+		regionVO.setRegionCode(regionDTO.getRegionCode());
+		regionVO.setRegionName(regionDTO.getRegionName());
 	}
 
 	@Override
@@ -974,8 +974,8 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	            }
 
 	            RegionVO region = new RegionVO();
-	            region.setRegionCode(regionCode.trim().toUpperCase());
-	            region.setRegionName(regionName.trim().toUpperCase());
+	            region.setRegionCode(regionCode.trim());
+	            region.setRegionName(regionName.trim());
 	    
 
 	            region.setOrgId(orgId);
@@ -1049,7 +1049,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							currencyDTO.getCurrency());
 					throw new ApplicationException(errorMessage);
 				}
-				currencyVO.setCurrency(currencyDTO.getCurrency().toUpperCase());
+				currencyVO.setCurrency(currencyDTO.getCurrency());
 			}
 			if (!currencyVO.getSubCurrency().equalsIgnoreCase(currencyDTO.getSubCurrency())) {
 				if (currencyRepo.existsByOrgIdAndCountryAndSubCurrencyIgnoreCase(currencyDTO.getOrgId(),
@@ -1059,7 +1059,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 					throw new ApplicationException(errorMessage);
 				}
 				if (currencyDTO.getSubCurrency() != null) {
-					currencyVO.setSubCurrency(currencyDTO.getSubCurrency().toUpperCase());
+					currencyVO.setSubCurrency(currencyDTO.getSubCurrency());
 				}
 			}
 			if (!currencyVO.getCurrencyDescription().equalsIgnoreCase(currencyDTO.getCurrencyDescription())) {
@@ -1071,7 +1071,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 					throw new ApplicationException(errorMessage);
 				}
 				if (currencyDTO.getCurrencyDescription() != null) {
-					currencyVO.setCurrencyDescription(currencyDTO.getCurrencyDescription().toUpperCase());
+					currencyVO.setCurrencyDescription(currencyDTO.getCurrencyDescription());
 				}
 			}
 			message = "Currency Updated Successfully";
@@ -1087,15 +1087,15 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	}
 
 	private void getCurrencyVOFromCurrencyDTO(CurrencyVO currencyVO, CurrencyDTO currencyDTO) {
-		currencyVO.setCurrency(currencyDTO.getCurrency().toUpperCase());
+		currencyVO.setCurrency(currencyDTO.getCurrency());
 		if (currencyDTO.getSubCurrency() != null) {
-			currencyVO.setSubCurrency(currencyDTO.getSubCurrency().toUpperCase());
+			currencyVO.setSubCurrency(currencyDTO.getSubCurrency());
 		}
 		if (currencyDTO.getCurrencyDescription() != null) {
-			currencyVO.setCurrencyDescription(currencyDTO.getCurrencyDescription().toUpperCase());
+			currencyVO.setCurrencyDescription(currencyDTO.getCurrencyDescription());
 		}
 		currencyVO.setActive(currencyDTO.isActive());
-		currencyVO.setCountry(currencyDTO.getCountry().toUpperCase());
+		currencyVO.setCountry(currencyDTO.getCountry());
 		currencyVO.setOrgId(currencyDTO.getOrgId());
 	}
 
@@ -1133,10 +1133,10 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 
 	            
 	            CurrencyVO currency = new CurrencyVO();
-	            currency.setCurrency(currencyname.trim().toUpperCase());
-	            currency.setSubCurrency(subCurrency.trim().toUpperCase());
-	            currency.setCurrencyDescription(currencyDescription.trim().toUpperCase());
-	            currency.setCountry(country.trim().toUpperCase());
+	            currency.setCurrency(currencyname.trim());
+	            currency.setSubCurrency(subCurrency.trim());
+	            currency.setCurrencyDescription(currencyDescription.trim());
+	            currency.setCountry(country.trim());
 	            currency.setOrgId(orgId);
 	            currency.setCreatedBy(createdBy);
 
@@ -1414,7 +1414,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							departmentDTO.getDepartmentName());
 					throw new ApplicationException(errorMessage);
 				}
-				departmentVO.setDepartmentName(departmentDTO.getDepartmentName().toUpperCase());
+				departmentVO.setDepartmentName(departmentDTO.getDepartmentName());
 			}
 			if (!departmentVO.getDepartmentCode().equalsIgnoreCase(departmentDTO.getDepartmentCode())) {
 				if (departmentRepo.existsByDepartmentCodeAndOrgId(departmentDTO.getDepartmentCode(),
@@ -1423,7 +1423,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							departmentDTO.getDepartmentCode());
 					throw new ApplicationException(errorMessage);
 				}
-				departmentVO.setDepartmentCode(departmentDTO.getDepartmentCode().toUpperCase());
+				departmentVO.setDepartmentCode(departmentDTO.getDepartmentCode());
 
 			}
 			message = "Department Update Successfully";
@@ -1439,8 +1439,8 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	}
 
 	private void getDepartmentVOFromDepartmentDTO(DepartmentVO departmentVO, DepartmentDTO departmentDTO) {
-		departmentVO.setDepartmentName(departmentDTO.getDepartmentName().toUpperCase());
-		departmentVO.setDepartmentCode(departmentDTO.getDepartmentCode().toUpperCase());
+		departmentVO.setDepartmentName(departmentDTO.getDepartmentName());
+		departmentVO.setDepartmentCode(departmentDTO.getDepartmentCode());
 		departmentVO.setActive(departmentDTO.isActive());
 		departmentVO.setOrgId(departmentDTO.getOrgId());
 
@@ -1471,8 +1471,8 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	            }
 
 	            DepartmentVO dept = new DepartmentVO();
-	            dept.setDepartmentCode(deptCode.trim().toUpperCase());
-	            dept.setDepartmentName(deptName.trim().toUpperCase());
+	            dept.setDepartmentCode(deptCode.trim());
+	            dept.setDepartmentName(deptName.trim());
 	            dept.setOrgId(orgId);
 	            dept.setCreatedBy(createdBy);
 
@@ -1533,8 +1533,8 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	            }
 
 	            DesignationVO dept = new DesignationVO();
-	            dept.setDesignationCode(designationCode.trim().toUpperCase());
-	            dept.setDesignationName(designationName.trim().toUpperCase());
+	            dept.setDesignationCode(designationCode.trim());
+	            dept.setDesignationName(designationName.trim());
 	            dept.setOrgId(orgId);
 	            dept.setCreatedBy(createdBy);
 
@@ -1598,7 +1598,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							designationDTO.getDesignationName());
 					throw new ApplicationException(errorMessage);
 				}
-				designationVO.setDesignationName(designationDTO.getDesignationName().toUpperCase());
+				designationVO.setDesignationName(designationDTO.getDesignationName());
 			}
 			if (!designationVO.getDesignationCode().equalsIgnoreCase(designationDTO.getDesignationCode())) {
 				if (departmentRepo.existsByDepartmentCodeAndOrgId(designationDTO.getDesignationCode(),
@@ -1607,7 +1607,7 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 							designationDTO.getDesignationCode());
 					throw new ApplicationException(errorMessage);
 				}
-				designationVO.setDesignationCode(designationDTO.getDesignationCode().toUpperCase());
+				designationVO.setDesignationCode(designationDTO.getDesignationCode());
 
 			}
 
@@ -1624,8 +1624,8 @@ public class CommonMasterServiceImpl implements CommonMasterService {
 	}
 
 	private void getDesignationVOFromDesignationDTO(DesignationVO designationVO, DesignationDTO designationDTO) {
-		designationVO.setDesignationName(designationDTO.getDesignationName().toUpperCase());
-		designationVO.setDesignationCode(designationDTO.getDesignationCode().toUpperCase());
+		designationVO.setDesignationName(designationDTO.getDesignationName());
+		designationVO.setDesignationCode(designationDTO.getDesignationCode());
 		designationVO.setActive(designationDTO.isActive());
 		designationVO.setOrgId(designationDTO.getOrgId());
 		designationVO.setExpenseLimit(designationDTO.getExpenseLimit());
