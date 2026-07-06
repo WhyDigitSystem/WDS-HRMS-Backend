@@ -550,10 +550,106 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 			List<Object[]> getMissingPunchReport(Long orgId,
 			                                     String branchCode,
 			                                     String employeeCode);
+			
+			
+			@Query(value =
+					"SELECT " +
+					"e.employeecode, " +
+					"e.employee, " +
+					"e.department, " +
+					"e.designation, " +
 
+					"ad.checkindate, " +
+					"ad.intime, " +
+					"ad.outtime, " +
 
+					"sad.intime AS shiftIn, " +
 
+					"CASE " +
+					"   WHEN DAYOFWEEK(ad.checkindate)=7 THEN '18:00:00' " +
+					"   ELSE CONCAT(sad.outtime,':00') " +
+					"END AS shiftOut, " +
 
+					"TIMEDIFF( " +
+					"   CASE " +
+					"      WHEN DAYOFWEEK(ad.checkindate)=7 THEN '18:00:00' " +
+					"      ELSE CONCAT(sad.outtime,':00') " +
+					"   END, " +
+					"   ad.outtime " +
+					") AS earlyBy, " +
+
+					"CASE WHEN lr.leaverequestid IS NULL THEN 'NO' ELSE lr.approvestatus END AS leaveStatus, " +
+					"CASE WHEN pr.permissionrequestid IS NULL THEN 'NO' ELSE pr.approvestatus END AS permissionStatus, " +
+					"CASE WHEN coa.checkinoutadjustmentid IS NULL THEN 'NO' ELSE coa.approvalstatus END AS adjustmentStatus " +
+
+					"FROM employee e " +
+
+					"INNER JOIN attendancedaily ad " +
+					"ON ad.empcode = e.employeecode " +
+
+					"INNER JOIN shiftassigndetails sad " +
+					"ON sad.employeecode = e.employeecode " +
+					"AND ad.checkindate BETWEEN sad.effectivefrom AND sad.effectiveto " +
+					"AND sad.active = 1 " +
+
+					"LEFT JOIN leaverequest lr " +
+					"ON lr.employeecode = e.employeecode " +
+					"AND ad.checkindate BETWEEN lr.fromdate AND lr.todate " +
+					"AND lr.cancel = 0 " +
+
+					"LEFT JOIN permissionrequest pr " +
+					"ON pr.employeecode = e.employeecode " +
+					"AND pr.date = ad.checkindate " +
+					"AND pr.cancel = 0 " +
+					"AND pr.active = 1 " +
+
+					"LEFT JOIN checkinoutadjustment coa " +
+					"ON coa.empcode = e.employeecode " +
+					"AND coa.checkindate = ad.checkindate " +
+
+					"WHERE e.orgid = ?1 " +
+					"AND e.branchcode = ?2 " +
+					"AND e.active = 1 " +
+					"AND (?3 IS NULL OR ?3='' OR e.employeecode=?3) " +
+					"AND ad.checkindate BETWEEN ?4 AND ?5 " +
+
+					"AND ad.outtime < CASE " +
+					"       WHEN DAYOFWEEK(ad.checkindate)=7 THEN TIME('18:00:00') " +
+					"       ELSE TIME(CONCAT(sad.outtime,':00')) " +
+					"END " +
+
+					/* Exclude Approved Leave */
+					"AND NOT ( " +
+					"    lr.leaverequestid IS NOT NULL " +
+					"    AND lr.approvestatus='APPROVED' " +
+					") " +
+
+					/* Exclude Approved Permission covering checkout -> shift end */
+					"AND NOT ( " +
+					"    pr.permissionrequestid IS NOT NULL " +
+					"    AND pr.approvestatus='APPROVED' " +
+					"    AND TIME(CONCAT(pr.fromtime,':00')) <= ad.outtime " +
+					"    AND TIME(CONCAT(pr.totime,':00')) >= " +
+					"        CASE " +
+					"            WHEN DAYOFWEEK(ad.checkindate)=7 THEN TIME('18:00:00') " +
+					"            ELSE TIME(CONCAT(sad.outtime,':00')) " +
+					"        END " +
+					") " +
+
+					/* Exclude Approved Adjustment */
+					"AND NOT ( " +
+					"    coa.checkinoutadjustmentid IS NOT NULL " +
+					"    AND coa.approvalstatus='APPROVED' " +
+					") " +
+
+					"ORDER BY ad.checkindate, e.employeecode",
+					nativeQuery = true)
+					List<Object[]> getFirstLastCheckReport(Long orgId,
+					                                       String branchCode,
+					                                       String employeeCode,
+					                                       String fromDate,
+					                                       String toDate);
+					
 //	Optional<CheckInVO> findTopByEmpCodeAndOrgIdAndBranchOrderByIdDesc(String empcode, long orgId, String branch);
 
 

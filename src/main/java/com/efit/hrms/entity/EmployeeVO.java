@@ -3,6 +3,7 @@ package com.efit.hrms.entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import com.efit.hrms.util.StringUtil;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,6 +13,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -191,6 +194,15 @@ public class EmployeeVO {
 	public EmployeeVO orElseThrow(Object object) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	
+	@PrePersist
+	@PreUpdate
+	public void formatFields() {
+		this.employeeName = StringUtil.toTitleCase(this.employeeName);
+		this.bankName = StringUtil.toTitleCase(this.bankName);
+
 	}
 
 }

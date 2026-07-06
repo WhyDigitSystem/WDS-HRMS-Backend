@@ -1263,6 +1263,7 @@ List<CheckInOutAdjustmentVO> allAdjustments = checkInOutAdjustmentRepo
 			map.put("screenName", record[6] != null ? record[6].toString() : " ");
 			map.put("screenCode", record[7] != null ? record[7].toString() : "");
 			map.put("employeeEmail", record[8] != null ? record[8].toString() : "");
+			map.put("requestReason", record[9] != null ? record[9].toString() : "");
 
 			detailsList.add(map);
 		}

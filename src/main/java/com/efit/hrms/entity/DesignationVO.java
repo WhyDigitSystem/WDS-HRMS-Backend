@@ -8,10 +8,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.efit.hrms.dto.CreatedUpdatedDate;
+import com.efit.hrms.util.StringUtil;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 import lombok.AllArgsConstructor;
@@ -66,6 +69,13 @@ public class DesignationVO {
     @Embedded
 	@Builder.Default
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
+    
+    @PrePersist
+	@PreUpdate
+	public void formatFields() {
+		this.designationName = StringUtil.toTitleCase(this.designationName);
+
+	}
 }
 
 

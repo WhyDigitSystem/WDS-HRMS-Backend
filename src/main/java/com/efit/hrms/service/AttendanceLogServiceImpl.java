@@ -308,6 +308,15 @@ public class AttendanceLogServiceImpl implements AttendanceLogService {
 	            result = checkInRepo.getMissingPunchReport(
 	                    orgId, branchCode, employeeCode);
 	            break;
+	            
+	        case "LATECHECKINOUT":
+	            result = checkInRepo.getFirstLastCheckReport(
+	                    orgId,
+	                    branchCode,
+	                    employeeCode,
+	                    fromDate,
+	                    toDate);
+	            break;
 
 	        default:
 	            throw new RuntimeException("Invalid Item Type");
@@ -398,6 +407,30 @@ public class AttendanceLogServiceImpl implements AttendanceLogService {
 	            map.put("lastOut", row[6]);
 
 	            break;
+	            
+	        case "LATECHECKINOUT":
+
+	            map.put("employeeCode", row[0]);
+	            map.put("employeeName", row[1]);
+	            map.put("department", row[2]);
+	            map.put("designation", row[3]);
+
+	            map.put("attendanceDate", row[4]);
+
+	            map.put("firstIn", row[5]);
+	            map.put("lastOut", row[6]);
+
+	            map.put("shiftIn", row[7]);
+	            map.put("shiftOut", row[8]);
+
+	            map.put("earlyBy", row[9]);
+
+	            map.put("leaveStatus", row[10]);
+	            map.put("permissionStatus", row[11]);
+	            map.put("adjustmentStatus", row[12]);
+
+	            break;
+	            
 	        }
 	        response.add(map);
 	    }

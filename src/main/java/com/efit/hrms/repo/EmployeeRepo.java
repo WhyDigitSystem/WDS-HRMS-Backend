@@ -137,15 +137,12 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 			+ "    TIMESTAMPDIFF(YEAR, joiningdate, CURDATE()) AS noofyears,\r\n"
 			+ "    profileimage\r\n"
 			+ "FROM employee\r\n"
-			+ "WHERE\r\n"
-			+ "    DAYOFYEAR(joiningdate)\r\n"
-			+ "    BETWEEN DAYOFYEAR(CURDATE())\r\n"
-			+ "    AND DAYOFYEAR(DATE_ADD(CURDATE(), INTERVAL 3 DAY))\r\n"
-			+ "    AND YEAR(joiningdate) < YEAR(CURDATE())\r\n"
-			+ "    AND active = 1  and orgid=?1\r\n"
-			+ "\r\n"
-			+ "\r\n"
-			+ "")
+			+ "WHERE DATE_FORMAT(joiningdate, '%m-%d')\r\n"
+			+ "      BETWEEN DATE_FORMAT(CURDATE(), '%m-%d')\r\n"
+			+ "      AND DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 3 DAY), '%m-%d')\r\n"
+			+ "  AND YEAR(joiningdate) < YEAR(CURDATE())\r\n"
+			+ "  AND active = 1\r\n"
+			+ "  AND orgid = ?1 ")
 	Set<Object[]> findWorkaniversaryByOrgId(Long orgid);
 
 	
