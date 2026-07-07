@@ -286,10 +286,15 @@ public class MasterServiceImpl implements MasterService {
 	        employeeVO.setUpdatedBy(employeeDTO.getCreatedBy());
 
 	        if (!employeeVO.getEmployeeCode().equalsIgnoreCase(employeeDTO.getEmployeeCode())) {
-	            if (employeeRepo.existsByEmployeeCodeAndOrgId(employeeDTO.getEmployeeCode(), employeeDTO.getOrgId())) {
-	                throw new ApplicationException(
-	                    String.format("This EmployeeCode: %s Already Exists in This Organization", employeeDTO.getEmployeeCode()));
-	            }
+	        	if (employeeRepo.existsByEmployeeCodeAndOrgIdAndIdNot(
+	        	        employeeDTO.getEmployeeCode(),
+	        	        employeeDTO.getOrgId(),
+	        	        employeeDTO.getId())) {
+
+	        	    throw new ApplicationException(
+	        	        "This EmployeeCode: " + employeeDTO.getEmployeeCode()
+	        	        + " Already Exists in This Organization");
+	        	}
 	            employeeVO.setEmployeeCode(employeeDTO.getEmployeeCode());
 	        }
 	        message = "Employee Update Successfully";

@@ -1416,7 +1416,7 @@ public class LeaveProcessController extends BaseController {
 	public ResponseEntity<ResponseDTO> getPendingWorkFromHomeForDashBoard(@RequestParam Long orgId,
 			@RequestParam String reportingPersonCode, @RequestParam String branchCode) {
 
-		String methodName = "getLeaveRequestForDashBoard()";
+		String methodName = "getPendingWorkFromHomeForDashBoard()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 
 		Map<String, Object> responseObjectsMap = new HashMap<>();

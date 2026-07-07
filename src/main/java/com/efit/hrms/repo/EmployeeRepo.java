@@ -281,6 +281,8 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 
 	List<EmployeeVO> findByActiveTrue();
 
+	boolean existsByEmployeeCodeAndOrgIdAndIdNot(String employeeCode, Long orgId, Long id);
+
 
 
 
