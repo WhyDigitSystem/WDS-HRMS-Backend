@@ -603,7 +603,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 					"CASE WHEN lr.leaverequestid IS NULL THEN 'NO' ELSE lr.approvestatus END AS leaveStatus, " +
 					"CASE WHEN pr.permissionrequestid IS NULL THEN 'NO' ELSE pr.approvestatus END AS permissionStatus, " +
 					"CASE WHEN coa.checkinoutadjustmentid IS NULL THEN 'NO' ELSE coa.approvalstatus END AS adjustmentStatus ,"
-					+ "ad.effectivehours" +
+					+ "ad.effectivehours AS effectiveHours" +
 
 					"FROM employee e " +
 
