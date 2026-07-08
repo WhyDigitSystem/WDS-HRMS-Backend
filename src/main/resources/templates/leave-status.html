@@ -1,154 +1,331 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title th:text="${title}">Leave Action</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; padding: 1rem; }
-    body.state-approved { background: #f0f4f0; }
-    body.state-rejected { background: #fdf0f0; }
-    body.state-error    { background: #fdf5e8; }
-    .card { background: #fff; border-radius: 18px; padding: 1.5rem; max-width: 380px; width: 100%; text-align: center; position: relative; overflow: hidden; animation: rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }
-    body.state-approved .card { border: 1px solid #e2ede2; }
-    body.state-rejected .card { border: 1px solid #eddddd; }
-    body.state-error    .card { border: 1px solid #eddfcc; }
-    @keyframes rise { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    .top-strip { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 18px 18px 0 0; }
-    body.state-approved .top-strip { background: linear-gradient(90deg, #2e9e5b, #4ecb80); }
-    body.state-rejected .top-strip { background: linear-gradient(90deg, #c0392b, #e74c3c); }
-    body.state-error    .top-strip { background: linear-gradient(90deg, #e67e22, #f39c12); }
-    .icon-wrap { width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0.25rem auto 0.9rem; animation: popIn 0.45s 0.1s cubic-bezier(0.34,1.56,0.64,1) both; }
-    body.state-approved .icon-wrap { background: #eaf7ef; border: 2px solid #b6e8cb; }
-    body.state-rejected .icon-wrap { background: #fdecea; border: 2px solid #f5b7b1; }
-    body.state-error    .icon-wrap { background: #fef5e4; border: 2px solid #f8d7a0; }
-    @keyframes popIn { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
-    .icon-wrap svg { width: 28px; height: 28px; }
-    .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; border-radius: 100px; padding: 4px 11px; margin-bottom: 0.9rem; }
-    body.state-approved .pill { background: #eaf7ef; color: #1e7a42; border: 1px solid #b6e8cb; }
-    body.state-rejected .pill { background: #fdecea; color: #922b21; border: 1px solid #f5b7b1; }
-    body.state-error    .pill { background: #fef5e4; color: #9a5f00; border: 1px solid #f8d7a0; }
-    .pill-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 1.8s ease-in-out infinite; }
-    body.state-approved .pill-dot { background: #2e9e5b; }
-    body.state-rejected .pill-dot { background: #c0392b; }
-    body.state-error    .pill-dot { background: #e67e22; }
-    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title th:text="${title}">Leave Action</title>
+<link
+	href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"
+	rel="stylesheet" />
+<style>
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
 
-    /* Employee Banner */
-    .emp-banner { display: flex; align-items: center; gap: 10px; border-radius: 10px; padding: 10px 12px; margin-bottom: 1rem; text-align: left; }
-    body.state-approved .emp-banner { background: #f0faf3; border: 1px solid #c6e8d1; }
-    body.state-rejected .emp-banner { background: #fdf5f5; border: 1px solid #f0cccc; }
-    body.state-error    .emp-banner { background: #fdf9f1; border: 1px solid #f0d9a8; }
-    .emp-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
-    body.state-approved .emp-avatar { background: #d0f0de; }
-    body.state-rejected .emp-avatar { background: #fad7d5; }
-    body.state-error    .emp-avatar  { background: #fde8c0; }
-    .emp-name { font-size: 13px; font-weight: 700; line-height: 1.2; }
-    body.state-approved .emp-name { color: #1b3a22; }
-    body.state-rejected .emp-name { color: #3a1b1b; }
-    body.state-error    .emp-name  { color: #3a2e1b; }
-    .emp-meta { font-size: 11px; margin-top: 2px; }
-    body.state-approved .emp-meta { color: #5a8a6a; }
-    body.state-rejected .emp-meta { color: #9a6060; }
-    body.state-error    .emp-meta  { color: #9a7840; }
+body {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: 'Outfit', sans-serif;
+	padding: 1rem;
+}
 
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
-    .info-cell { border-radius: 10px; padding: 9px 11px; text-align: left; }
-    body.state-approved .info-cell { background: #f7fbf8; border: 1px solid #daeee0; }
-    body.state-rejected .info-cell { background: #fdf5f5; border: 1px solid #f0cccc; }
-    body.state-error    .info-cell { background: #fdf9f1; border: 1px solid #f0d9a8; }
-    .info-label { font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 3px; }
-    body.state-approved .info-label { color: #7a9880; }
-    body.state-rejected .info-label { color: #a07070; }
-    body.state-error    .info-label { color: #a08040; }
-    .info-value { font-size: 13px; font-weight: 600; }
-    body.state-approved .info-value { color: #1b3a22; }
-    body.state-rejected .info-value { color: #3a1b1b; }
-    body.state-error    .info-value { color: #3a2e1b; }
+body.state-approved { background: #f0f4f0; }
+body.state-rejected { background: #fdf0f0; }
+body.state-error    { background: #fdf5e8; }
 
-    .reason-box { border-radius: 10px; padding: 10px 12px; text-align: left; margin-bottom: 1rem; font-size: 13px; line-height: 1.5; }
-    body.state-rejected .reason-box { background: #fdecea; border: 1px solid #f5b7b1; color: #7b241c; }
-    body.state-error    .reason-box { background: #fef5e4; border: 1px solid #f8d7a0; color: #7d4e00; }
-    .reason-label { font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 3px; }
-    body.state-rejected .reason-label { color: #a07070; }
-    body.state-error    .reason-label { color: #a08040; }
+.card {
+	background: #fff;
+	border-radius: 18px;
+	padding: 1.5rem;
+	max-width: 380px;
+	width: 100%;
+	text-align: center;
+	position: relative;
+	overflow: hidden;
+	animation: rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
-    .divider { height: 1px; background: #eaf2eb; margin-bottom: 0.9rem; }
-    .timestamp { font-size: 11px; color: #9ab09e; letter-spacing: 0.02em; }
-  </style>
+body.state-approved .card { border: 1px solid #e2ede2; }
+body.state-rejected .card { border: 1px solid #eddddd; }
+body.state-error    .card { border: 1px solid #eddfcc; }
+
+@keyframes rise {
+	from { opacity: 0; transform: translateY(14px) scale(0.97); }
+	to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.top-strip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 4px;
+	border-radius: 18px 18px 0 0;
+}
+
+body.state-approved .top-strip { background: linear-gradient(90deg, #2e9e5b, #4ecb80); }
+body.state-rejected .top-strip { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+body.state-error    .top-strip { background: linear-gradient(90deg, #e67e22, #f39c12); }
+
+.icon-wrap {
+	width: 58px;
+	height: 58px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0.25rem auto 0.9rem;
+	animation: popIn 0.45s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+body.state-approved .icon-wrap { background: #eaf7ef; border: 2px solid #b6e8cb; }
+body.state-rejected .icon-wrap { background: #fdecea; border: 2px solid #f5b7b1; }
+body.state-error    .icon-wrap { background: #fef5e4; border: 2px solid #f8d7a0; }
+
+@keyframes popIn {
+	from { opacity: 0; transform: scale(0.4); }
+	to   { opacity: 1; transform: scale(1); }
+}
+
+.icon-wrap svg { width: 28px; height: 28px; }
+
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	border-radius: 100px;
+	padding: 4px 11px;
+	margin-bottom: 0.9rem;
+}
+
+body.state-approved .pill { background: #eaf7ef; color: #1e7a42; border: 1px solid #b6e8cb; }
+body.state-rejected .pill { background: #fdecea; color: #922b21; border: 1px solid #f5b7b1; }
+body.state-error    .pill { background: #fef5e4; color: #9a5f00; border: 1px solid #f8d7a0; }
+
+.pill-dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	animation: pulse 1.8s ease-in-out infinite;
+}
+
+body.state-approved .pill-dot { background: #2e9e5b; }
+body.state-rejected .pill-dot { background: #c0392b; }
+body.state-error    .pill-dot { background: #e67e22; }
+
+@keyframes pulse {
+	0%, 100% { opacity: 1; transform: scale(1); }
+	50%      { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* Employee Banner */
+.emp-banner {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border-radius: 10px;
+	padding: 10px 12px;
+	margin-bottom: 1rem;
+	text-align: left;
+}
+
+body.state-approved .emp-banner { background: #f0faf3; border: 1px solid #c6e8d1; }
+body.state-rejected .emp-banner { background: #fdf5f5; border: 1px solid #f0cccc; }
+body.state-error    .emp-banner { background: #fdf9f1; border: 1px solid #f0d9a8; }
+
+.emp-avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 17px;
+	flex-shrink: 0;
+}
+
+body.state-approved .emp-avatar { background: #d0f0de; }
+body.state-rejected .emp-avatar { background: #fad7d5; }
+body.state-error    .emp-avatar { background: #fde8c0; }
+
+.emp-name {
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+body.state-approved .emp-name { color: #1b3a22; }
+body.state-rejected .emp-name { color: #3a1b1b; }
+body.state-error    .emp-name { color: #3a2e1b; }
+
+.emp-meta {
+	font-size: 11px;
+	margin-top: 2px;
+}
+
+body.state-approved .emp-meta { color: #5a8a6a; }
+body.state-rejected .emp-meta { color: #9a6060; }
+body.state-error    .emp-meta { color: #9a7840; }
+
+.info-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	margin-bottom: 1rem;
+}
+
+.info-cell {
+	border-radius: 10px;
+	padding: 9px 11px;
+	text-align: left;
+}
+
+body.state-approved .info-cell { background: #f7fbf8; border: 1px solid #daeee0; }
+body.state-rejected .info-cell { background: #fdf5f5; border: 1px solid #f0cccc; }
+body.state-error    .info-cell { background: #fdf9f1; border: 1px solid #f0d9a8; }
+
+.info-label {
+	font-size: 10px;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	margin-bottom: 3px;
+}
+
+body.state-approved .info-label { color: #7a9880; }
+body.state-rejected .info-label { color: #a07070; }
+body.state-error    .info-label { color: #a08040; }
+
+.info-value {
+	font-size: 13px;
+	font-weight: 600;
+}
+
+body.state-approved .info-value { color: #1b3a22; }
+body.state-rejected .info-value { color: #3a1b1b; }
+body.state-error    .info-value { color: #3a2e1b; }
+
+.reason-box {
+	border-radius: 10px;
+	padding: 10px 12px;
+	text-align: left;
+	margin-bottom: 1rem;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+body.state-rejected .reason-box { background: #fdecea; border: 1px solid #f5b7b1; color: #7b241c; }
+body.state-error    .reason-box { background: #fef5e4; border: 1px solid #f8d7a0; color: #7d4e00; }
+
+.reason-label {
+	font-size: 10px;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	margin-bottom: 3px;
+}
+
+body.state-rejected .reason-label { color: #a07070; }
+body.state-error    .reason-label { color: #a08040; }
+
+.divider {
+	height: 1px;
+	background: #eaf2eb;
+	margin-bottom: 0.9rem;
+}
+
+.timestamp {
+	font-size: 11px;
+	color: #9ab09e;
+	letter-spacing: 0.02em;
+}
+</style>
 </head>
 
 <body th:class="${stateClass}">
-  <div class="card">
-    <div class="top-strip"></div>
+	<div class="card">
+		<div class="top-strip"></div>
 
-    <!-- Icon -->
-    <div class="icon-wrap">
-      <svg th:if="${stateClass == 'state-approved'}" viewBox="0 0 36 36" fill="none">
-        <circle cx="18" cy="18" r="18" fill="#d0f0de"/>
-        <path d="M10.5 18.5L15.5 23.5L25.5 13" stroke="#1e7a42" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+		<!-- Icon -->
+		<div class="icon-wrap">
+			<svg th:if="${stateClass == 'state-approved'}" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="#d0f0de" />
+        <path d="M10.5 18.5L15.5 23.5L25.5 13" stroke="#1e7a42"
+					stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
-      <svg th:if="${stateClass == 'state-rejected'}" viewBox="0 0 36 36" fill="none">
-        <circle cx="18" cy="18" r="18" fill="#fad7d5"/>
-        <path d="M12 12L24 24M24 12L12 24" stroke="#c0392b" stroke-width="2.6" stroke-linecap="round"/>
+			<svg th:if="${stateClass == 'state-rejected'}" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="#fad7d5" />
+        <path d="M12 12L24 24M24 12L12 24" stroke="#c0392b"
+					stroke-width="2.6" stroke-linecap="round" />
       </svg>
-      <svg th:if="${stateClass == 'state-error'}" viewBox="0 0 36 36" fill="none">
-        <circle cx="18" cy="18" r="18" fill="#fde8c0"/>
-        <path d="M18 11v8M18 24v1" stroke="#e67e22" stroke-width="2.6" stroke-linecap="round"/>
+			<svg th:if="${stateClass == 'state-error'}" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="#fde8c0" />
+        <path d="M18 11v8M18 24v1" stroke="#e67e22" stroke-width="2.6"
+					stroke-linecap="round" />
       </svg>
-    </div>
+		</div>
 
-    <!-- Pill -->
-    <div class="pill">
-      <span class="pill-dot"></span>
-      <span th:text="${pillLabel}">Status</span>
-    </div>
+		<!-- Pill -->
+		<div class="pill">
+			<span class="pill-dot"></span> <span th:text="${pillLabel}">Status</span>
+		</div>
 
-    <!-- Employee Banner -->
-    <div class="emp-banner" th:if="${stateClass != 'state-error'}">
-      <div class="emp-avatar">👤</div>
-      <div>
-        <div class="emp-name" th:text="${codeAndName}">—</div>
-        <div class="emp-meta" th:text="${designation + ' · ' + department}">—</div>
-      </div>
-    </div>
+		<!-- Employee Banner -->
+		<div class="emp-banner" th:if="${stateClass != 'state-error'}">
+			<div class="emp-avatar">👤</div>
+			<div>
+				<div class="emp-name" th:text="${codeAndName}">—</div>
+				<div class="emp-meta" th:text="${designation + ' · ' + department}">—</div>
+			</div>
+		</div>
 
-    <!-- Info Grid -->
-    <div class="info-grid" th:if="${stateClass != 'state-error'}">
-      <div class="info-cell">
-        <div class="info-label">Leave Type</div>
-        <div class="info-value" th:text="${leaveType}">—</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-label">From</div>
-        <div class="info-value" th:text="${fromDate}">—</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-label">To</div>
-        <div class="info-value" th:text="${toDate}">—</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-label">Action</div>
-        <div class="info-value" th:text="${pillLabel}">—</div>
-      </div>
-    </div>
+		<!-- Info Grid -->
+		<div class="info-grid" th:if="${stateClass != 'state-error'}">
 
-    <!-- Reason -->
-    <div class="reason-box" th:if="${(stateClass == 'state-rejected' or stateClass == 'state-error') and reason != null and !#strings.isEmpty(reason)}">
-      <div class="reason-label" th:text="${stateClass == 'state-error'} ? 'Error details' : 'Reason'">Reason</div>
-      <div th:text="${reason}">—</div>
-    </div>
+			<div class="info-cell">
+				<div class="info-label">Leave Type</div>
+				<div class="info-value" th:text="${leaveType}">—</div>
+			</div>
 
-    <div class="divider"></div>
+			<div class="info-cell">
+				<div class="info-label">Action</div>
+				<div class="info-value" th:text="${pillLabel}">—</div>
+			</div>
 
-    <p class="timestamp" th:if="${stateClass != 'state-error'}">
-      Action by <span th:text="${approvedBy}">—</span> &middot; <span th:text="${actionTime}">—</span>
-    </p>
-    <p class="timestamp" th:if="${stateClass == 'state-error'}">
-      Contact your administrator if this keeps happening.
-    </p>
-  </div>
+			<!-- Single day: one full-width "Date" cell -->
+			<div class="info-cell" th:if="${fromDate == toDate}" style="grid-column: span 2;">
+				<div class="info-label">Date</div>
+				<div class="info-value" th:text="${fromDate}">—</div>
+			</div>
+
+			<!-- Multi day: From + To cells -->
+			<th:block th:unless="${fromDate == toDate}">
+				<div class="info-cell">
+					<div class="info-label">From</div>
+					<div class="info-value" th:text="${fromDate}">—</div>
+				</div>
+				<div class="info-cell">
+					<div class="info-label">To</div>
+					<div class="info-value" th:text="${toDate}">—</div>
+				</div>
+			</th:block>
+
+		</div>
+
+		<!-- Reason -->
+		<div class="reason-box"
+			th:if="${(stateClass == 'state-rejected' or stateClass == 'state-error') and reason != null and !#strings.isEmpty(reason)}">
+			<div class="reason-label"
+				th:text="${stateClass == 'state-error'} ? 'Error details' : 'Reason'">Reason</div>
+			<div th:text="${reason}">—</div>
+		</div>
+
+		<div class="divider"></div>
+
+		<p class="timestamp" th:if="${stateClass != 'state-error'}">
+			Action by <span th:text="${approvedBy}">—</span> &middot; <span
+				th:text="${actionTime}">—</span>
+		</p>
+		<p class="timestamp" th:if="${stateClass == 'state-error'}">
+			Contact your administrator if this keeps happening.</p>
+	</div>
 </body>
 </html>

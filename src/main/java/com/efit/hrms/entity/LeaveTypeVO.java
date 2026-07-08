@@ -10,10 +10,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.efit.hrms.dto.CreatedUpdatedDate;
+import com.efit.hrms.util.StringUtil;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -76,4 +79,11 @@ public class LeaveTypeVO {
 		
 		@Embedded
 		private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
+		
+		@PrePersist
+		@PreUpdate
+		public void formatFields() {
+			this.leaveType = StringUtil.toTitleCase(this.leaveType);
+
+		}
 }
