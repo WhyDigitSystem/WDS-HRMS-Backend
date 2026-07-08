@@ -417,7 +417,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 			"WHERE e.orgid = ?3 " +
 			"AND e.branchcode = ?4 " +
 			"AND e.active = 1 " +
-			"AND (?5 IS NULL OR ?5='' OR e.employeecode=?5) " +
+			"AND (?5 IS NULL OR ?5='' OR ?5 = 'ALL'  OR e.employeecode=?5) " +
 
 			"ORDER BY e.employeecode, d.attendance_date",
 			nativeQuery = true)
@@ -478,7 +478,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 					"WHERE e.orgid = ?3 " +
 					"AND e.branchcode = ?4 " +
 					"AND e.active = 1 " +
-					"AND (?5 IS NULL OR ?5 = '' OR e.employeecode = ?5) " +
+					"AND (?5 IS NULL OR ?5 = '' OR ?5 = 'ALL'  OR e.employeecode = ?5) " +
 
 					"AND ( " +
 					"      (c.first_in IS NULL OR c.first_in = '00:00:00') " +
@@ -529,7 +529,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 			"WHERE e.orgid = ?1 " +
 			"AND e.branchcode = ?2 " +
 			"AND e.active = 1 " +
-			"AND (?3 IS NULL OR ?3 = '' OR e.employeecode = ?3) " +
+			"AND (?3 IS NULL OR ?3 = '' OR ?5 = 'ALL'  OR e.employeecode = ?3) " +
 			"AND (\r\n"
 			+ "    (\r\n"
 			+ "        c.first_in IS NOT NULL\r\n"
@@ -610,7 +610,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 					"WHERE e.orgid = ?1 " +
 					"AND e.branchcode = ?2 " +
 					"AND e.active = 1 " +
-					"AND (?3 IS NULL OR ?3='' OR e.employeecode=?3) " +
+					"AND (?3 IS NULL OR ?5 = 'ALL'  OR ?3='' OR e.employeecode=?3) " +
 					"AND ad.checkindate BETWEEN ?4 AND ?5 " +
 
 					"AND ad.outtime < CASE " +

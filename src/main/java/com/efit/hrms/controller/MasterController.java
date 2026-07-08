@@ -280,6 +280,34 @@ public class MasterController extends BaseController {
 			return ResponseEntity.ok().body(responseDTO);
 		}
 		
+		@GetMapping("/getEmployeeNameAndCode")
+		public ResponseEntity<ResponseDTO> getEmployeeNameAndCode(@RequestParam Long orgId,@RequestParam String branchCode) {
+			String methodName = "getEmployeeNameAndCode()";
+			LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+			String errorMsg = null;
+			Map<String, Object> responseObjectsMap = new HashMap<>();
+			ResponseDTO responseDTO = null;
+			List<Map<String, Object>> mapp = new ArrayList<>();
+
+			try {
+				mapp = masterService.getEmployeeNameAndCode(orgId,branchCode);
+			} catch (Exception e) {
+				errorMsg = e.getMessage();
+				LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			}
+
+			if (StringUtils.isBlank(errorMsg)) {
+				responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Employee Details retrieved successfully");
+				responseObjectsMap.put("employeeVO", mapp);
+				responseDTO = createServiceResponse(responseObjectsMap);
+			} else {
+				responseDTO = createServiceResponseError(responseObjectsMap, "Failed to retrieve Employee Details", errorMsg);
+			}
+
+			LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+			return ResponseEntity.ok().body(responseDTO);
+		}
+		
 		@PostMapping("/uploadEmployeeImageInBloob")
 		public ResponseEntity<ResponseDTO> uploadEmployeeImageInBloob(@RequestParam("file") MultipartFile file,
 				@RequestParam Long id) {

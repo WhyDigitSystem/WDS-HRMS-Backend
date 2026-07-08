@@ -126,7 +126,7 @@ public interface PermissionRequestRepo extends JpaRepository<PermissionRequestVO
 			"WHERE e.orgid = ?3 " +
 			"AND e.branchcode = ?4 " +
 			"AND e.active = 1 " +
-			"AND (?5 IS NULL OR ?5 = '' OR e.employeecode = ?5) " +
+			"AND (?5 IS NULL OR ?5 = '' OR ?5 = 'ALL'  OR  e.employeecode = ?5) " +
 
 			"ORDER BY e.employeecode, d.attendance_date",
 			nativeQuery = true)

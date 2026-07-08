@@ -283,6 +283,9 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 
 	boolean existsByEmployeeCodeAndOrgIdAndIdNot(String employeeCode, Long orgId, Long id);
 
+	@Query(value = "SELECT employee,employeecode FROM employee WHERE orgid = ?1  AND  (?2 = 'ALL' OR branchcode = ?2)", nativeQuery = true)
+	Set<Object[]> getEmployeeNameAndCode(Long orgId, String branchCode);
+
 
 
 

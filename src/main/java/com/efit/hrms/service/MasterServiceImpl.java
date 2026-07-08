@@ -260,6 +260,25 @@ public class MasterServiceImpl implements MasterService {
 		return details;
 	}
 	
+	@Override
+	public List<Map<String, Object>> getEmployeeNameAndCode(Long orgId, String branchCode) {
+		Set<Object[]> result = employeeRepo.getEmployeeNameAndCode(orgId, branchCode);
+		return getEmployeeNameAndCode(result);
+	}
+
+	private List<Map<String, Object>> getEmployeeNameAndCode(Set<Object[]> result) {
+		List<Map<String, Object>> details = new ArrayList<>();
+		for (Object[] fs : result) {
+			Map<String, Object> object = new HashMap<>();
+			object.put("employeeName", fs[0] != null ? fs[0].toString() : "");
+			object.put("employeeCode", fs[1] != null ? fs[1].toString() : "");
+		
+			details.add(object); // Add the map to the list
+
+		}
+		return details;
+	}
+	
 	
 	@Override
 	@Transactional

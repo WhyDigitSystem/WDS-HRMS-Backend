@@ -92,6 +92,8 @@ public interface MasterService {
 
 		String previewEmployeeCode(Long orgId, String employeeType) throws ApplicationException;
 
+		List<Map<String, Object>> getEmployeeNameAndCode(Long orgId, String branchCode);
+
 
 
 
