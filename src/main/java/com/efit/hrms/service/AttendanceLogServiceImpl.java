@@ -428,6 +428,7 @@ public class AttendanceLogServiceImpl implements AttendanceLogService {
 	            map.put("leaveStatus", row[10]);
 	            map.put("permissionStatus", row[11]);
 	            map.put("adjustmentStatus", row[12]);
+	            map.put("effectiveHours", row[13]);
 
 	            break;
 	            

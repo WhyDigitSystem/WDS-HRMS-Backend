@@ -430,72 +430,94 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 			
 			
 			@Query(value =
-					"WITH RECURSIVE dates AS ( " +
-					"    SELECT DATE(?1) AS attendance_date " +
-					"    UNION ALL " +
-					"    SELECT DATE_ADD(attendance_date, INTERVAL 1 DAY) " +
-					"    FROM dates " +
-					"    WHERE attendance_date < DATE(?2) " +
-					"), " +
+			        "WITH RECURSIVE dates AS ( " +
+			        "    SELECT DATE(?1) AS attendance_date " +
+			        "    UNION ALL " +
+			        "    SELECT DATE_ADD(attendance_date, INTERVAL 1 DAY) " +
+			        "    FROM dates " +
+			        "    WHERE attendance_date < DATE(?2) " +
+			        "), " +
 
-					"checkin_summary AS ( " +
-					"    SELECT " +
-					"        empcode, " +
-					"        checkindate, " +
-					"        MIN(CASE WHEN status='In' THEN entrytime END) AS first_in, " +
-					"        MAX(CASE WHEN status='Out' THEN entrytime END) AS last_out " +
-					"    FROM checkin " +
-					"    GROUP BY empcode, checkindate " +
-					") " +
+			        "checkin_summary AS ( " +
+			        "    SELECT " +
+			        "        empcode, " +
+			        "        checkindate, " +
+			        "        MIN(CASE WHEN status='In' THEN entrytime END) AS first_in, " +
+			        "        MAX(CASE WHEN status='Out' THEN entrytime END) AS last_out " +
+			        "    FROM checkin " +
+			        "    GROUP BY empcode, checkindate " +
+			        ") " +
 
-					"SELECT " +
-					"    e.employeecode, " +
-					"    e.employee, " +
-					"    e.department, " +
-					"    e.designation, " +
-					"    d.attendance_date " +
+			        "SELECT " +
+			        "    e.employeecode, " +
+			        "    e.employee, " +
+			        "    e.department, " +
+			        "    e.designation, " +
+			        "    d.attendance_date " +
 
-					"FROM employee e " +
+			        "FROM employee e " +
 
-					"CROSS JOIN dates d " +
+			        "CROSS JOIN dates d " +
 
-					"LEFT JOIN checkin_summary c " +
-					"ON c.empcode = e.employeecode " +
-					"AND c.checkindate = d.attendance_date " +
+			        "LEFT JOIN checkin_summary c " +
+			        "ON c.empcode = e.employeecode " +
+			        "AND c.checkindate = d.attendance_date " +
 
-					"LEFT JOIN leaverequest l " +
-					"ON l.employeecode = e.employeecode " +
-					"AND d.attendance_date BETWEEN l.fromdate AND l.todate " +
-					"AND l.approvestatus = 'APPROVED' " +
-					"AND l.cancel = 0 " +
+			        "LEFT JOIN leaverequest l " +
+			        "ON l.employeecode = e.employeecode " +
+			        "AND d.attendance_date BETWEEN l.fromdate AND l.todate " +
+			        "AND l.approvestatus = 'APPROVED' " +
+			        "AND l.cancel = 0 " +
 
-					"LEFT JOIN permissionrequest p " +
-					"ON p.employeecode = e.employeecode " +
-					"AND p.date = d.attendance_date " +
-					"AND p.approvestatus = 'APPROVED' " +
-					"AND p.cancel = 0 " +
+			        "LEFT JOIN permissionrequest p " +
+			        "ON p.employeecode = e.employeecode " +
+			        "AND p.date = d.attendance_date " +
+			        "AND p.approvestatus = 'APPROVED' " +
+			        "AND p.cancel = 0 " +
 
-					"WHERE e.orgid = ?3 " +
-					"AND e.branchcode = ?4 " +
-					"AND e.active = 1 " +
-					"AND (?5 IS NULL OR ?5 = '' OR ?5 = 'ALL'  OR e.employeecode = ?5) " +
+			        // Weekoff Join
+			        "LEFT JOIN companyweekoff cw " +
+			        "ON cw.companyid = e.orgid " +
+			        "AND DAYNAME(d.attendance_date) = cw.weekoffdays " +
+			        "AND (cw.type = 'ALL' OR FIND_IN_SET(e.designation, cw.type) > 0) " +
 
-					"AND ( " +
-					"      (c.first_in IS NULL OR c.first_in = '00:00:00') " +
-					"  AND (c.last_out IS NULL OR c.last_out = '00:00:00') " +
-					") " +
+			        "LEFT JOIN companyweekoffweek cww " +
+			        "ON cww.companyweekoffid = cw.companyweekoffid " +
 
-					"AND l.leaverequestid IS NULL " +
-					"AND p.permissionrequestid IS NULL " +
+			        "WHERE e.orgid = ?3 " +
+			        "AND e.branchcode = ?4 " +
+			        "AND e.active = 1 " +
+			        "AND (?5 IS NULL OR ?5 = '' OR ?5 = 'ALL' OR e.employeecode = ?5) " +
 
-					"ORDER BY e.employeecode, d.attendance_date",
-					nativeQuery = true)
-					List<Object[]> getAbsentEscalationReport(
-					        String fromDate,
-					        String toDate,
-					        Long orgId,
-					        String branchCode,
-					        String employeeCode);
+			        // Absent
+			        "AND ( " +
+			        "      (c.first_in IS NULL OR c.first_in = '00:00:00') " +
+			        "  AND (c.last_out IS NULL OR c.last_out = '00:00:00') " +
+			        ") " +
+
+			        // No Leave
+			        "AND l.leaverequestid IS NULL " +
+
+			        // No Permission
+			        "AND p.permissionrequestid IS NULL " +
+
+			        // Exclude Weekoff
+			        "AND NOT ( " +
+			        "      cw.companyweekoffid IS NOT NULL " +
+			        "  AND ( " +
+			        "          cww.weeknumber = -1 " +
+			        "       OR cww.weeknumber = FLOOR((DAY(d.attendance_date)-1)/7)+1 " +
+			        "      ) " +
+			        ") " +
+
+			        "ORDER BY e.employeecode, d.attendance_date",
+			        nativeQuery = true)
+			List<Object[]> getAbsentEscalationReport(
+			        String fromDate,
+			        String toDate,
+			        Long orgId,
+			        String branchCode,
+			        String employeeCode);
 	
 	@Query(value =
 			"WITH checkin_summary AS ( " +
@@ -580,7 +602,8 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 
 					"CASE WHEN lr.leaverequestid IS NULL THEN 'NO' ELSE lr.approvestatus END AS leaveStatus, " +
 					"CASE WHEN pr.permissionrequestid IS NULL THEN 'NO' ELSE pr.approvestatus END AS permissionStatus, " +
-					"CASE WHEN coa.checkinoutadjustmentid IS NULL THEN 'NO' ELSE coa.approvalstatus END AS adjustmentStatus " +
+					"CASE WHEN coa.checkinoutadjustmentid IS NULL THEN 'NO' ELSE coa.approvalstatus END AS adjustmentStatus ,"
+					+ "ad.effectivehours" +
 
 					"FROM employee e " +
 
