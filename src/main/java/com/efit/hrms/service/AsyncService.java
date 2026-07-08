@@ -36,6 +36,8 @@ public class AsyncService {
 	private String noReplayEmail;
 
 	private String externalUrl = "http://139.5.190.244:8061/api/ticket/createticket";
+	
+//	private String externalUrl = "http://localhost:8061/api/ticket/createticket";
 
 	// ✅ EXTERNAL API ASYNC
 	@Async
@@ -47,18 +49,18 @@ public class AsyncService {
 			body.put("client", "LOCAL_APP");
 			body.put("createdBy", ticketVO.getCreatedBy());
 			body.put("description", ticketVO.getDescription());
-			body.put("email", ticketVO.getEmail());
+			body.put("sourceEmail", ticketVO.getEmail());
 			body.put("modifiedBy", ticketVO.getUpdatedBy());
 			body.put("priority", "HIGH");
 			body.put("title", ticketVO.getSubject());
 
 			// 🔥 IMPORTANT
 			body.put("sourceId", ticketVO.getSourceId());
-			body.put("customer", ticketVO.getCompanyName());
+			body.put("customer", "WhyDigit System Private Limitd");
 			body.put("sourceOrgId", ticketVO.getOrgId());
 			body.put("sourceBranch", ticketVO.getBranch());
 			body.put("sourceBranchCode", ticketVO.getBranchCode());
-			body.put("projectName", ticketVO.getCompanyName());
+			body.put("projectName", "WhyDigit System Private Limitd");
 			body.put("application", "HRMS");
 
 			HttpHeaders headers = new HttpHeaders();
