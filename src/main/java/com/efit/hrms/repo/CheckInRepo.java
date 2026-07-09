@@ -481,7 +481,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 			        "AND DAYNAME(d.attendance_date) = cw.weekoffdays " +
 			        "AND (cw.type = 'ALL' OR FIND_IN_SET(e.designation, cw.type) > 0) " +
 
-			        "LEFT JOIN companyweekoffweek cww " +
+			        "LEFT JOIN weekoffoccurrences cww " +
 			        "ON cww.companyweekoffid = cw.companyweekoffid " +
 
 			        "WHERE e.orgid = ?3 " +
@@ -551,7 +551,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 			"WHERE e.orgid = ?1 " +
 			"AND e.branchcode = ?2 " +
 			"AND e.active = 1 " +
-			"AND (?3 IS NULL OR ?3 = '' OR ?5 = 'ALL'  OR e.employeecode = ?3) " +
+			"AND (?3 IS NULL OR ?3 = '' OR ?3 = 'ALL'  OR e.employeecode = ?3) " +
 			"AND (\r\n"
 			+ "    (\r\n"
 			+ "        c.first_in IS NOT NULL\r\n"
@@ -603,7 +603,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 					"CASE WHEN lr.leaverequestid IS NULL THEN 'NO' ELSE lr.approvestatus END AS leaveStatus, " +
 					"CASE WHEN pr.permissionrequestid IS NULL THEN 'NO' ELSE pr.approvestatus END AS permissionStatus, " +
 					"CASE WHEN coa.checkinoutadjustmentid IS NULL THEN 'NO' ELSE coa.approvalstatus END AS adjustmentStatus ,"
-					+ "ad.effectivehours AS effectiveHours" +
+					+ "ad.effectivehours AS effectiveHours " +
 
 					"FROM employee e " +
 
@@ -633,7 +633,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 					"WHERE e.orgid = ?1 " +
 					"AND e.branchcode = ?2 " +
 					"AND e.active = 1 " +
-					"AND (?3 IS NULL OR ?5 = 'ALL'  OR ?3='' OR e.employeecode=?3) " +
+					"AND (?3 IS NULL OR ?3 = 'ALL'  OR ?3='' OR e.employeecode=?3) " +
 					"AND ad.checkindate BETWEEN ?4 AND ?5 " +
 
 					"AND ad.outtime < CASE " +
