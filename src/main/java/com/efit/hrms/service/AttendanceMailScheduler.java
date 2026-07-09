@@ -68,31 +68,21 @@ public class AttendanceMailScheduler {
             // ==================================================
             // GET EMAIL IDS
             // ==================================================
-        	String empSql =
-        	        "SELECT DISTINCT  email\r\n"
-        	        + "FROM employee\r\n"
-        	        + "WHERE\r\n"
-        	        + "(\r\n"
+            String empSql =
+                    "SELECT DISTINCT  email\r\n"
+                    + "FROM employee\r\n"
+                    + "WHERE\r\n"
+                    + "(\r\n"
         	        + "    designation IN\r\n"
         	        + "    ('MANAGING DIRECTOR', 'GENERAL MANAGER')\r\n"
         	        + "\r\n"
         	        + "    OR\r\n"
         	        + "\r\n"
-        	        + "    employeecode IN ('wds038', 'wds051')\r\n"
-        	        + ")\r\n"
-        	        + "AND email IS NOT NULL\r\n"
-        	        + "AND email <> ''";
-        	
-//        	String empSql =
-//	        "SELECT DISTINCT  email\r\n"
-//	        + "FROM employee\r\n"
-//	        + "WHERE\r\n"
-//	        + "("
-//	        + "    employeecode IN ('wds038')\r\n"
-//	        + ")\r\n"
-//	        + "AND email IS NOT NULL\r\n"
-//	        + "AND email <> ''";
-        	
+                    + "    employeecode IN ('wds038', 'wds051')\r\n"
+                    + ")\r\n"
+                    + "AND email IS NOT NULL\r\n"
+                    + "AND email <> ''";
+
             List<String> mailList =
                     jdbcTemplate.queryForList(
                             empSql,
@@ -124,7 +114,6 @@ public class AttendanceMailScheduler {
                     + "\r\n"
                     + "LEFT JOIN attendancedaily a\r\n"
                     + "       ON a.empcode = e.employeecode\r\n"
-//                    + "      AND a.checkindate = CURRENT_DATE()\r\n"
                     + "      AND a.checkindate = CURRENT_DATE() \r\n"
                     + "\r\n"
                     + "WHERE e.orgid = '1000000001'\r\n"
@@ -149,6 +138,11 @@ public class AttendanceMailScheduler {
                     jdbcTemplate.queryForList(sql);
 
             // ==================================================
+            // COMMON CELL STYLE
+            // ==================================================
+            String tdStyle = "padding:5px 6px;border:1px solid #ddd;font-size:13px;";
+
+            // ==================================================
             // BUILD TABLE ROWS
             // ==================================================
             StringBuilder rows = new StringBuilder();
@@ -160,90 +154,89 @@ public class AttendanceMailScheduler {
                 rows.append("<tr>");
 
                 // SERIAL NUMBER
-                rows.append("<td style='padding:10px;border:1px solid #ddd;'>")
+                rows.append("<td style='").append(tdStyle).append("'>")
                         .append(i++)
                         .append("</td>");
 
                 // EMPLOYEE NAME
-                rows.append("<td style='padding:10px;border:1px solid #ddd;'>")
+                rows.append("<td style='").append(tdStyle).append("'>")
                         .append(row.get("Employee"))
                         .append("</td>");
 
                 // EMPLOYEE CODE
-                rows.append("<td style='padding:10px;border:1px solid #ddd;'>")
+                rows.append("<td style='").append(tdStyle).append("'>")
                         .append(row.get("Code"))
                         .append("</td>");
 
                 // ==================================================
                 // CHECK IN
                 // ==================================================
-             // ==================================================
-             // CHECK IN
-             // ==================================================
-             Object checkinObj = row.get("Checkin");
+                Object checkinObj = row.get("Checkin");
 
-             if (checkinObj == null) {
+                if (checkinObj == null) {
 
-                 // NO CHECKIN
-                 rows.append("<td style='padding:10px;border:1px solid #ddd;'>-</td>");
+                    // NO CHECKIN
+                    rows.append("<td style='").append(tdStyle).append("'>-</td>");
 
-             } else {
+                } else {
 
-                 LocalTime inTime =
-                         ((java.sql.Time) checkinObj).toLocalTime();
+                    LocalTime inTime =
+                            ((java.sql.Time) checkinObj).toLocalTime();
 
-                 // ==========================================
-                 // AFTER 10:59 -> SHOW "-"
-                 // ==========================================
-                 LocalTime allowedTime =
-                         LocalTime.of(10, 58);
+                    // ==========================================
+                    // AFTER 10:58 -> SHOW "-"
+                    // ==========================================
+                    LocalTime allowedTime =
+                            LocalTime.of(10, 58);
 
-                 if (inTime.isAfter(allowedTime)) {
+                    if (inTime.isAfter(allowedTime)) {
 
-                     rows.append("<td style='padding:10px;border:1px solid #ddd;'>-</td>");
+                        rows.append("<td style='").append(tdStyle).append("'>-</td>");
 
-                 } else {
+                    } else {
 
-                     String checkin = checkinObj.toString();
+                        String checkin = checkinObj.toString();
 
-                     LocalDate date =
-                             ((java.sql.Date) row.get("Date")).toLocalDate();
+                        LocalDate date =
+                                ((java.sql.Date) row.get("Date")).toLocalDate();
 
-                     DayOfWeek day = date.getDayOfWeek();
+                        DayOfWeek day = date.getDayOfWeek();
 
-                     // ==========================================
-                     // LATE MARK TIME
-                     // SATURDAY -> 09:01
-                     // OTHER DAYS -> 10:01
-                     // ==========================================
-                     LocalTime limitTime =
-                             (day == DayOfWeek.SATURDAY)
-                                     ? LocalTime.of(9, 31)
-                                     : LocalTime.of(10, 1);
+                        // ==========================================
+                        // LATE MARK TIME
+                        // SATURDAY -> 09:31
+                        // OTHER DAYS -> 10:01
+                        // ==========================================
+                        LocalTime limitTime =
+                                (day == DayOfWeek.SATURDAY)
+                                        ? LocalTime.of(9, 31)
+                                        : LocalTime.of(10, 1);
 
-                     // ==========================================
-                     // RED COLOR FOR LATE
-                     // ==========================================
-                     if (!inTime.isBefore(limitTime)) {
+                        // ==========================================
+                        // RED COLOR FOR LATE
+                        // ==========================================
+                        if (!inTime.isBefore(limitTime)) {
 
-                         rows.append("<td style='padding:10px;border:1px solid #ddd;color:red;font-weight:bold;'>")
-                                 .append(checkin)
-                                 .append("</td>");
+                            rows.append("<td style='").append(tdStyle)
+                                    .append("color:red;font-weight:bold;'>")
+                                    .append(checkin)
+                                    .append("</td>");
 
-                     } else {
+                        } else {
 
-                         rows.append("<td style='padding:10px;border:1px solid #ddd;'>")
-                                 .append(checkin)
-                                 .append("</td>");
-                     }
-                 }
-             }
+                            rows.append("<td style='").append(tdStyle).append("'>")
+                                    .append(checkin)
+                                    .append("</td>");
+                        }
+                    }
+                }
+
                 // ==================================================
                 // CHECK OUT
                 // ==================================================
                 if (!subject.equalsIgnoreCase("TimeLogIn Report")) {
 
-                    rows.append("<td style='padding:10px;border:1px solid #ddd;'>")
+                    rows.append("<td style='").append(tdStyle).append("'>")
                             .append(
                                     row.get("Checkout") == null
                                             ? "-"
@@ -270,16 +263,13 @@ public class AttendanceMailScheduler {
                     );
 
             // ==================================================
-            // REPLACE VALUES
+            // REPLACE SUBJECT
             // ==================================================
             html = html.replace("${subject}", subject);
 
-//            html = html.replace(
-//                    "${date}",
-//                    LocalDate.now().toString()
-//            );
-
-            
+            // ==================================================
+            // REPLACE DATE
+            // ==================================================
             String formattedDate =
                     LocalDate.now()
                     .format(
@@ -291,9 +281,20 @@ public class AttendanceMailScheduler {
                     "${date}",
                     formattedDate
             );
-            
-            
-            if (subject.equalsIgnoreCase("TimeLogIn Report")) {
+
+            // ==================================================
+            // COLGROUP + CHECK OUT HEADER (kept in sync)
+            // ==================================================
+            boolean includeCheckout = !subject.equalsIgnoreCase("TimeLogIn Report");
+
+            String colgroup =
+                    includeCheckout
+                    ? "<colgroup><col style='width:65px;'><col style='width:220px;'><col style='width:120px;'><col style='width:130px;'><col style='width:130px;'></colgroup>"
+                    : "<colgroup><col style='width:65px;'><col style='width:220px;'><col style='width:120px;'><col style='width:130px;'></colgroup>";
+
+            html = html.replace("${colgroup}", colgroup);
+
+            if (!includeCheckout) {
 
                 html = html.replace(
                         "${checkoutHeader}",
@@ -304,10 +305,13 @@ public class AttendanceMailScheduler {
 
                 html = html.replace(
                         "${checkoutHeader}",
-                        "<th style='padding:12px;background:#0d6efd;color:#ffffff;border:1px solid #ddd;'>Check Out</th>"
+                        "<th style='padding:5px 6px;background:#198754;color:#ffffff;border:1px solid #ddd;text-align:left;font-size:13px;'>Check Out</th>"
                 );
             }
 
+            // ==================================================
+            // REPLACE ROWS
+            // ==================================================
             html = html.replace(
                     "${rows}",
                     rows.toString()
