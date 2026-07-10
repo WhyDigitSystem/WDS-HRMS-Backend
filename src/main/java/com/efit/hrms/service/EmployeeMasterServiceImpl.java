@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1007,7 +1008,13 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 			map.put("employee", ch[4] != null ? ch[4].toString() : "");
 			map.put("gender", ch[5] != null ? ch[5].toString() : "");
 			map.put("orgid", ch[6] != null ? ch[6].toString() : "");
-
+			map.put("noofyears", ch[7] != null ? ch[7].toString() : "");
+			if (ch[8] != null) {
+			    byte[] imageBytes = (byte[]) ch[8];
+			    map.put("profileimage", Base64.getEncoder().encodeToString(imageBytes));
+			} else {
+			    map.put("profileimage", "");
+			}
 			List1.add(map);
 		}
 		return List1;
