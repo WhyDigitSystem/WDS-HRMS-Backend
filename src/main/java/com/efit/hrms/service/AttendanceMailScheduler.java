@@ -18,10 +18,15 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @EnableScheduling
 public class AttendanceMailScheduler {
+	
+	private static final Logger LOGGER =
+	        LoggerFactory.getLogger(AttendanceMailScheduler.class);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -37,8 +42,19 @@ public class AttendanceMailScheduler {
     // ==================================================
 //    @Scheduled(cron = "0 0 11 * * *")
     public void morningReport() {
+    	
+    	LOGGER.info("Morning Scheduler Started");
+
 
         if (isHoliday()) {
+            System.out.println("Today is Holiday");
+            System.out.println("Today is Holiday");
+            System.out.println("Today is Holiday");
+            System.out.println("Today is Holiday");
+            System.out.println("Today is Holiday");
+            System.out.println("Today is Holiday");
+            System.out.println("Today is Holiday");
+
             return;
         }
 
@@ -62,6 +78,7 @@ public class AttendanceMailScheduler {
     // COMMON MAIL METHOD
     // ==================================================
     public void sendMail(String subject) {
+    	LOGGER.info("sendMail() Started");
 
         try {
 
@@ -78,7 +95,7 @@ public class AttendanceMailScheduler {
         	        + "\r\n"
         	        + "    OR\r\n"
         	        + "\r\n"
-                    + "    employeecode IN ('wds038', 'wds051')\r\n"
+                    + "    employeecode IN ('wds038', 'wds051','wds031')\r\n"
                     + ")\r\n"
                     + "AND email IS NOT NULL\r\n"
                     + "AND email <> ''";
@@ -88,6 +105,9 @@ public class AttendanceMailScheduler {
                             empSql,
                             String.class
                     );
+            LOGGER.info("Mail Count : {}", mailList.size());
+
+
 
             if (mailList.isEmpty()) {
 
@@ -136,6 +156,8 @@ public class AttendanceMailScheduler {
 
             List<Map<String, Object>> list =
                     jdbcTemplate.queryForList(sql);
+            
+            LOGGER.info("Employee Count : {}", list.size());
 
             // ==================================================
             // COMMON CELL STYLE
@@ -327,6 +349,7 @@ public class AttendanceMailScheduler {
             // ==================================================
             MimeMessage message =
                     mailSender.createMimeMessage();
+            
 
             MimeMessageHelper helper =
                     new MimeMessageHelper(
@@ -343,14 +366,17 @@ public class AttendanceMailScheduler {
 
             helper.setText(html, true);
 
+            LOGGER.info("Before mailSender.send()");
+
             mailSender.send(message);
 
+            LOGGER.info("After mailSender.send()");
+            
             System.out.println("Mail Sent Successfully");
 
-        } catch (Exception e) {
+        }catch (Exception e) {
 
-            System.out.println("MAIL ERROR");
-            System.out.println(e.getMessage());
+            LOGGER.error("MAIL ERROR", e);
 
             e.printStackTrace();
         }
