@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -16,11 +17,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.EmployeeVO;
+import com.efit.hrms.repo.CompanyRepo;
 import com.efit.hrms.repo.EmployeeRepo;
 
 @Service
@@ -34,6 +38,10 @@ public class EmailServiceImpl implements EmailService {
 	
 	@Autowired
 	EmployeeRepo employeeRepo;
+	
+
+	@Autowired
+	CompanyRepo companyRepo;
 	
 	@Value("${app.base-url}")
 	private String baseUrl;
@@ -823,5 +831,91 @@ public class EmailServiceImpl implements EmailService {
 		        e.printStackTrace();
 		    }
 		}
+		
+		//Task esculation email schedular
+		
+//		@Scheduled(cron = "0 0 22 * * *")
+		public void sendTaskReminder() {
+
+		    List<CompanyVO> companies = companyRepo.getMonthlyAttendanceMailCompanies();
+
+		    for (CompanyVO company : companies) {
+
+		        sendPendingTaskMail(company.getId());
+		    }
+		}
+		
+		@Override
+		public void sendPendingTaskMail(Long orgId) {
+
+		    LocalDate today = LocalDate.now();
+
+		    String day = today.getDayOfWeek().name();
+
+		    int weekNo = ((today.getDayOfMonth() - 1) / 7) + 1;
+
+		    List<EmployeeVO> pendingEmployees =
+		            employeeRepo.getPendingTaskEmployees(
+		                    orgId,
+		                    today,
+		                    day,
+		                    weekNo);
+		    System.out.println("Pending Employees : " + pendingEmployees.size());
+		    System.out.println("Pending Employees : " + pendingEmployees.size());
+		    System.out.println("Pending Employees : " + pendingEmployees.size());
+
+		    if (pendingEmployees.isEmpty()) {
+		        return;
+		    }
+
+		    List<EmployeeVO> receivers =
+		            employeeRepo.getTaskMailReceivers(orgId);
+		    System.out.println("Receivers : " + receivers.size());
+		    System.out.println("Receivers : " + receivers.size());
+		    System.out.println("Receivers : " + receivers.size());
+
+		    StringBuilder body = new StringBuilder();
+
+		    Context context = new Context();
+
+		    context.setVariable("employees", pendingEmployees);
+
+		    String html = templateEngine.process("pending-task-report", context);
+
+		    for (EmployeeVO receiver : receivers) {
+
+		        sendMail(
+		                receiver.getEmail(),
+		                "Pending Timesheet Report",
+		                html);
+
+		    }
+		}
+
+		 @Override
+		    public void sendMail(String email,
+		                         String subject,
+		                         String body) {
+
+		        try {
+
+		            MimeMessage message = mailSender.createMimeMessage();
+
+		            MimeMessageHelper helper =
+		                    new MimeMessageHelper(message, true);
+
+		            helper.setTo(email);
+		            helper.setSubject(subject);
+		            helper.setText(body, true);
+
+		            mailSender.send(message);
+
+		        } catch (Exception e) {
+
+		            e.printStackTrace();
+
+		        }
+
+		    }
 		
 	}

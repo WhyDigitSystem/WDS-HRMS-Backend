@@ -95,6 +95,18 @@ public interface EmailService {
 
 
 
+	void sendPendingTaskMail(Long orgId);
+
+
+
+	void sendMail(String email,
+            String subject,
+            String body);
+
+
+
+
+
 
 
 }

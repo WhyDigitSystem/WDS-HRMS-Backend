@@ -1,5 +1,6 @@
 package com.efit.hrms.repo;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -286,7 +287,62 @@ public interface EmployeeRepo extends JpaRepository<EmployeeVO,Long>{
 	@Query(value = "SELECT employee,employeecode FROM employee WHERE orgid = ?1  AND  (?2 = 'ALL' OR branchcode = ?2)", nativeQuery = true)
 	Set<Object[]> getEmployeeNameAndCode(Long orgId, String branchCode);
 
+	@Query(value = """
+		    SELECT e.*
+		    FROM employee e
 
+		    WHERE e.orgid = :orgId
+		    AND e.active = 1
+		    AND e.cancel = 0
+		    AND e.taskflag = 1
+
+		    AND NOT EXISTS (
+		        SELECT 1
+		        FROM timesheet t
+		        WHERE t.orgid = e.orgid
+		        AND t.employeecode = e.employeecode
+		        AND t.date = :today
+		    )
+
+		    AND NOT EXISTS (
+		        SELECT 1
+		        FROM companyweekoff cw
+		        JOIN weekoffoccurrences cww
+		          ON cw.companyweekoffid = cww.companyweekoffid
+
+		        WHERE cw.companyid = e.orgid
+		        AND cw.weekoffdays = :day
+
+		        AND (
+		            cw.type='ALL'
+		            OR FIND_IN_SET(e.designation,cw.type)
+		        )
+
+		        AND (
+		            cww.weeknumber=-1
+		            OR cww.weeknumber=:weekNo
+		        )
+		    )
+
+		    ORDER BY e.employee
+		    """, nativeQuery = true)
+			List<EmployeeVO> getPendingTaskEmployees(Long orgId,
+			                                         LocalDate today,
+			                                         String day,
+			                                         Integer weekNo);
+
+	@Query(value = """
+			SELECT *
+			FROM employee
+			WHERE orgid=:orgId
+			AND active=1
+			AND cancel=0
+			AND employeecode IN
+			(
+			'WDS038'
+			)
+			""",nativeQuery=true)
+			List<EmployeeVO> getTaskMailReceivers(Long orgId);
 
 
 
