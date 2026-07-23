@@ -45,9 +45,12 @@ public interface TicketRepo extends JpaRepository<TicketVO, Long> {
 
 	@Query(nativeQuery = true, value = "select * from ticket where orgid=?1 and ticketid=?2 and email=?3")
 	TicketVO findByOrgIdAndIdEmail(Long orgId, Long id, String email);
-	
+
 	@Query(nativeQuery = true, value = "select * from ticket where orgid=?1  and  (?2 is null or STR_TO_DATE(createdon,'%d-%m-%Y %h:%i:%s %p') >=?2)\r\n"
 			+ "			and (?3 is null or STR_TO_DATE(createdon,'%d-%m-%Y %h:%i:%s %p') <= ?3)")
 	List<TicketVO> getTicketReport(Long orgId, String fromDate, String toDate);
+
+	@Query(nativeQuery = true, value = "select docid from ticket where orgid=?1 order by docid desc limit 1")
+	String findByDocId(Long orgId);
 
 }

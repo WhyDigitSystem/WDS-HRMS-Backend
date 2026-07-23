@@ -109,6 +109,19 @@ public class TicketServiceImpl implements TicketService {
 		vo.setOrgId(dto.getOrgId());
 		vo.setStatus(dto.getStatus());
 		vo.setEmail(dto.getEmail());
+		
+		String lastDocId = ticketRepo.findByDocId(dto.getOrgId());
+
+		String newDocId;
+
+		if (lastDocId == null || lastDocId.trim().isEmpty()) {
+			newDocId = "HRMS-001";
+		} else {
+			int count = Integer.parseInt(lastDocId.substring(lastDocId.lastIndexOf("-") + 1));
+			newDocId = "HRMS-" + String.format("%03d", count + 1);
+		}
+
+		vo.setDocId(newDocId);
 		vo.setBranch(dto.getBranch());
 		vo.setBranchCode(dto.getBranchCode());
 		vo.setCompanyName(dto.getCompanyName());
