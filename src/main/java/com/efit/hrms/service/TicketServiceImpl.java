@@ -14,7 +14,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
@@ -31,9 +30,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.efit.hrms.dto.CommentsDTO;
 import com.efit.hrms.dto.TicketDTO;
 import com.efit.hrms.entity.CommentsVO;
+import com.efit.hrms.entity.EmailConfigurationVO;
 import com.efit.hrms.entity.TicketVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.CommentsRepo;
+import com.efit.hrms.repo.EmailConfigurationRepo;
 import com.efit.hrms.repo.NotificationRepo;
 import com.efit.hrms.repo.TicketRepo;
 
@@ -56,14 +57,10 @@ public class TicketServiceImpl implements TicketService {
 	
 	@Autowired
 	CommentSyncService commentSyncService;
+	
+	@Autowired
+	EmailConfigurationRepo emailConfigurationRepo;
 
-	@Value("${app.mail.adminEmail}")
-
-	private String adminEmail;
-
-	@Value("${app.mail.noreplay}")
-
-	private String noReplayEmail;
 	
 	@Autowired
 	private RestTemplate restTemplate;
@@ -320,7 +317,13 @@ public class TicketServiceImpl implements TicketService {
 		try {
 			String htmlContent = loadHtmlTemplateUpdateMail(ticketVO.getId(), Ticketstatus, ticketVO.getStatus(),
 					ticketVO.getDescription());
-			emailService.sendHtmlEmail(noReplayEmail, ticketVO.getEmail(), Ticketstatus, htmlContent);
+			EmailConfigurationVO config = emailConfigurationRepo.findByType();
+
+			if (config == null) {
+				throw new RuntimeException("Email Configuration Not Found.");
+			}
+			
+			emailService.sendHtmlEmail(config.getNoReplayMail(), ticketVO.getEmail(), Ticketstatus, htmlContent);
 			mailSent = true;
 
 		} catch (Exception e) {

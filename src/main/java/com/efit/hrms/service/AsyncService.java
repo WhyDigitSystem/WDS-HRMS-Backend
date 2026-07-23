@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
@@ -18,7 +17,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.efit.hrms.entity.EmailConfigurationVO;
 import com.efit.hrms.entity.TicketVO;
+import com.efit.hrms.repo.EmailConfigurationRepo;
 
 @Service
 public class AsyncService {
@@ -27,16 +28,13 @@ public class AsyncService {
 	private RestTemplate restTemplate;
 
 	@Autowired
-	private EmailService emailService;
+	DynamicEmailService dynamicEmailService;
 
-	@Value("${app.mail.adminEmail}")
-	private String adminEmail;
-
-	@Value("${app.mail.noreplay}")
-	private String noReplayEmail;
+	@Autowired
+	EmailConfigurationRepo emailConfigurationRepo;
 
 	private String externalUrl = "http://139.5.190.244:8061/api/ticket/createticket";
-	
+
 //	private String externalUrl = "http://localhost:8061/api/ticket/createticket";
 
 	// ✅ EXTERNAL API ASYNC
@@ -95,11 +93,19 @@ public class AsyncService {
 					.replace("${raisedBy}", ticketVO.getCreatedBy()).replace("${raisedEmail}", ticketVO.getEmail())
 					.replace("${raisedOn}", createdOn);
 
+			EmailConfigurationVO config = emailConfigurationRepo.findByType();
+
+			if (config == null) {
+				throw new RuntimeException("Email Configuration Not Found.");
+			}
+
 			// send to admin
-			emailService.sendHtmlEmail(noReplayEmail, adminEmail, ticketVO.getSubject(), htmlContent);
+			dynamicEmailService.sendHtmlEmail(config.getNoReplayMail(), config.getAdminEmail(), ticketVO.getSubject(),
+					htmlContent);
 
 			// send to user
-			emailService.sendHtmlEmail(noReplayEmail, ticketVO.getEmail(), ticketVO.getSubject(), htmlContent);
+			dynamicEmailService.sendHtmlEmail(config.getNoReplayMail(), ticketVO.getEmail(), ticketVO.getSubject(),
+					htmlContent);
 
 			System.out.println("✅ Email Sent");
 
