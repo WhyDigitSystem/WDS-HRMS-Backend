@@ -2322,6 +2322,7 @@ List<CheckInOutAdjustmentVO> allAdjustments = checkInOutAdjustmentRepo
 			} else {
 				map.put("profileImage", null);
 			}
+			map.put("joiningDate", ch[9] != null ? ch[9].toString() : "");
 
 			List1.add(map);
 		}
