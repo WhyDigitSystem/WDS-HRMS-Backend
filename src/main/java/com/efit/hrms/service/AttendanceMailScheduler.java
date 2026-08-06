@@ -258,14 +258,41 @@ public class AttendanceMailScheduler {
                 // ==================================================
                 if (!subject.equalsIgnoreCase("TimeLogIn Report")) {
 
-                    rows.append("<td style='").append(tdStyle).append("'>")
-                            .append(
-                                    row.get("Checkout") == null
-                                            ? "-"
-                                            : row.get("Checkout")
-                            )
-                            .append("</td>");
+                    Object checkoutObj = row.get("Checkout");
+
+                    if (checkoutObj == null) {
+
+                        rows.append("<td style='")
+                            .append(tdStyle)
+                            .append("'>-</td>");
+
+                    } else {
+
+                        LocalTime outTime = ((java.sql.Time) checkoutObj).toLocalTime();
+
+                        LocalTime expectedCheckoutTime = LocalTime.of(19, 30);
+
+                        if (outTime.isBefore(expectedCheckoutTime)) {
+
+                            rows.append("<td style='")
+                                .append(tdStyle)
+                                .append("color:red;font-weight:bold;'>")
+                                .append(checkoutObj)
+                                .append("</td>");
+
+                        } else {
+
+                            rows.append("<td style='")
+                                .append(tdStyle)
+                                .append("'>")
+                                .append(checkoutObj)
+                                .append("</td>");
+                        }
+                    
+                    }
                 }
+                // Keep this line as it is
+              
 
                 rows.append("</tr>");
             }
