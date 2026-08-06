@@ -1,10 +1,10 @@
 package com.efit.hrms.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,9 +38,10 @@ import com.efit.hrms.dto.SalaryEarningDetailsDTO;
 import com.efit.hrms.dto.SalaryHeadsDTO;
 import com.efit.hrms.dto.SalaryProcessDTO;
 import com.efit.hrms.dto.SalaryStructureDTO;
-import com.efit.hrms.entity.AdvanceVO;
+import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.LeaveProcessVO;
+import com.efit.hrms.entity.NotificationVO;
 import com.efit.hrms.entity.PermissionRequestNotifyVO;
 import com.efit.hrms.entity.PermissionRequestVO;
 import com.efit.hrms.entity.SalaryDetectionDetailsVO;
@@ -48,10 +49,13 @@ import com.efit.hrms.entity.SalaryEarningDetailsVO;
 import com.efit.hrms.entity.SalaryHeadsVO;
 import com.efit.hrms.entity.SalaryProcessVO;
 import com.efit.hrms.entity.SalaryStructureVO;
+import com.efit.hrms.entity.UserVO;
 import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.AdvanceRepo;
+import com.efit.hrms.repo.CompanyRepo;
 import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.LeaveProcessRepo;
+import com.efit.hrms.repo.NotificationRepo;
 import com.efit.hrms.repo.PermissionRequestNotifyRepo;
 import com.efit.hrms.repo.PermissionRequestRepo;
 import com.efit.hrms.repo.SalaryDetectionDetailsRepo;
@@ -59,6 +63,7 @@ import com.efit.hrms.repo.SalaryEarningDetailsRepo;
 import com.efit.hrms.repo.SalaryHeadsRepo;
 import com.efit.hrms.repo.SalaryProcessRepo;
 import com.efit.hrms.repo.SalaryStructureRepo;
+import com.efit.hrms.repo.UserRepo;
 
 @Service
 public class EmployeeMasterServiceImpl implements EmployeeMasterService {
@@ -94,6 +99,18 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 
 	@Autowired
 	AdvanceRepo advanceRepo;
+	
+	@Autowired
+	UserRepo userRepo;
+	
+	@Autowired
+	NotificationRepo notificationRepo;
+	
+	@Autowired
+	EmailService emailService;
+	
+	@Autowired
+	CompanyRepo companyRepo;
 
 	@Override
 	@Transactional
@@ -259,6 +276,7 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 		salaryStructureVO.setDesignation(salaryStructureDTO.getDesignation());
 		salaryStructureVO.setPfPercentage(salaryStructureDTO.getPfPercentage());
 		salaryStructureVO.setEsiPercentage(salaryStructureDTO.getEsiPercentage());
+		salaryStructureVO.setEffectiveFrom(salaryStructureDTO.getEffectiveFrom());
 
 		// Save Parent Record
 		final SalaryStructureVO savedSalaryStructureVO = salaryStructureRepo.save(salaryStructureVO);
@@ -407,6 +425,103 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 		// Save the entity
 		final PermissionRequestVO savedPermissionRequestVO = permissionRequestRepo.save(permissionRequestVO);
 
+		CompanyVO company = companyRepo.findById(permissionRequestDTO.getOrgId())
+		        .orElseThrow(() -> new ApplicationException("Company not found"));
+		boolean permissionRequest = company.isPermissionRequest();
+		// ✅ Send mail to main approver
+		if (savedPermissionRequestVO.getNotifyCode() != null && permissionRequest ) {
+		    EmployeeVO notifyEmp = employeeRepo.findByEmployeeCode(
+		            savedPermissionRequestVO.getNotifyCode());
+
+		    if (notifyEmp != null && notifyEmp.getEmail() != null) {
+		    	emailService.sendPermissionRequestMail(
+		    	        notifyEmp.getEmail(),
+		    	        savedPermissionRequestVO.getOrgId(),
+		    	        savedPermissionRequestVO.getId(),
+		    	        savedPermissionRequestVO.getEmployeeCode(),
+		    	        savedPermissionRequestVO.getEmployeeName(),
+		    	        savedPermissionRequestVO.getDate() != null
+		    	                ? savedPermissionRequestVO.getDate().toString() : "—",
+		    	        savedPermissionRequestVO.getFromTime() != null
+		    	                ? savedPermissionRequestVO.getFromTime().toString() : "—",
+		    	        savedPermissionRequestVO.getToTime() != null
+		    	                ? savedPermissionRequestVO.getToTime().toString() : "—",
+		    	        savedPermissionRequestVO.getTotalHours() != null
+		    	                ? String.valueOf(savedPermissionRequestVO.getTotalHours()) : "—",  // ← convert to String
+		    	        savedPermissionRequestVO.getNotes(),
+		    	        savedPermissionRequestVO.getNotifyCode(),
+		    	        true);
+		    }
+		}
+
+		// ✅ Send mail to additional approvers (no buttons)
+		if (savedPermissionRequestVO.getPermissionRequestNotifyVO() != null && permissionRequest) {
+		    for (PermissionRequestNotifyVO notifyVO :
+		            savedPermissionRequestVO.getPermissionRequestNotifyVO()) {
+		        if (notifyVO.getNotify2Email() == null
+		                || notifyVO.getNotify2Email().trim().isEmpty()) continue;
+
+		        emailService.sendPermissionRequestMail(
+		                notifyVO.getNotify2Email(),
+		                savedPermissionRequestVO.getOrgId(),
+		                savedPermissionRequestVO.getId(),
+		                savedPermissionRequestVO.getEmployeeCode(),
+		                savedPermissionRequestVO.getEmployeeName(),
+		                savedPermissionRequestVO.getDate() != null
+		                        ? savedPermissionRequestVO.getDate().toString() : "—",
+		                savedPermissionRequestVO.getFromTime() != null
+		                        ? savedPermissionRequestVO.getFromTime().toString() : "—",
+		                savedPermissionRequestVO.getToTime() != null
+		                        ? savedPermissionRequestVO.getToTime().toString() : "—",
+		                        		savedPermissionRequestVO.getTotalHours() != null
+				    	                ? String.valueOf(savedPermissionRequestVO.getTotalHours()) : "—", 		                savedPermissionRequestVO.getNotes(),
+		                notifyVO.getNotify2Code(),
+		                false);
+		    }
+		}
+		// 🔔 Prepare notification message
+		String notifyMessage;
+		if (permissionRequestDTO.getId() == null) {
+		    notifyMessage = "New permission request submitted by "
+		            + savedPermissionRequestVO.getEmployeeName()
+		            + " on " + savedPermissionRequestVO.getDate()
+		            + " from " + savedPermissionRequestVO.getFromTime()
+		            + " to " + savedPermissionRequestVO.getToTime();
+		} else {
+		    notifyMessage = "Permission request updated by "
+		            + savedPermissionRequestVO.getEmployeeName()
+		            + " on " + savedPermissionRequestVO.getDate()
+		            + " from " + savedPermissionRequestVO.getFromTime()
+		            + " to " + savedPermissionRequestVO.getToTime();
+		}
+
+		/* 🔹 1. Notify main approver */
+		createNotificationForUser(
+		        savedPermissionRequestVO.getNotifyCode(),
+		        savedPermissionRequestVO.getId(),
+		        notifyMessage,
+		        savedPermissionRequestVO.getCreatedBy(),
+		        savedPermissionRequestVO.getOrgId(),
+		        "PERMISSION REQUEST"
+		);
+
+		/* 🔹 2. Notify additional users */
+		if (savedPermissionRequestVO.getPermissionRequestNotifyVO() != null) {
+		    for (PermissionRequestNotifyVO notifyVO :
+		            savedPermissionRequestVO.getPermissionRequestNotifyVO()) {
+
+		        createNotificationForUser(
+		                notifyVO.getNotify2Code(),
+		                savedPermissionRequestVO.getId(),
+		                notifyMessage,
+		                savedPermissionRequestVO.getCreatedBy(),
+		                savedPermissionRequestVO.getOrgId(),
+		                "PERMISSION REQUEST"
+		        );
+		    }
+		}
+
+		
 		// Attach response
 		Map<String, Object> paramObjectsMap = new LinkedHashMap<>();
 		paramObjectsMap.put("permissionRequestVO", savedPermissionRequestVO);
@@ -415,6 +530,39 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 		return response;
 	}
 
+	
+	private void createNotificationForUser(
+	        String employeeCode,
+	        Long refId,
+	        String message,
+	        String actionBy,
+	        Long orgId,
+	        String notificationType) {
+
+	    if (employeeCode == null || employeeCode.trim().isEmpty()) {
+	        return;
+	    }
+
+	    UserVO user = userRepo.findByUserName(employeeCode);
+	    if (user == null) {
+	        return;
+	    }
+
+	    NotificationVO notification = new NotificationVO();
+	    notification.setUserid(user.getId());
+//	    notification.setAuctionsid(refId); // PermissionRequest ID
+	    notification.setNotificationType(notificationType);
+	    notification.setMessage(message);
+	    notification.setRead(false);
+	    notification.setDeleted(false);
+	    notification.setCreatedBy(actionBy);
+	    notification.setUpdatedBy(actionBy);
+	    notification.setOrgId(orgId);
+
+	    notificationRepo.save(notification);
+	}
+
+	
 	@Override
 	public PermissionRequestVO getPermissionRequestById(Long id) {
 		return permissionRequestRepo.getPermissionRequestById(id);
@@ -860,7 +1008,13 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 			map.put("employee", ch[4] != null ? ch[4].toString() : "");
 			map.put("gender", ch[5] != null ? ch[5].toString() : "");
 			map.put("orgid", ch[6] != null ? ch[6].toString() : "");
-
+			map.put("noofyears", ch[7] != null ? ch[7].toString() : "");
+			if (ch[8] != null) {
+			    byte[] imageBytes = (byte[]) ch[8];
+			    map.put("profileimage", Base64.getEncoder().encodeToString(imageBytes));
+			} else {
+			    map.put("profileimage", "");
+			}
 			List1.add(map);
 		}
 		return List1;
@@ -895,7 +1049,7 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 
 	@Override
 	public Map<String, Object> createApprovalPermissionRequest(Long orgId, Long id, String employeeCode, String action,
-			String actionBy, String notifyCode, String notify, String screenName) throws ApplicationException {
+			String actionBy, String notifyCode, String notify, String screenName,String reason) throws ApplicationException {
 
 		PermissionRequestVO permissionRequestVO = permissionRequestRepo.findByOrgIdAndIdAndEmployeeCode(orgId, id,
 				employeeCode);
@@ -908,12 +1062,41 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 			if ("APPROVED".equalsIgnoreCase(action) || "REJECTED".equalsIgnoreCase(action)) {
 				permissionRequestVO.setApproveStatus(action);
 				permissionRequestVO.setApproveBy(actionBy);
+				permissionRequestVO.setReason(reason);
 
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
 				permissionRequestVO.setApproveOn(LocalDateTime.now().format(formatter).toUpperCase());
 
 				permissionRequestRepo.save(permissionRequestVO);
 
+				
+				// 🔔 Create notification for EMPLOYEE (after approve / reject)
+				String notifyMessage;
+
+				if ("APPROVED".equalsIgnoreCase(action)) {
+				    notifyMessage = "Your permission request on "
+				            + permissionRequestVO.getDate()
+				            + " from " + permissionRequestVO.getFromTime()
+				            + " to " + permissionRequestVO.getToTime()
+				            + " has been APPROVED";
+				} else {
+				    notifyMessage = "Your permission request on "
+				            + permissionRequestVO.getDate()
+				            + " from " + permissionRequestVO.getFromTime()
+				            + " to " + permissionRequestVO.getToTime()
+				            + " has been REJECTED";
+				}
+
+				// 🔹 Notify employee who requested permission
+				createNotificationForUser(
+				        permissionRequestVO.getEmployeeCode(), // employee
+				        permissionRequestVO.getId(),            // permission request id
+				        notifyMessage,
+				        actionBy,
+				        permissionRequestVO.getOrgId(),
+				        "PERMISSION  " +action
+				);
+				
 				if (permissionRequestVO.getApproveStatus().equalsIgnoreCase("Approved")) {
 					message = "Approved Successfully";
 				} else if (permissionRequestVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
@@ -926,6 +1109,9 @@ public class EmployeeMasterServiceImpl implements EmployeeMasterService {
 		} else if (permissionRequestVO.getApproveStatus().equalsIgnoreCase("Rejected")) {
 			throw new ApplicationException("This PermissionRequest Already Rejected");
 		}
+
+		
+		
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("permissionRequestVO", permissionRequestVO);

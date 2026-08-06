@@ -59,6 +59,10 @@ public interface AuthService {
 
 	public UserVO getUserByUserName(String userName);
 
+	public Map<String, Object> sendOtp(String userName);
+
+	public void resetPasswordNew(ResetPasswordFormDTO resetPasswordRequest);
+
 	
 
 }

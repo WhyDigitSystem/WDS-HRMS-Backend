@@ -139,5 +139,46 @@ public class AttendanceLogController extends BaseController {
 		return ResponseEntity.ok().body(responseDTO);
 
 	}
+	
+	
+	@GetMapping("/attendanceEscalationReport")
+	public ResponseEntity<ResponseDTO> getAttendanceEscalationReport(
+	        @RequestParam String fromDate,
+	        @RequestParam String toDate,
+	        @RequestParam Long orgId,
+	        @RequestParam String branchCode,
+	        @RequestParam(required = false) String employeeCode,
+	        @RequestParam String itemType) {
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO;
+
+	    try {
+
+	        List<Map<String, Object>> data = attendanceLogService.getAttendanceEscalationReport(
+	                fromDate,
+	                toDate,
+	                orgId,
+	                branchCode,
+	                employeeCode,
+	                itemType);
+
+	        responseObjectsMap.put(CommonConstant.STRING_MESSAGE,
+	                "Attendance Escalation Report Retrieved Successfully");
+	        responseObjectsMap.put("attendanceEscalationReport", data);
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+
+	        responseDTO = createServiceResponseError(
+	                responseObjectsMap,
+	                "Attendance Escalation Report Failed",
+	                e.getMessage());
+
+	    }
+
+	    return ResponseEntity.ok(responseDTO);
+	}
 
 }

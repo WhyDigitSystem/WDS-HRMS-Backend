@@ -39,5 +39,13 @@ public interface AttendanceDailyRepo extends JpaRepository<AttendanceDailyVO, Lo
         @Param("orgId") long orgId,
         @Param("branch") String branch);
 
+
+
+	AttendanceDailyVO findByCheckInDateAndEmpCodeAndOrgId(LocalDate wfhDate, String employeeCode, Long orgId);
+
+	boolean existsByEmpCodeAndCheckInDate(String employeeCode, LocalDate wfhDate);
+
+
+
 	
 }

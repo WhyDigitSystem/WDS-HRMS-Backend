@@ -15,7 +15,7 @@ public class AppraisalPeriodDTO {
 
 	private String type;
 
-	private Long appraisalId;
+	private String appraisalId;
 
 	private LocalDate effectiveForm;
 

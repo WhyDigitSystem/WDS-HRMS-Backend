@@ -49,9 +49,9 @@ public interface LeaveProcessService {
 	
 //	List<Map<String, Object>> getTotalLeaveFromLeaveBalance(Long orgId, String employeeCode, String leavetype);
 
-	Map<String, Object> createApprovalLeave(Long orgId, Long id,String employeeCode,String action, String actionBy, String notifyCode, String notify, String screenName) throws ApplicationException;
+	Map<String, Object> createApprovalLeave(Long orgId, Long id,String employeeCode,String action, String actionBy, String notifyCode, String notify, String screenName, String email, String reason) throws ApplicationException;
 
-	Map<String, Object> calculateLeavedays(Long orgId, LocalDate fromDate, LocalDate toDate, String selectLeave) throws ApplicationException;
+	Map<String, Object> calculateLeavedays(Long orgId, LocalDate fromDate, LocalDate toDate, String selectLeave, String employeeCode) throws ApplicationException;
 
 	//Leave Process
 	
@@ -86,7 +86,7 @@ public interface LeaveProcessService {
 
 	Map<String, Object> createUpdateCompOff(@Valid List<CompensatoryOffDTO> compensatoryOffDTO) throws ApplicationException;
 
-	Map<String, Object> createApprovalCompOff(Long orgId, Long id, String employeeCode, String action, String actionBy, String notifyCode, String notify, String screenName) throws ApplicationException;
+	Map<String, Object> createApprovalCompOff(Long orgId, Long id, String employeeCode, String action, String actionBy, String notifyCode, String notify, String screenName, String reason) throws ApplicationException;
 
 	List<Map<String, Object>> getCompoffRequestForDashBoard(Long orgId, String reportingPersonCode, String branchCode);
 

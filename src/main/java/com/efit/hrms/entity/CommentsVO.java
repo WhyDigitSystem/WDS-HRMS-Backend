@@ -38,9 +38,21 @@ public class CommentsVO {
 	@Column(name = "orgid")
 	private Long orgId;
 	
+	@Column(name="sourceusername")
+	private String sourceUserName;
+	
+	@Column(name="sourceid")
+	private Long sourceId;
+	
 	private String status;
 	@Column(name = "ticketid")
 	private Long ticketId;
+	
+	
+	
+	@Column(name="sourceticketid")
+	private Long sourceTicketId;
+
 	
 	@Column(name="notificationflag")
 	private Boolean notificationFlag=false;

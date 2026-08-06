@@ -1,5 +1,6 @@
 package com.efit.hrms.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.efit.hrms.dto.CreatedUpdatedDate;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -42,7 +44,8 @@ public class TimeSheetVO {
 	@Column(name = "date")
 	private LocalDate date;
 	@Column(name = "totalhours")
-	private Double totalhours;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0.00")
+	private BigDecimal totalhours;
 
 	@Column(name = "active")
 	private boolean active;

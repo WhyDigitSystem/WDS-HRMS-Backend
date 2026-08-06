@@ -18,6 +18,7 @@ import com.efit.hrms.entity.CheckInVO;
 public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 
 	Optional<CheckInVO> findTopByEmpCodeAndOrgIdAndBranchOrderByIdDesc(String empcode, long orgId, String branch);
+	Optional<CheckInVO> findTopByEmpCodeAndStatusAndOrgIdAndBranchOrderByIdDesc(String empcode, String status, long orgId, String branch);
 
 	boolean existsByEmpCodeAndBranchAndOrgIdAndCheckInDateAndStatus(String empcode, String branch, long orgId,
 			LocalDate checkInDate, String string);
@@ -362,7 +363,7 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 			+ "      ELSE '00:00'\r\n"
 			+ "    END AS othours\r\n"
 			+ "FROM final_cte f\r\n"
-			+ "ORDER BY f.checkindate, f.empcode;\r\n"
+			+ "ORDER BY f.empcode,f.checkindate\r\n"
 			+ "\r\n",
 	        nativeQuery = true)
 	Set<Object[]> getCheckInOutReport(Long orgId, String employeeCode, String fromDate, String toDate, String branch);
@@ -373,9 +374,305 @@ public interface CheckInRepo extends JpaRepository<CheckInVO,Long>{
 	boolean existsByEmpCodeAndCheckInDateAndEntryTimeAndStatus(String empCode, LocalDate checkInDate,
 			LocalTime entryTime, String status);
 
+	Optional<CheckInVO> findTopByEmpCodeAndCheckInDateAndStatusAndOrgIdAndBranchOrderByIdDesc(String empcode,
+			LocalDate checkInDate, String string, long orgId, String branch);
+	
+	@Query(value =
+			"WITH RECURSIVE dates AS ( " +
+			"    SELECT DATE(?1) AS attendance_date " +
+			"    UNION ALL " +
+			"    SELECT DATE_ADD(attendance_date, INTERVAL 1 DAY) " +
+			"    FROM dates " +
+			"    WHERE attendance_date < DATE(?2) " +
+			") " +
 
+			"SELECT " +
+			"    e.employeecode, " +
+			"    e.employee, " +
+			"    e.department, " +
+			"    e.designation, " +
+			"    d.attendance_date, " +
+			"    a.status, " +
+			"    a.entrytime, " +
+			"    a.reason, " +
+			"    a.requestreason, " +
+			"    a.approvalstatus, " +
+			"    a.approveon, " +
+			"    a.approveby, " +
+			"    approver.employee AS approvedByName " +
 
+			"FROM employee e " +
 
+			"CROSS JOIN dates d " +
+
+			"INNER JOIN checkinoutadjustment a " +
+			"ON a.empcode = e.employeecode " +
+			"AND a.checkindate = d.attendance_date " +
+			"AND a.approvalstatus = 'APPROVED' " +
+
+			"LEFT JOIN employee approver " +
+			"ON approver.employeecode = a.approveby " +
+			"AND approver.orgid = a.orgid " +
+
+			"WHERE e.orgid = ?3 " +
+			"AND e.branchcode = ?4 " +
+			"AND e.active = 1 " +
+			"AND (?5 IS NULL OR ?5='' OR ?5 = 'ALL'  OR e.employeecode=?5) " +
+
+			"ORDER BY e.employeecode, d.attendance_date",
+			nativeQuery = true)
+			List<Object[]> getAdjustmentEscalationReport(
+			        String fromDate,
+			        String toDate,
+			        Long orgId,
+			        String branchCode,
+			        String employeeCode);
+			
+			
+			@Query(value =
+			        "WITH RECURSIVE dates AS ( " +
+			        "    SELECT DATE(?1) AS attendance_date " +
+			        "    UNION ALL " +
+			        "    SELECT DATE_ADD(attendance_date, INTERVAL 1 DAY) " +
+			        "    FROM dates " +
+			        "    WHERE attendance_date < DATE(?2) " +
+			        "), " +
+
+			        "checkin_summary AS ( " +
+			        "    SELECT " +
+			        "        empcode, " +
+			        "        checkindate, " +
+			        "        MIN(CASE WHEN status='In' THEN entrytime END) AS first_in, " +
+			        "        MAX(CASE WHEN status='Out' THEN entrytime END) AS last_out " +
+			        "    FROM checkin " +
+			        "    GROUP BY empcode, checkindate " +
+			        ") " +
+
+			        "SELECT " +
+			        "    e.employeecode, " +
+			        "    e.employee, " +
+			        "    e.department, " +
+			        "    e.designation, " +
+			        "    d.attendance_date " +
+
+			        "FROM employee e " +
+
+			        "CROSS JOIN dates d " +
+
+			        "LEFT JOIN checkin_summary c " +
+			        "ON c.empcode = e.employeecode " +
+			        "AND c.checkindate = d.attendance_date " +
+
+			        "LEFT JOIN leaverequest l " +
+			        "ON l.employeecode = e.employeecode " +
+			        "AND d.attendance_date BETWEEN l.fromdate AND l.todate " +
+			        "AND l.approvestatus = 'APPROVED' " +
+			        "AND l.cancel = 0 " +
+
+			        "LEFT JOIN permissionrequest p " +
+			        "ON p.employeecode = e.employeecode " +
+			        "AND p.date = d.attendance_date " +
+			        "AND p.approvestatus = 'APPROVED' " +
+			        "AND p.cancel = 0 " +
+
+			        // Weekoff Join
+			        "LEFT JOIN companyweekoff cw " +
+			        "ON cw.companyid = e.orgid " +
+			        "AND DAYNAME(d.attendance_date) = cw.weekoffdays " +
+			        "AND (cw.type = 'ALL' OR FIND_IN_SET(e.designation, cw.type) > 0) " +
+
+			        "LEFT JOIN weekoffoccurrences cww " +
+			        "ON cww.companyweekoffid = cw.companyweekoffid " +
+
+			        "WHERE e.orgid = ?3 " +
+			        "AND e.branchcode = ?4 " +
+			        "AND e.active = 1 " +
+			        "AND (?5 IS NULL OR ?5 = '' OR ?5 = 'ALL' OR e.employeecode = ?5) " +
+
+			        // Absent
+			        "AND ( " +
+			        "      (c.first_in IS NULL OR c.first_in = '00:00:00') " +
+			        "  AND (c.last_out IS NULL OR c.last_out = '00:00:00') " +
+			        ") " +
+
+			        // No Leave
+			        "AND l.leaverequestid IS NULL " +
+
+			        // No Permission
+			        "AND p.permissionrequestid IS NULL " +
+
+			        // Exclude Weekoff
+			        "AND NOT ( " +
+			        "      cw.companyweekoffid IS NOT NULL " +
+			        "  AND ( " +
+			        "          cww.weeknumber = -1 " +
+			        "       OR cww.weeknumber = FLOOR((DAY(d.attendance_date)-1)/7)+1 " +
+			        "      ) " +
+			        ") " +
+
+			        "ORDER BY e.employeecode, d.attendance_date",
+			        nativeQuery = true)
+			List<Object[]> getAbsentEscalationReport(
+			        String fromDate,
+			        String toDate,
+			        Long orgId,
+			        String branchCode,
+			        String employeeCode);
+	
+	@Query(value =
+			"WITH checkin_summary AS ( " +
+			"   SELECT empcode, checkindate, " +
+			"          MIN(CASE WHEN status='In' THEN entrytime END) AS first_in, " +
+			"          MAX(CASE WHEN status='Out' THEN entrytime END) AS last_out " +
+			"   FROM checkin " +
+			"   GROUP BY empcode, checkindate " +
+			") " +
+
+			"SELECT " +
+			"e.employeecode, " +
+			"e.employee, " +
+			"e.department, " +
+			"e.designation, " +
+			"c.checkindate, " +
+			"c.first_in, " +
+			"c.last_out " +
+
+			"FROM employee e " +
+
+			"INNER JOIN checkin_summary c " +
+			"ON c.empcode = e.employeecode " +
+
+			"LEFT JOIN checkinoutadjustment coa " +
+			"ON coa.empcode = e.employeecode " +
+			"AND coa.checkindate = c.checkindate " +
+
+			"AND coa.checkinoutadjustmentid IS NULL " +
+
+			"WHERE e.orgid = ?1 " +
+			"AND e.branchcode = ?2 " +
+			"AND e.active = 1 " +
+			"AND (?3 IS NULL OR ?3 = '' OR ?3 = 'ALL'  OR e.employeecode = ?3) " +
+			"AND (\r\n"
+			+ "    (\r\n"
+			+ "        c.first_in IS NOT NULL\r\n"
+			+ "        AND c.first_in <> '00:00:00'\r\n"
+			+ "        AND (c.last_out IS NULL OR c.last_out = '00:00:00')\r\n"
+			+ "    )\r\n"
+			+ "    OR\r\n"
+			+ "    (\r\n"
+			+ "        (c.first_in IS NULL OR c.first_in = '00:00:00')\r\n"
+			+ "        AND c.last_out IS NOT NULL\r\n"
+			+ "        AND c.last_out <> '00:00:00'\r\n"
+			+ "    )\r\n"
+			+ ")"
+			+ "AND coa.checkinoutadjustmentid IS NULL ORDER BY e.employeecode, c.checkindate" +
+
+			"",
+			nativeQuery = true)
+			List<Object[]> getMissingPunchReport(Long orgId,
+			                                     String branchCode,
+			                                     String employeeCode);
+			
+			
+			@Query(value =
+					"SELECT " +
+					"e.employeecode, " +
+					"e.employee, " +
+					"e.department, " +
+					"e.designation, " +
+
+					"ad.checkindate, " +
+					"ad.intime, " +
+					"ad.outtime, " +
+
+					"sad.intime AS shiftIn, " +
+
+					"CASE " +
+					"   WHEN DAYOFWEEK(ad.checkindate)=7 THEN '18:00:00' " +
+					"   ELSE CONCAT(sad.outtime,':00') " +
+					"END AS shiftOut, " +
+
+					"TIMEDIFF( " +
+					"   CASE " +
+					"      WHEN DAYOFWEEK(ad.checkindate)=7 THEN '18:00:00' " +
+					"      ELSE CONCAT(sad.outtime,':00') " +
+					"   END, " +
+					"   ad.outtime " +
+					") AS earlyBy, " +
+
+					"CASE WHEN lr.leaverequestid IS NULL THEN 'NO' ELSE lr.approvestatus END AS leaveStatus, " +
+					"CASE WHEN pr.permissionrequestid IS NULL THEN 'NO' ELSE pr.approvestatus END AS permissionStatus, " +
+					"CASE WHEN coa.checkinoutadjustmentid IS NULL THEN 'NO' ELSE coa.approvalstatus END AS adjustmentStatus ,"
+					+ "ad.effectivehours AS effectiveHours " +
+
+					"FROM employee e " +
+
+					"INNER JOIN attendancedaily ad " +
+					"ON ad.empcode = e.employeecode " +
+
+					"INNER JOIN shiftassigndetails sad " +
+					"ON sad.employeecode = e.employeecode " +
+					"AND ad.checkindate BETWEEN sad.effectivefrom AND sad.effectiveto " +
+					"AND sad.active = 1 " +
+
+					"LEFT JOIN leaverequest lr " +
+					"ON lr.employeecode = e.employeecode " +
+					"AND ad.checkindate BETWEEN lr.fromdate AND lr.todate " +
+					"AND lr.cancel = 0 " +
+
+					"LEFT JOIN permissionrequest pr " +
+					"ON pr.employeecode = e.employeecode " +
+					"AND pr.date = ad.checkindate " +
+					"AND pr.cancel = 0 " +
+					"AND pr.active = 1 " +
+
+					"LEFT JOIN checkinoutadjustment coa " +
+					"ON coa.empcode = e.employeecode " +
+					"AND coa.checkindate = ad.checkindate " +
+
+					"WHERE e.orgid = ?1 " +
+					"AND e.branchcode = ?2 " +
+					"AND e.active = 1 " +
+					"AND (?3 IS NULL OR ?3 = 'ALL'  OR ?3='' OR e.employeecode=?3) " +
+					"AND ad.checkindate BETWEEN ?4 AND ?5 " +
+
+					"AND ad.outtime < CASE " +
+					"       WHEN DAYOFWEEK(ad.checkindate)=7 THEN TIME('18:00:00') " +
+					"       ELSE TIME(CONCAT(sad.outtime,':00')) " +
+					"END " +
+
+					/* Exclude Approved Leave */
+					"AND NOT ( " +
+					"    lr.leaverequestid IS NOT NULL " +
+					"    AND lr.approvestatus='APPROVED' " +
+					") " +
+
+					/* Exclude Approved Permission covering checkout -> shift end */
+					"AND NOT ( " +
+					"    pr.permissionrequestid IS NOT NULL " +
+					"    AND pr.approvestatus='APPROVED' " +
+					"    AND TIME(CONCAT(pr.fromtime,':00')) <= ad.outtime " +
+					"    AND TIME(CONCAT(pr.totime,':00')) >= " +
+					"        CASE " +
+					"            WHEN DAYOFWEEK(ad.checkindate)=7 THEN TIME('18:00:00') " +
+					"            ELSE TIME(CONCAT(sad.outtime,':00')) " +
+					"        END " +
+					") " +
+
+					/* Exclude Approved Adjustment */
+					"AND NOT ( " +
+					"    coa.checkinoutadjustmentid IS NOT NULL " +
+					"    AND coa.approvalstatus='APPROVED' " +
+					") " +
+
+					"ORDER BY ad.checkindate, e.employeecode",
+					nativeQuery = true)
+					List<Object[]> getFirstLastCheckReport(Long orgId,
+					                                       String branchCode,
+					                                       String employeeCode,
+					                                       String fromDate,
+					                                       String toDate);
+					
 //	Optional<CheckInVO> findTopByEmpCodeAndOrgIdAndBranchOrderByIdDesc(String empcode, long orgId, String branch);
 
 

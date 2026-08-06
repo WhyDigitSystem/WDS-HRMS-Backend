@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import javax.persistence.Column;
+
 import com.efit.hrms.entity.OverTime;
 
 import lombok.AllArgsConstructor;
@@ -21,6 +23,7 @@ public class CompanyDTO {
 	private String companyName;
 	private String country;
 	private String currency;
+	private List<String> separation;
 	// private String mainCurrency;
 	private String address;
 	private String zip;
@@ -59,7 +62,9 @@ public class CompanyDTO {
 
 	private BigDecimal otEligibleHours;
 
+	private boolean permissionRequest;
 
+	private boolean monthlyAttendanceMail;
 
 	private Double latitude;
 	private Double longitude;

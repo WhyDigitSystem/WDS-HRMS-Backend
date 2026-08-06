@@ -1,7 +1,6 @@
 package com.efit.hrms.entity;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -9,10 +8,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import com.efit.hrms.dto.CreatedUpdatedDate;
+import com.efit.hrms.util.StringUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -62,4 +64,11 @@ public class HolidayVO {
 	
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
+	
+	@PrePersist
+	@PreUpdate
+	public void formatFields() {
+	    this.day = StringUtil.toTitleCase(this.day);
+	    this.festival = StringUtil.toTitleCase(this.festival);
+	}
 }

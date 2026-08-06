@@ -127,10 +127,26 @@ public class CompanyVO {
 
 	@Column(name = "locationaddress")
 	private String locationAddress;
-
+	@Column(name = "separation")
+	private String separation;
 	
 	@Column(name = "companylogo", columnDefinition = "LONGBLOB")
 	private byte[] companyLogo;
+	
+	@Column(name = "elastnum")
+	private int eLastNum = 1;
+	
+	@Column(name = "clastnum")
+	private int cLastNum = 1;
+	
+	@Column(name = "mclastnum")
+	private int mcLastNum = 1;
+	
+	@Column(name = "monthlattendancemail")
+	private boolean monthlyAttendanceMail=false;
+	
+	@Column(name = "permissionrequest")
+	private boolean permissionRequest=false;
 	
 	@OneToMany(mappedBy = "companyVO", cascade = CascadeType.ALL)
 	@JsonManagedReference
@@ -156,5 +172,13 @@ public class CompanyVO {
 
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
+
+
+
+	
+
+
+
+	
 
 }

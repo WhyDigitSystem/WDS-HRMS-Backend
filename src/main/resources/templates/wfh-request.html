@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work From Home Request</title>
+</head>
+<body style="margin:0;padding:40px 16px;background:#f1f5f9;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;">
+  <div style="max-width:580px;margin:0 auto;">
+    <div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
+
+      <div style="background:#1a2236;padding:36px 40px 32px;">
+        <h1 style="margin:0;font-size:26px;font-weight:600;color:#f8fafc;line-height:1.25;">Work From Home Request</h1>
+      </div>
+
+      <div style="padding:32px 40px;">
+
+        <!-- Replace existing employee box with this -->
+		<div style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:#f8fafc;border-radius:10px;margin-bottom:28px;border:1px solid #e2e8f0;">
+		  <div style="width:44px;height:44px;border-radius:10px;background:#eef2ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">👤</div>
+		  <div>
+		    <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:600;">Employee</p>
+		    <p style="margin:3px 0 0;font-size:17px;font-weight:600;color:#0f172a;" th:text="${codeAndName}">—</p>
+		    <p style="margin:2px 0 0;font-size:13px;color:#64748b;" th:text="${designation + ' | ' + department}">—</p>
+		  </div>
+		</div>
+
+        <p style="margin:0 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:600;">Request Details</p>
+
+        <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:28px;">
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:16px 20px;background:#f0f9ff;width:40%;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:8px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;">📅</div>
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#1d4ed8;font-weight:600;">WFH Date</span>
+              </div>
+            </td>
+            <td style="padding:16px 20px;font-size:15px;font-weight:600;color:#0f172a;" th:text="${wfhDate}">—</td>
+          </tr>
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:16px 20px;background:#fafaff;width:40%;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:8px;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:15px;">📋</div>
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#7c3aed;font-weight:600;">Reason</span>
+              </div>
+            </td>
+            <td style="padding:16px 20px;font-size:15px;font-weight:600;color:#0f172a;" th:text="${reason}">—</td>
+          </tr>
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:16px 20px;background:#f0fdf4;width:40%;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:8px;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:15px;">💼</div>
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#15803d;font-weight:600;">Work Accomplished</span>
+              </div>
+            </td>
+            <td style="padding:16px 20px;font-size:15px;font-weight:600;color:#0f172a;" th:text="${workAccomplished}">—</td>
+          </tr>
+        </table>
+
+        <table th:if="${showButtons}" style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding-right:8px;width:50%;">
+              <a th:href="${approveUrl}" style="display:block;text-align:center;padding:15px 20px;background:#16a34a;color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:600;">
+                ✓ &nbsp;Approve
+              </a>
+            </td>
+            <td style="padding-left:8px;width:50%;">
+              <a th:href="${rejectPageUrl}" style="display:block;text-align:center;padding:15px 20px;background:#dc2626;color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:600;">
+                ✕ &nbsp;Reject
+              </a>
+            </td>
+          </tr>
+        </table>
+
+      </div>
+
+      <div style="padding:18px 40px;background:#f8fafc;border-top:1px solid #e2e8f0;">
+        <p style="margin:0;font-size:12px;color:#94a3b8;">Automated notification. Do not reply.</p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

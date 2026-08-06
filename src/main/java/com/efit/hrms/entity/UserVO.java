@@ -1,6 +1,7 @@
 
 package com.efit.hrms.entity;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class UserVO {
 	@Column(name = "email")
 	private String email;
 	@Column(name = "orgid")
-	private Long orgId;
+    private Long orgId;
 	@Column(name = "mobileno")
 	private String mobileNo;
 	@Column(name = "usertype")
@@ -95,6 +96,11 @@ public class UserVO {
 	private List<UserLoginBranchAccessibleVO> branchAccessibleVO;
 	
 	private Date accountRemovedDate;
+	
+	@Column(name = "otp")
+	private String otp;
+	@Column(name = "otpexpiry")
+	private LocalDateTime otpExpiry;
 	
 	@ManyToOne
 	@JoinColumn(name="companyid")

@@ -86,6 +86,8 @@ public interface ShiftMasterService {
 	List<Map<String, Object>> getAllEmployeeAndShiftMasterDetails(Long orgId, String type, String contractor,
 			String department, String shift, String shiftCode, String branchCode, LocalDate effectiveFrom);
 
+	String previewContractMasterCode(Long orgId) throws ApplicationException;
+
 	
 
 }

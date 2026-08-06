@@ -1,5 +1,7 @@
 package com.efit.hrms.entity;
 
+import java.time.LocalDate;
+
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -28,35 +30,55 @@ public class TicketVO {
 	@SequenceGenerator(name = "ticketgen", sequenceName = "ticketseq", initialValue = 1000000001, allocationSize = 1)
 	@Column(name = "ticketid")
 	private Long id;
-	
+
 	private String subject;
-	
+
 	private String description;
-	
-	@Column(name="createdby")
+
+	@Column(name = "createdby")
 	private String createdBy;
-	@Column(name="modifiedy")
+	@Column(name = "modifiedy")
 	private String updatedBy;
-	@Column(name="username")
+	@Column(name = "username")
 	private String userName;
 	@Column(name = "orgid")
 	private Long orgId;
-	
+
+	@Column(name = "email")
+	private String email;
+
 	private String status;
 
-	@Column(name="statusflag")
-	private Boolean statusFlag=true;
-	
-	@Column(name="notificationflag")
-	private Boolean notificationFlag=false;
-	
+	@Column(name = "statusflag")
+	private Boolean statusFlag = true;
+
+	@Column(name = "notificationflag")
+	private Boolean notificationFlag = false;
+
+	@Column(name = "companyname")
+	private String companyName;
+
+	@Column(name = "branch")
+	private String branch;
+
+	@Column(name = "branchcode")
+	private String branchCode;
+
+	@Column(name = "sourceId")
+	private Long sourceId;
+
+	@Column(name = "updateddate")
+	private LocalDate updatedDate;
+
 	private boolean cancel;
-	
+
+	@Column(name = "ticketstatus")
+	private String ticketStatus;
+
 	@Lob
 	@Column(name = "screenshot", columnDefinition = "LONGBLOB")
 	private byte[] screenShot;
-	
+
 	@Embedded
 	private CreatedUpdatedDate commonDate = new CreatedUpdatedDate();
 }
-

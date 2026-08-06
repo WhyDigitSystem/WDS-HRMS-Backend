@@ -72,7 +72,7 @@ public class WorkFromHomeVO {
 	@Column(name = "screencode", length = 30)
 	private String screenCode = "WFH";
 	@Column(name = "screenname", length = 30)
-	private String screenName = "WORKFROMHOME";
+	private String screenName = "WORK FROM HOME";
 	@Column(name = "branch",length = 30)
 	private String branch;
 	@Column(name = "branchcode",length = 10)

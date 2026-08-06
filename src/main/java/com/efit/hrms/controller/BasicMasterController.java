@@ -1,6 +1,8 @@
 package com.efit.hrms.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
@@ -34,6 +38,7 @@ import com.efit.hrms.dto.CircularDTO;
 import com.efit.hrms.dto.EmployeeCodeConfigDTO;
 import com.efit.hrms.dto.EmployeeDTOnew;
 import com.efit.hrms.dto.HolidayDTO;
+import com.efit.hrms.dto.PendingRequestProjection;
 import com.efit.hrms.dto.PollVoteDTO;
 import com.efit.hrms.dto.PollsDTO;
 import com.efit.hrms.dto.PraiseDTO;
@@ -43,13 +48,15 @@ import com.efit.hrms.dto.UserNameDTO;
 import com.efit.hrms.entity.AnnouncementVO;
 import com.efit.hrms.entity.CalendarVO;
 import com.efit.hrms.entity.CheckInOutAdjustmentVO;
-import com.efit.hrms.entity.CheckInVO;
 import com.efit.hrms.entity.CircularVO;
-import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.EmployeeCodeConfigVO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.HolidayVO;
 import com.efit.hrms.entity.PollsVO;
+import com.efit.hrms.repo.CheckInOutAdjustmentRepo;
+import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.service.BasicMasterService;
+import com.efit.hrms.service.EmailService;
 
 @CrossOrigin
 @RestController
@@ -58,6 +65,18 @@ public class BasicMasterController extends BaseController {
 
 	@Autowired
 	BasicMasterService basicMasterService;
+	
+	@Autowired
+	TemplateEngine templateEngine;
+	
+	@Autowired
+	EmailService emailService;
+	
+	@Autowired
+	CheckInOutAdjustmentRepo checkInOutAdjustmentRepo;
+	
+	@Autowired
+	EmployeeRepo employeeRepo;
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(BasicMasterController.class);
 
@@ -224,7 +243,7 @@ public class BasicMasterController extends BaseController {
 	public ResponseEntity<ResponseDTO> createApprovalCheckInOutAdjustment(@RequestParam Long orgId,
 			@RequestParam String employeeCode, @RequestParam String action, @RequestParam String actionBy,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) String checkOutDate,
-			@RequestParam String notifyCode, @RequestParam String notify, @RequestParam String screenName) {
+			@RequestParam String notifyCode, @RequestParam String notify, @RequestParam String screenName,@RequestParam(required=false) String reason) {
 
 		String methodName = "createApprovalCheckInOutAdjustment()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
@@ -238,7 +257,7 @@ public class BasicMasterController extends BaseController {
 
 			// Call the service
 			Map<String, Object> result = basicMasterService.createApprovalCheckInOutAdjustment(orgId, employeeCode,
-					action, actionBy, localCheckOutDate, notifyCode, notify, screenName);
+					action, actionBy, localCheckOutDate, notifyCode, notify, screenName,reason);
 
 			// ✅ Extract and flatten
 			List<CheckInOutAdjustmentVO> adjustmentList = (List<CheckInOutAdjustmentVO>) result
@@ -259,6 +278,169 @@ public class BasicMasterController extends BaseController {
 
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
+	}
+	
+	@GetMapping("/mailCheckInOutAction")
+	public ResponseEntity<String> mailCheckInOutAction(
+	        @RequestParam Long orgId,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam String checkInDate,
+	        @RequestParam String notifyCode,
+	        @RequestParam String notify,
+	        @RequestParam String screenName,
+	        @RequestParam String email,
+	        @RequestParam(required = false) String reason) {
+
+	    System.out.println("=== mailCheckInOutAction ===");
+	    System.out.println("orgId="        + orgId);
+	    System.out.println("employeeCode=" + employeeCode);
+	    System.out.println("action="       + action);
+	    System.out.println("checkInDate="  + checkInDate);
+	    System.out.println("actionBy="     + actionBy);
+
+	    Context context = new Context();
+	    List<CheckInOutAdjustmentVO> voList = null;
+
+	    try {
+	        LocalDate localDate = LocalDate.parse(checkInDate);
+
+	        Map<String, Object> details = basicMasterService.createApprovalCheckInOutAdjustment(
+	                orgId, employeeCode, action, actionBy,
+	                localDate, notifyCode, notify, screenName, reason);
+
+	        boolean isApproved = "APPROVED".equalsIgnoreCase(action);
+	        voList = (List<CheckInOutAdjustmentVO>) details.get("checkInOutAdjustmentList");
+
+	        CheckInOutAdjustmentVO inVO = voList.stream()
+	                .filter(v -> "IN".equalsIgnoreCase(v.getStatus()))
+	                .findFirst().orElse(null);
+
+	        CheckInOutAdjustmentVO outVO = voList.stream()
+	                .filter(v -> "OUT".equalsIgnoreCase(v.getStatus()))
+	                .findFirst().orElse(null);
+
+	        CheckInOutAdjustmentVO mainVO = inVO != null ? inVO : outVO;
+
+	     // After getting mainVO, fetch employee details
+	        EmployeeVO employee = employeeRepo.findByEmployeeCode(employeeCode);
+	        String department  = employee != null ? employee.getDepartment()   : "";
+	        String designation = employee != null ? employee.getDesignation()  : "";
+
+	        // Also resolve actionBy name
+	        EmployeeVO approver = employeeRepo.findByEmployeeCode(actionBy);
+	        String approvedByName = approver != null ? approver.getEmployeeName() : actionBy;
+
+	        context.setVariable("stateClass",   isApproved ? "state-approved" : "state-rejected");
+	        context.setVariable("pillLabel",    isApproved ? "Approved" : "Rejected");
+	        context.setVariable("title",        isApproved ? "Adjustment Approved Successfully" : "Adjustment Rejected Successfully");
+	        context.setVariable("message",      isApproved
+	                ? "The adjustment request has been approved and the team has been notified."
+	                : "The adjustment request has been rejected and the employee has been notified.");
+
+	        // ← replace employeeName with these 3
+	        context.setVariable("codeAndName",  employeeCode + " - " + mainVO.getEmpName());
+	        context.setVariable("department",   department);
+	        context.setVariable("designation",  designation);
+
+	        context.setVariable("fromDate",     mainVO.getCheckInDate()
+	                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+	        context.setVariable("inTime",       inVO != null && inVO.getEntryTime() != null
+	                                                ? inVO.getEntryTime().toString() : "—");
+	        context.setVariable("outTime",      outVO != null && outVO.getEntryTime() != null
+	                                                ? outVO.getEntryTime().toString() : "—");
+	        context.setVariable("approvedBy",   approvedByName); // ← resolved name, not code
+	        context.setVariable("actionTime",   LocalDateTime.now()
+	                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+	        context.setVariable("reason",       reason);
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        context.setVariable("stateClass", "state-error");
+	        context.setVariable("pillLabel",  "Failed");
+	        context.setVariable("reason",     e.getMessage());
+	    }
+
+	    String html = templateEngine.process("checkinout-status", context);
+
+	    if (voList != null && !voList.isEmpty()) {
+	        CheckInOutAdjustmentVO inVO = voList.stream()
+	                .filter(v -> "IN".equalsIgnoreCase(v.getStatus()))
+	                .findFirst().orElse(voList.get(0));
+	        CheckInOutAdjustmentVO outVO = voList.stream()
+	                .filter(v -> "OUT".equalsIgnoreCase(v.getStatus()))
+	                .findFirst().orElse(null);
+
+	        emailService.sendCheckInOutStatusMail(
+	                inVO.getEmpCode(),
+	                inVO.getEmpName(),
+	                action,
+	                reason,
+	                inVO.getCheckInDate(),
+	                inVO.getEntryTime() != null ? inVO.getEntryTime().toString() : null,
+	                outVO != null && outVO.getEntryTime() != null
+	                        ? outVO.getEntryTime().toString() : null,
+	                actionBy);
+	    }
+
+	    return ResponseEntity.ok(html);
+	}
+	
+	@GetMapping("/checkinout-reject-page")
+	public ResponseEntity<String> checkInOutRejectPage(
+	        @RequestParam Long orgId,
+	        @RequestParam String employeeCode,
+	        @RequestParam String action,
+	        @RequestParam String actionBy,
+	        @RequestParam String checkInDate,
+	        @RequestParam(required = false, defaultValue = "") String notifyCode,
+	        @RequestParam(required = false, defaultValue = "") String notify,
+	        @RequestParam(required = false, defaultValue = "") String screenName,
+	        @RequestParam(required = false, defaultValue = "") String email,
+	        @RequestParam(required = false, defaultValue = "") String reason) {
+
+	    try {
+	        LocalDate localDate = LocalDate.parse(checkInDate);
+
+	        List<CheckInOutAdjustmentVO> list = checkInOutAdjustmentRepo
+	                .findByOrgIdAndEmpCodeAndCheckInDateBetween(orgId, employeeCode,
+	                        localDate, localDate.plusDays(1));
+
+	        boolean allDone = list != null && !list.isEmpty() &&
+	                list.stream().allMatch(v ->
+	                        "APPROVED".equalsIgnoreCase(v.getApprovalStatus()) ||
+	                        "REJECTED".equalsIgnoreCase(v.getApprovalStatus()));
+
+	        if (allDone) {
+	            String existingAction = list.get(0).getApprovalStatus();
+	            return mailCheckInOutAction(orgId, employeeCode, existingAction,
+	                    actionBy, checkInDate, notifyCode, notify, screenName, email, reason);
+	        }
+
+	        Context context = new Context();
+	        context.setVariable("orgId",         orgId);
+	        context.setVariable("employeeCode",  employeeCode);
+	        context.setVariable("action",        action);
+	        context.setVariable("actionBy",      actionBy);
+	        context.setVariable("checkInDate",   checkInDate);
+	        context.setVariable("notifyCode",    notifyCode);
+	        context.setVariable("notify",        notify);
+	        context.setVariable("screenName",    screenName);
+	        context.setVariable("email",         email);
+
+	        String html = templateEngine.process("checkinout-reject-reason", context);
+	        return ResponseEntity.ok(html);
+
+	    } catch (Exception e) {
+	        Context context = new Context();
+	        context.setVariable("stateClass", "state-error");
+	        context.setVariable("pillLabel",  "Failed");
+	        context.setVariable("title",      "Action Failed");
+	        context.setVariable("message",    e.getMessage());
+	        String html = templateEngine.process("leave-status", context);
+	        return ResponseEntity.ok(html);
+	    }
 	}
 
 	@GetMapping("/getRequestCheckInOutByOrgId")
@@ -426,7 +608,7 @@ public class BasicMasterController extends BaseController {
 
 	@GetMapping("/attendance")
 	public ResponseEntity<ResponseDTO> getAttendanceByEmpcode(@RequestParam String empcode, @RequestParam String month,
-			@RequestParam String orgId,  @RequestParam String branchCode) {
+			@RequestParam String orgId,  @RequestParam String branchCode,@RequestParam String finYear) {
 
 		String methodName = "getAttendanceByEmpcode()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
@@ -439,7 +621,7 @@ public class BasicMasterController extends BaseController {
 			Integer monthInt = Integer.parseInt(month);
 
 			List<Map<String, Object>> attendanceList = basicMasterService.getAttendanceByEmpcode(empcode, monthInt,
-					orgId, branchCode);
+					orgId, branchCode,finYear);
 
 			if (attendanceList.isEmpty()) {
 				errorMsg = "No attendance data found for empcode: " + empcode;
@@ -1215,7 +1397,7 @@ public class BasicMasterController extends BaseController {
 	}
 
 	@GetMapping("/getpayslipemployeedetails")
-	public ResponseEntity<ResponseDTO> getpayslipemployeedetails(@RequestParam Long orgId, String Employeecode) {
+	public ResponseEntity<ResponseDTO> getpayslipemployeedetails(@RequestParam Long orgId, String Employeecode,Long month,Long year) {
 		String methodName = "getpayslipemployeedetails()";
 		LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
 		String errorMsg = null;
@@ -1224,7 +1406,7 @@ public class BasicMasterController extends BaseController {
 		List<Map<String, Object>> mapp = new ArrayList<>();
 
 		try {
-			mapp = basicMasterService.getpayslipemployeedetails(orgId, Employeecode);
+			mapp = basicMasterService.getpayslipemployeedetails(orgId, Employeecode,month,year);
 		} catch (Exception e) {
 			errorMsg = e.getMessage();
 			LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
@@ -1603,5 +1785,41 @@ public class BasicMasterController extends BaseController {
 		LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 		return ResponseEntity.ok().body(responseDTO);
 	}
+	
+	@GetMapping("/getDashBoardApprovalStatusDetails/{empCode}")
+	public ResponseEntity<ResponseDTO> getDashBoardApprovalStatusDetails(
+	        @PathVariable String empCode) {
+
+	    String methodName = "getDashBoardApprovalStatusDetails()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    Map<String, Object> responseObjectsMap = new HashMap<>();
+	    ResponseDTO responseDTO;
+
+	    try {
+
+	        List<PendingRequestProjection> dashBoard =
+	                basicMasterService.getDashBoardApprovalStatusDetails(empCode);
+
+	        responseObjectsMap.put("dashBoard", dashBoard);
+
+	        responseDTO = createServiceResponse(responseObjectsMap);
+
+	    } catch (Exception e) {
+
+	        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, e.getMessage());
+
+	        responseDTO = createServiceResponseError(
+	                responseObjectsMap,
+	                e.getMessage(),
+	                e.getMessage()
+	        );
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+
+	    return ResponseEntity.ok(responseDTO);
+	}
+
 
 }

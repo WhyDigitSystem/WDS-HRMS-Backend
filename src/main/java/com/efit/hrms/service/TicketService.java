@@ -53,6 +53,18 @@ public interface TicketService {
 
 	TicketVO clearUserNotification(Long orgId, String userName, Long ticketId, String status);
 
+	Map<String, Object> createComments(CommentsDTO commentDTO);
+
+	List<CommentsVO> getAllCommentsAnotherServer(Long ticketId);
+
+	List<CommentsVO> getAllCommentsMyServer(Long ticketId);
+
+	CommentsVO updateComments(CommentsDTO dto);
+
+	void deleteComments(Long id, Long sourceId);
+
+	List<TicketVO> getTicketReport(Long orgId, String fromDate, String toDate);
+
 	
 
 

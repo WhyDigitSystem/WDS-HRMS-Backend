@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -25,16 +26,21 @@ import com.efit.hrms.dto.BranchDTO;
 import com.efit.hrms.dto.DesignationLeaveDTO;
 import com.efit.hrms.dto.EmployeeDTO;
 import com.efit.hrms.dto.EmployeeLeaveDTO;
+import com.efit.hrms.dto.ListOfValuesDTO;
+import com.efit.hrms.dto.ListOfValuesDetailsDTO;
 import com.efit.hrms.dto.ProjectMasterDTO;
 import com.efit.hrms.entity.AemployeeLeaveVO;
 import com.efit.hrms.entity.AemployeeVO;
 import com.efit.hrms.entity.BranchVO;
+import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.DepartmentVO;
 import com.efit.hrms.entity.DesignationLeaveVO;
 import com.efit.hrms.entity.DesignationVO;
 import com.efit.hrms.entity.EmployeeLeaveVO;
 import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.LeaveBalanceVO;
+import com.efit.hrms.entity.ListOfValuesDetailsVO;
+import com.efit.hrms.entity.ListOfValuesVO;
 import com.efit.hrms.entity.ProjectMasterVO;
 import com.efit.hrms.entity.UserLoginRolesVO;
 import com.efit.hrms.entity.UserVO;
@@ -42,12 +48,15 @@ import com.efit.hrms.exception.ApplicationException;
 import com.efit.hrms.repo.AemployeeLeaveRepo;
 import com.efit.hrms.repo.AemployeeRepo;
 import com.efit.hrms.repo.BranchRepo;
+import com.efit.hrms.repo.CompanyRepo;
 import com.efit.hrms.repo.DepartmentRepo;
 import com.efit.hrms.repo.DesignationLeaveRepo;
 import com.efit.hrms.repo.DesignationRepo;
 import com.efit.hrms.repo.EmployeeLeaveRepo;
 import com.efit.hrms.repo.EmployeeRepo;
 import com.efit.hrms.repo.LeaveBalanceRepo;
+import com.efit.hrms.repo.ListOfValuesDetailsRepo;
+import com.efit.hrms.repo.ListOfValuesRepo;
 import com.efit.hrms.repo.ProjectMasterRepo;
 import com.efit.hrms.repo.UserLoginRolesRepo;
 import com.efit.hrms.repo.UserRepo;
@@ -96,6 +105,16 @@ public class MasterServiceImpl implements MasterService {
 	@Autowired
 	DesignationRepo designationRepo;
 
+	
+	@Autowired
+	ListOfValuesRepo listOfValuesRepo;
+	
+	@Autowired
+	ListOfValuesDetailsRepo listOfValuesDetailsRepo;
+	
+	@Autowired
+	CompanyRepo companyRepo;
+	
 	// Branch
 
 	@Override
@@ -241,6 +260,25 @@ public class MasterServiceImpl implements MasterService {
 		return details;
 	}
 	
+	@Override
+	public List<Map<String, Object>> getEmployeeNameAndCode(Long orgId, String branchCode) {
+		Set<Object[]> result = employeeRepo.getEmployeeNameAndCode(orgId, branchCode);
+		return getEmployeeNameAndCode(result);
+	}
+
+	private List<Map<String, Object>> getEmployeeNameAndCode(Set<Object[]> result) {
+		List<Map<String, Object>> details = new ArrayList<>();
+		for (Object[] fs : result) {
+			Map<String, Object> object = new HashMap<>();
+			object.put("employeeName", fs[0] != null ? fs[0].toString() : "");
+			object.put("employeeCode", fs[1] != null ? fs[1].toString() : "");
+		
+			details.add(object); // Add the map to the list
+
+		}
+		return details;
+	}
+	
 	
 	@Override
 	@Transactional
@@ -248,7 +286,9 @@ public class MasterServiceImpl implements MasterService {
 	    EmployeeVO employeeVO;
 	    String message;
 
-	    if (ObjectUtils.isEmpty(employeeDTO.getId())) {
+	    if (ObjectUtils.isEmpty(employeeDTO.getEmployeeCode())) {
+	    	employeeDTO.setEmployeeCode(generateEmployeeCode(employeeDTO.getOrgId(), employeeDTO.getEmployeeType()));
+	    	
 	        // CREATE
 	        if (employeeRepo.existsByEmployeeCodeAndOrgId(employeeDTO.getEmployeeCode(), employeeDTO.getOrgId())) {
 	            throw new ApplicationException(
@@ -265,10 +305,15 @@ public class MasterServiceImpl implements MasterService {
 	        employeeVO.setUpdatedBy(employeeDTO.getCreatedBy());
 
 	        if (!employeeVO.getEmployeeCode().equalsIgnoreCase(employeeDTO.getEmployeeCode())) {
-	            if (employeeRepo.existsByEmployeeCodeAndOrgId(employeeDTO.getEmployeeCode(), employeeDTO.getOrgId())) {
-	                throw new ApplicationException(
-	                    String.format("This EmployeeCode: %s Already Exists in This Organization", employeeDTO.getEmployeeCode()));
-	            }
+	        	if (employeeRepo.existsByEmployeeCodeAndOrgIdAndIdNot(
+	        	        employeeDTO.getEmployeeCode(),
+	        	        employeeDTO.getOrgId(),
+	        	        employeeDTO.getId())) {
+
+	        	    throw new ApplicationException(
+	        	        "This EmployeeCode: " + employeeDTO.getEmployeeCode()
+	        	        + " Already Exists in This Organization");
+	        	}
 	            employeeVO.setEmployeeCode(employeeDTO.getEmployeeCode());
 	        }
 	        message = "Employee Update Successfully";
@@ -294,6 +339,66 @@ public class MasterServiceImpl implements MasterService {
 	    response.put("createdEmployeeVO", employeeVO);
 	    return response;
 	}
+	
+	//auto generated code 
+	
+	private String generateEmployeeCode(
+	        Long orgId,
+	        String employeeType) throws ApplicationException {
+
+	    CompanyVO company = companyRepo.findById(orgId)
+	            .orElseThrow(() ->
+	                    new ApplicationException(
+	                            "Company not found for orgId: " + orgId));
+
+	    String companyCode = company.getCompanyCode();
+
+	    if (companyCode == null || companyCode.trim().isEmpty()) {
+	        throw new ApplicationException("Company Code is Empty");
+	    }
+
+	    Integer lastNum;
+	    String employeeCode;
+
+	    // EMPLOYEE
+	    if ("Employee".equalsIgnoreCase(employeeType)) {
+
+	        lastNum = company.getELastNum();
+
+	        if (lastNum == null || lastNum == 0) {
+	            lastNum = 1;
+	        }
+
+	        employeeCode =
+	                companyCode + String.format("%03d", lastNum);
+
+	        company.setELastNum(lastNum + 1);
+	    }
+
+	    // CONTRACTOR
+	    else if ("Contractor".equalsIgnoreCase(employeeType)) {
+
+	        lastNum = company.getCLastNum();
+
+	        if (lastNum == null || lastNum == 0) {
+	            lastNum = 1;
+	        }
+
+	        employeeCode =
+	                companyCode + "C" +
+	                String.format("%03d", lastNum);
+
+	        company.setCLastNum(lastNum + 1);
+	    }
+
+	    else {
+	        throw new ApplicationException("Invalid Employee Type");
+	    }
+
+	    companyRepo.save(company);
+
+	    return employeeCode;
+	}
 
 	/** Maps ONLY simple fields. NO save calls, NO child handling here. */
 	private void mapEmployeeBasics(EmployeeVO employeeVO, EmployeeDTO employeeDTO) throws ApplicationException {
@@ -309,7 +414,6 @@ public class MasterServiceImpl implements MasterService {
 	    employeeVO.setOtFlag(employeeDTO.getOtFlag());
 	    employeeVO.setBioId(employeeDTO.getBioId());
 	    employeeVO.setPayslipEffectiveDate(employeeDTO.getPayslipEffectiveDate());
-
 
 	    UserVO userVO = userRepo.findByEmployeeCodeAndOrgId(employeeDTO.getEmployeeCode(), employeeDTO.getOrgId());
 	    if (userVO != null) {
@@ -1505,5 +1609,155 @@ public class MasterServiceImpl implements MasterService {
 //	    successResponse.put("totalSaved", savedEmployees.size());
 //	    return successResponse;
 //	}
+	
+	
+	
+	
+	// ListOfValues
 
+		@Override
+		public List<ListOfValuesVO> getAllListOfValuesByOrgId(Long orgId) {
+
+			return listOfValuesRepo.getAllListOfValuesByOrgId(orgId);
+		}
+
+		@Override
+		public ListOfValuesVO getAllListOfValuesById(Long id) {
+
+			return listOfValuesRepo.getAllListOfValuesById(id);
+		}
+
+		@Override
+		public Map<String, Object> updateCreateListOfValues(@Valid ListOfValuesDTO listOfValuesDTO)
+				throws ApplicationException {
+
+			ListOfValuesVO listOfValuesVO = new ListOfValuesVO();
+			String message;
+			if (ObjectUtils.isNotEmpty(listOfValuesDTO.getId())) {
+				listOfValuesVO = listOfValuesRepo.findById(listOfValuesDTO.getId())
+						.orElseThrow(() -> new ApplicationException("ListOfValues Not Found!"));
+
+				listOfValuesVO.setUpdatedBy(listOfValuesDTO.getCreatedBy());
+				createUpdateListOfValuesVOByListOfValuesDTO(listOfValuesDTO, listOfValuesVO);
+
+				if (!listOfValuesVO.getListDescription().equalsIgnoreCase(listOfValuesDTO.getListDescription())) {
+					if (listOfValuesRepo.existsByListDescriptionAndOrgId(listOfValuesDTO.getListDescription(),
+							listOfValuesDTO.getOrgId())) {
+						String errorMessage = String.format("This ListDescription: %s Already Exists in This Organization",
+								listOfValuesDTO.getOrgId());
+						throw new ApplicationException(errorMessage);
+					}
+					listOfValuesVO.setListDescription(listOfValuesDTO.getListDescription().toUpperCase());
+				}
+
+				message = "ListOfValues Updated Successfully";
+			} else {
+
+				if (listOfValuesRepo.existsByListDescriptionAndOrgId(listOfValuesDTO.getListDescription(),
+						listOfValuesDTO.getOrgId())) {
+					String errorMessage = String.format("This ListOfValues: %s Already Exists in This Organization",
+							listOfValuesDTO.getListDescription());
+					throw new ApplicationException(errorMessage);
+				}
+				listOfValuesVO.setUpdatedBy(listOfValuesDTO.getCreatedBy());
+				listOfValuesVO.setCreatedBy(listOfValuesDTO.getCreatedBy());
+
+				createUpdateListOfValuesVOByListOfValuesDTO(listOfValuesDTO, listOfValuesVO);
+				message = "ListOfValues Created Successfully";
+			}
+
+			listOfValuesRepo.save(listOfValuesVO);
+			Map<String, Object> response = new HashMap<>();
+			response.put("listOfValuesVO", listOfValuesVO);
+			response.put("message", message);
+			return response;
+		}
+
+		private void createUpdateListOfValuesVOByListOfValuesDTO(@Valid ListOfValuesDTO listOfValuesDTO,
+				ListOfValuesVO listOfValuesVO) throws ApplicationException {
+
+			listOfValuesVO.setCreatedBy(listOfValuesDTO.getCreatedBy());
+			listOfValuesVO.setOrgId(listOfValuesDTO.getOrgId());
+			listOfValuesVO.setListDescription(listOfValuesDTO.getListDescription());
+			if (listOfValuesDTO.getId() != null) {
+				List<ListOfValuesDetailsVO> listOfValuesDetailsVOs = listOfValuesDetailsRepo
+						.findByListOfValuesVO(listOfValuesVO);
+				listOfValuesDetailsRepo.deleteAll(listOfValuesDetailsVOs);
+
+			}
+			List<ListOfValuesDetailsVO> liistOfValuesDetailsVOs = new ArrayList<>();
+			for (ListOfValuesDetailsDTO listOfValuesDetailsDTO : listOfValuesDTO.getListOfValuesDetailsDTO()) {
+				ListOfValuesDetailsVO listOfValuesDetailsVO = new ListOfValuesDetailsVO();
+
+				listOfValuesDetailsVO.setListValues(listOfValuesDetailsDTO.getListValues());
+				listOfValuesDetailsVO.setActive(listOfValuesDetailsDTO.isActive());
+
+				listOfValuesDetailsVO.setListOfValuesVO(listOfValuesVO);
+				liistOfValuesDetailsVOs.add(listOfValuesDetailsVO);
+			}
+
+			listOfValuesVO.setListOfValuesDetailsVO(liistOfValuesDetailsVOs);
+
+		}
+
+		@Override
+		public List<Map<String, Object>> getAllListValues(Long orgId, String listDescription) {
+			Set<Object[]> chType = listOfValuesRepo.getAllListValues(orgId, listDescription);
+			return getAllListValues(chType);
+		}
+
+		private List<Map<String, Object>> getAllListValues(Set<Object[]> chType) {
+			List<Map<String, Object>> List1 = new ArrayList<>();
+			for (Object[] ch : chType) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("listOfValues", ch[0] != null ? ch[0].toString() : "");
+				List1.add(map);
+			}
+			return List1;
+		}
+		
+		@Override
+		public String previewEmployeeCode(
+		        Long orgId,
+		        String employeeType)
+		        throws ApplicationException {
+
+		    CompanyVO company = companyRepo.findById(orgId)
+		            .orElseThrow(() ->
+		                    new ApplicationException("Company not found"));
+
+		    String companyCode = company.getCompanyCode();
+
+		    Integer lastNum;
+
+		    // Employee
+		    if ("Employee".equalsIgnoreCase(employeeType)) {
+
+		        lastNum = company.getELastNum();
+
+		        if (lastNum == null || lastNum <= 0) {
+		            lastNum = 1;
+		        }
+
+		        return companyCode +
+		                String.format("%03d", lastNum);
+		    }
+
+		    // Contractor
+		    else if ("Contractor".equalsIgnoreCase(employeeType)) {
+
+		        lastNum = company.getCLastNum();
+
+		        if (lastNum == null || lastNum <= 0) {
+		            lastNum = 1;
+		        }
+
+		        return companyCode + "C" +
+		                String.format("%03d", lastNum);
+		    }
+
+		    else {
+		        throw new ApplicationException("Invalid Employee Type");
+		    }
+		}
 }

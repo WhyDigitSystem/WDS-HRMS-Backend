@@ -1,0 +1,25 @@
+package com.efit.hrms.repo;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.efit.hrms.entity.JobPostingsVO;
+
+@Repository
+public interface JobPostingsRepo extends JpaRepository<JobPostingsVO, Long> {
+
+	@Query(nativeQuery = true, value = "select * from jobpostings where orgid=?1 and branchcode=?2 and active=1")
+	List<JobPostingsVO> getJobPostingsByOrgId(Long orgId, String branchCode);
+
+	@Query(nativeQuery = true, value = "select * from jobpostings where jobpostingsid=?1 ")
+	JobPostingsVO getJobPostingsById(Long id);
+
+	@Query(nativeQuery = true, value = "select * from jobpostings where orgid =?1 and (department=?2 or 'ALL'=?2) and branchcode = ?3 and (?4 is null or STR_TO_DATE(createdon,'%d-%m-%Y %h:%i:%s %p') >=?4)\r\n"
+			+ "and (?5 is null or STR_TO_DATE(createdon,'%d-%m-%Y %h:%i:%s %p') <= ?5 )")
+	List<JobPostingsVO> getJobPostingDetails(Long orgId, String department, String branchCode, String fromDate,
+			String toDate);
+
+}

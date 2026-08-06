@@ -1,12 +1,14 @@
 package com.efit.hrms.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +38,6 @@ import com.efit.hrms.dto.SignUpFormDTO;
 import com.efit.hrms.dto.UserLoginBranchAccessDTO;
 import com.efit.hrms.dto.UserLoginRoleAccessDTO;
 import com.efit.hrms.dto.UserResponseDTO;
-import com.efit.hrms.entity.CompanyVO;
 import com.efit.hrms.entity.ResponsibilityVO;
 import com.efit.hrms.entity.RolesResponsibilityVO;
 import com.efit.hrms.entity.RolesVO;
@@ -102,6 +104,12 @@ public class AuthServiceImpl implements AuthService {
 	
 	@Autowired
 	CompanyRepo companyRepo;
+	
+	@Autowired
+	EmailService emailService;
+	
+	@Autowired
+	private JavaMailSender mailSender;
 
 	@Override
 	public void signup(SignUpFormDTO signUpRequest) {
@@ -807,4 +815,102 @@ public class AuthServiceImpl implements AuthService {
 		}
 	}
 
+	
+	@Override
+	public Map<String, Object> sendOtp(String userName) {
+
+	    UserVO user = userRepo.findByEmail(userName);
+
+	    if (user == null) {
+	        throw new RuntimeException("Email not found");
+	    }
+
+	    // 🔹 Generate OTP
+	    String otp = String.valueOf(new Random().nextInt(900000) + 100000);
+
+	    // 🔹 Save OTP
+	    user.setOtp(otp);
+	    user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
+	    userRepo.save(user);
+
+	    // 🔹 Send email
+	    emailService.sendOtpEmail(
+	            user.getEmail(),
+	            user.getEmployeeName(),
+	            otp
+	    );
+
+	    // 🔹 Response map
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("message", "OTP sent successfully");
+	    response.put("userName", user.getEmployeeName());
+
+	    return response;
+	}
+	
+	@Override
+	public void resetPasswordNew(ResetPasswordFormDTO resetPasswordRequest) {
+
+	    String methodName = "resetPassword()";
+	    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+	    if (ObjectUtils.isEmpty(resetPasswordRequest)
+	            || StringUtils.isBlank(resetPasswordRequest.getUserName())
+	            || StringUtils.isBlank(resetPasswordRequest.getNewPassword())
+	            || StringUtils.isBlank(resetPasswordRequest.getOtp())) {
+
+	        throw new ApplicationContextException(
+	                UserConstants.ERRROR_MSG_INVALID_RESET_PASSWORD_INFORMATION);
+	    }
+
+	    UserVO userVO = userRepo.findByEmail(resetPasswordRequest.getUserName());
+	    
+	    if (userVO == null) {
+	        throw new RuntimeException("Email not found");
+	    }
+
+	    if (ObjectUtils.isNotEmpty(userVO)) {
+
+	        // 🔴 1. OTP validation
+	        if (StringUtils.isBlank(userVO.getOtp())
+	                || !userVO.getOtp().equals(resetPasswordRequest.getOtp())) {
+
+	            throw new ApplicationContextException("Invalid OTP");
+	        }
+
+	        // 🔴 2. OTP expiry check
+	        if (userVO.getOtpExpiry() == null
+	                || userVO.getOtpExpiry().isBefore(LocalDateTime.now())) {
+
+	            throw new ApplicationContextException("OTP expired");
+	        }
+
+	        // 🔴 3. Update password
+	        try {
+	            userVO.setPassword(
+	                    encoder.encode(
+	                            CryptoUtils.getDecrypt(resetPasswordRequest.getNewPassword())
+	                    )
+	            );
+	        } catch (Exception e) {
+	            throw new ApplicationContextException(
+	                    UserConstants.ERRROR_MSG_UNABLE_TO_ENCODE_USER_PASSWORD);
+	        }
+
+	        // 🔴 4. Clear OTP after success
+	        userVO.setOtp(null);
+	        userVO.setOtpExpiry(null);
+
+	        userRepo.save(userVO);
+
+	       
+
+	    } else {
+	        throw new ApplicationContextException(
+	                UserConstants.ERRROR_MSG_USER_INFORMATION_NOT_FOUND);
+	    }
+
+	    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+	}
+	
 }

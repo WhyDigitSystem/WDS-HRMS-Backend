@@ -28,8 +28,19 @@ public class NotificationVO {
 	@Column(name = "notificationid")
 	private Long id;
 
-	@Column(name = "ticketid")
-	private Long ticketId;
+
+	@Column(name = "userid")
+    private Long userid; 
+	@Column(name = "auctionsid")
+    private Long auctionsid;        // Auction reference
+	@Column(name = "message")
+    private String message;
+	@Column(name = "isread")
+    private boolean isRead = false;
+	@Column(name = "isdeleted")
+    private boolean isDeleted = false;
+	@Column(name = "notificationtype")
+    private String notificationType;
 	
 	@Column(name = "createdby")
 	private String createdBy;
@@ -41,15 +52,7 @@ public class NotificationVO {
 	@Column(name = "orgid")
 	private Long orgId;
 
-	private String status;
-
-	private String message;
 	
-	@Column(name="notifiedto")
-	private String notifiedTo;
-	
-	@Column(name="statusflag")
-	private Boolean statusFlag=true;
 	
 	
 	@Embedded

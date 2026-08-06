@@ -25,6 +25,7 @@ import com.efit.hrms.common.CommonConstant;
 import com.efit.hrms.common.UserConstants;
 import com.efit.hrms.dto.ResponseDTO;
 import com.efit.hrms.dto.TimeSheetDTO;
+import com.efit.hrms.entity.EmployeeVO;
 import com.efit.hrms.entity.TimeSheetVO;
 import com.efit.hrms.service.TimeSheetService;
 
@@ -62,6 +63,29 @@ public class TimeSheetController extends BaseController {
 				return ResponseEntity.ok().body(responseDTO);
 			}
 		 
+			
+			@PutMapping("/createUpdateTask")
+			public ResponseEntity<ResponseDTO> createUpdateTask(@Valid @RequestBody TimeSheetDTO timeSheetDTO) {
+				String methodName = "createUpdateTask()";
+				LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+				String errorMsg = null;
+				Map<String, Object> responseObjectsMap = new HashMap<>();
+				ResponseDTO responseDTO = null;
+				try {
+					Map<String, Object> timeSheetVO = timeSheetService.createUpdateTask(timeSheetDTO);
+					responseObjectsMap.put(CommonConstant.STRING_MESSAGE, timeSheetVO.get("message"));
+					responseObjectsMap.put("timeSheetVO", timeSheetVO.get("timeSheetVO"));
+					responseDTO = createServiceResponse(responseObjectsMap);
+				} catch (Exception e) {
+					errorMsg = e.getMessage();
+					LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+					responseDTO = createServiceResponseError(responseObjectsMap, errorMsg, errorMsg);
+				}
+				LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+				return ResponseEntity.ok().body(responseDTO);
+			}
+		 
+			
 			@GetMapping("/getTimeSheetByOrgId")
 			public ResponseEntity<ResponseDTO> getTimeSheetByOrgId(@RequestParam Long orgId,@RequestParam (required = false) String empCode,
 					@RequestParam (required = false) String date) {
@@ -246,4 +270,78 @@ public class TimeSheetController extends BaseController {
 				LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
 				return ResponseEntity.ok().body(responseDTO);
 			}
+			
+			@GetMapping("/getEmployeeDetailsForAllTaskReport")
+			public ResponseEntity<ResponseDTO> getEmployeeDetailsForAllTaskReport(@RequestParam Long orgId,@RequestParam String branchCode,@RequestParam String department) {
+				String methodName = "getEmployeeDetailsForAllTaskReport()";
+				LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+				String errorMsg = null;
+				Map<String, Object> responseObjectsMap = new HashMap<>();
+				ResponseDTO responseDTO = null;
+				List<Map<String, Object>> employeeVO = null;
+				try {
+					employeeVO = timeSheetService.getEmployeeDetailsForAllTaskReport(orgId,branchCode,department);
+				} catch (Exception e) {
+					errorMsg = e.getMessage();
+					LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+				}
+				if (StringUtils.isEmpty(errorMsg)) {
+					responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Employee Details found by OrgId");
+					responseObjectsMap.put("employeeVO", employeeVO);
+					responseDTO = createServiceResponse(responseObjectsMap);
+				} else {
+					errorMsg = "E	mployee Details not found for orgID: " + orgId;
+					responseDTO = createServiceResponseError(responseObjectsMap, "Employee Details  not found", errorMsg);
+				}
+				LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+				return ResponseEntity.ok().body(responseDTO);
+			}
+			
+			
+			@GetMapping("/getAllEmployeeTask")
+			public ResponseEntity<ResponseDTO> getAllEmployeeTask(
+			        @RequestParam String fromDate,
+			        @RequestParam String toDate,
+			        @RequestParam Long orgId,
+			        @RequestParam String branchCode,
+			        @RequestParam String department,
+			        @RequestParam String employeecode) {
+
+			    String methodName = "getAllEmployeeTask()";
+			    LOGGER.debug(CommonConstant.STARTING_METHOD, methodName);
+
+			    String errorMsg = null;
+			    Map<String, Object> responseObjectsMap = new HashMap<>();
+			    ResponseDTO responseDTO = null;
+			    List<Map<String, Object>> timeSheetVO = null;
+
+			    try {
+			        timeSheetVO = timeSheetService.getAllTimeSheetDescByOrgId(
+			                fromDate, toDate, orgId, branchCode, department, employeecode
+			        );
+			    } catch (Exception e) {
+			        errorMsg = e.getMessage();
+			        LOGGER.error(UserConstants.ERROR_MSG_METHOD_NAME, methodName, errorMsg);
+			    }
+
+			    if (StringUtils.isEmpty(errorMsg)) {
+			        responseObjectsMap.put(CommonConstant.STRING_MESSAGE, "Task Details Get Successfully");
+			        responseObjectsMap.put("timeSheetVO", timeSheetVO);
+			        responseDTO = createServiceResponse(responseObjectsMap);
+			    } else {
+			        errorMsg = "TimeSheet not found for orgID: " + orgId;
+			        responseDTO = createServiceResponseError(responseObjectsMap, "TimeSheet not found", errorMsg);
+			    }
+
+			    LOGGER.debug(CommonConstant.ENDING_METHOD, methodName);
+			    return ResponseEntity.ok().body(responseDTO);
+			}
+
+
 }
+
+			
+
+
+
+
